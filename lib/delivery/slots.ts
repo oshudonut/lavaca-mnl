@@ -42,22 +42,6 @@ type AnnouncementRow = {
   closed_until: string | null
 }
 
-type DeliveryDateSlotRow = {
-  id: string
-  date: string
-  is_open: boolean
-  max_orders_total: number
-  closure_reason: string | null
-  closure_type: string | null
-  slot_id: string | null
-  slot_window: 'AM' | 'PM' | null
-  window_start: string | null
-  window_end: string | null
-  max_orders: number | null
-  booked_count: number | null
-  slot_is_open: boolean | null
-}
-
 // ---------------------------------------------------------------------------
 // Main export
 // ---------------------------------------------------------------------------
@@ -161,7 +145,8 @@ export async function getAvailableSlots(
       rawRow
 
     // BR-ORD-04: Skip Mondays entirely (getDay() === 1)
-    const dayOfWeek = new Date(`${date}T00:00:00`).getDay()
+    // Use +08:00 (PST) so day-of-week is correct regardless of server timezone
+    const dayOfWeek = new Date(`${date}T00:00:00+08:00`).getDay()
     if (dayOfWeek === 1) continue
 
     // Build slot list
@@ -169,7 +154,8 @@ export async function getAvailableSlots(
       .sort((a, b) => (a.slot_window < b.slot_window ? -1 : 1))
       .map((s) => {
         // BR-ORD-01: 48hr advance booking rule
-        const slotStart = new Date(`${date}T${s.window_start}`)
+        // Explicit +08:00 offset (PST) so cutoff is correct on UTC servers
+        const slotStart = new Date(`${date}T${s.window_start}+08:00`)
         const withinCutoff = slotStart < cutoff
 
         const remaining = Math.max(0, s.max_orders - s.booked_count)
