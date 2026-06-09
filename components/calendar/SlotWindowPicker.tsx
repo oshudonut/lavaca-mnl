@@ -15,7 +15,8 @@ const WINDOW_LABELS: Record<'AM' | 'PM', { time: string; label: string }> = {
 }
 
 function capacityText(slot: SlotWindow): string {
-  if (!slot.is_open || slot.remaining === 0) return 'Full'
+  if (!slot.is_open) return 'Unavailable'
+  if (slot.remaining === 0) return 'Full'
   if (slot.remaining === 1) return '1 left'
   if (slot.remaining <= 2) return `${slot.remaining} left`
   return `${slot.remaining} remaining`

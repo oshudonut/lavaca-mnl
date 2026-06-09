@@ -30,15 +30,12 @@ type DateState =
   | 'fully-booked'
   | 'closed'
   | 'disabled'
-  | 'monday'
 
 function getDateState(
   dateStr: string,
   availableDate: AvailableDate | undefined,
   isPast: boolean,
-  isMonday: boolean
 ): { state: DateState; label?: string } {
-  if (isMonday) return { state: 'monday' }
   if (isPast) return { state: 'disabled' }
 
   if (!availableDate) return { state: 'disabled' }
@@ -91,7 +88,7 @@ export function AvailabilityCalendar({ slotsData, selectedDate, onSelectDate }: 
     cursor = addDays(cursor, 1)
   }
 
-  const todayStr = format(today, 'yyyy-MM-dd')
+  const currentMonthStart = startOfMonth(today)
 
   return (
     <div className="w-full max-w-sm mx-auto select-none">
@@ -101,6 +98,7 @@ export function AvailabilityCalendar({ slotsData, selectedDate, onSelectDate }: 
           variant="outline"
           size="icon"
           onClick={() => setViewMonth((m) => subMonths(m, 1))}
+          disabled={!isBefore(currentMonthStart, viewMonth)}
           aria-label="Previous month"
         >
           &#8249;
@@ -151,7 +149,7 @@ export function AvailabilityCalendar({ slotsData, selectedDate, onSelectDate }: 
           }
 
           const availableDate = dateMap.get(dayStr)
-          const { state, label } = getDateState(dayStr, availableDate, isPast, false)
+          const { state, label } = getDateState(dayStr, availableDate, isPast)
 
           const isSelectable = state === 'available' || state === 'limited'
 
