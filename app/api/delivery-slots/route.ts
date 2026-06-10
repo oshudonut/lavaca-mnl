@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   const to   = searchParams.get('to')   ?? plus60
 
   try {
-    const data = await getAvailableSlots(from, to)
+    const data = await getAvailableSlots(from, to, true)
     return NextResponse.json(data)
   } catch (error) {
     console.error('[delivery-slots] Error:', error)
