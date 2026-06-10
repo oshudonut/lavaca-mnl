@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { sendEmail } from '@/lib/resend/send'
 import Cust05 from '@/lib/resend/templates/cust-05'
+import { deleteCalendarEvent } from '@/lib/calendar/service'
 
 const TERMINAL = ['CONFIRMED', 'DELIVERED', 'CANCELLED', 'EXPIRED']
 
@@ -24,7 +25,7 @@ export async function POST(
 
   const { data: order } = await supabase
     .from('orders')
-    .select('id, order_number, status, delivery_slot_id, customers ( name, email )')
+    .select('id, order_number, status, delivery_slot_id, calendar_event_id, customers ( name, email )')
     .eq('id', params.id)
     .single()
 
@@ -43,6 +44,13 @@ export async function POST(
     .eq('id', params.id)
 
   if (updateError) return NextResponse.json({ error: 'Failed to cancel order.' }, { status: 500 })
+
+  // Delete GCal event if one was created (non-blocking — spec §8)
+  if (order.calendar_event_id) {
+    deleteCalendarEvent(order.calendar_event_id).catch((err) =>
+      console.error('[cancel] deleteCalendarEvent error:', err)
+    )
+  }
 
   // Decrement booked_count to free the slot
   if (order.delivery_slot_id) {
