@@ -135,6 +135,31 @@ export async function createOrder(
   }
 
   // -------------------------------------------------------------------------
+  // Upsert customer (by email — idempotent across repeat orders)
+  // -------------------------------------------------------------------------
+  const { data: customerRow, error: customerError } = await supabase
+    .from('customers')
+    .upsert(
+      {
+        name: customer.name.trim(),
+        phone: customer.phone.trim(),
+        email: customer.email.trim().toLowerCase(),
+        default_address: customer.delivery_address.trim(),
+      },
+      { onConflict: 'email' }
+    )
+    .select('id')
+    .single()
+
+  if (customerError || !customerRow) {
+    await supabase
+      .from('delivery_slots')
+      .update({ booked_count: Math.max(0, slotRow.booked_count) })
+      .eq('id', slotRow.id)
+    return { error: { code: 'INTERNAL', message: 'Failed to create customer record.' } }
+  }
+
+  // -------------------------------------------------------------------------
   // Generate order number: LV-YYYYMMDD-NNN
   // -------------------------------------------------------------------------
   const dateStr = manilaDateStr()
@@ -166,6 +191,7 @@ export async function createOrder(
     .from('orders')
     .insert({
       order_number,
+      customer_id: customerRow.id,
       delivery_slot_id: slotRow.id,
       status: 'PENDING_PAYMENT',
       subtotal,
