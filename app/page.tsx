@@ -3,245 +3,315 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
-const BURGUNDY = '#5C1A1A'
-const WARM_DARK = '#1A1410'
-const GOLD = '#A16207'
-const CREAM = '#FAF7F2'
+const PRODUCTS = [
+  {
+    sku: 'LV-100',
+    name: 'Angus Roast Beef',
+    weight: '100g · Solo Serving',
+    price: '₱350',
+    occasion: 'Perfect for date nights and personal indulgence. The ideal introduction to Lavaca MNL.',
+    photo: '/photo-topdown.png',
+    photoPos: 'center 40%',
+  },
+  {
+    sku: 'LV-1000',
+    name: 'Angus Roast Beef',
+    weight: '1kg · Serves 4–6',
+    price: '₱3,000',
+    occasion: 'The family dinner cut. Enough for a full table, worthy of a celebration.',
+    photo: '/photo-slices.png',
+    photoPos: 'center 40%',
+  },
+  {
+    sku: 'LV-1500',
+    name: 'Angus Roast Beef',
+    weight: '1.5kg · Serves 6–9',
+    price: '₱4,000',
+    occasion: 'Built for gatherings. The centrepiece your guests will remember long after the table is cleared.',
+    photo: '/photo-slices.png',
+    photoPos: 'center 60%',
+  },
+]
+
+const TRUST = [
+  { num: '25',   l1: 'Hours',           l2: 'Slow-Cooked'  },
+  { num: '100%', l1: 'Premium',         l2: 'Angus Beef'   },
+  { num: '3',    l1: 'Sizes for Every', l2: 'Occasion'     },
+  { num: '48h',  l1: 'Advance Order',   l2: 'Metro Manila' },
+]
+
+const STEPS = [
+  {
+    num: '1',
+    title: 'Choose Your Cut',
+    desc: 'Browse the menu and select the size that fits your occasion — a solo treat, a family dinner, or a celebration feast.',
+  },
+  {
+    num: '2',
+    title: 'Pick Your Delivery Slot',
+    desc: 'Select a delivery date and time window that works for you. Available Tuesday through Sunday across Metro Manila.',
+  },
+  {
+    num: '3',
+    title: 'Pay & Confirm',
+    desc: 'Pay via GCash or bank transfer. We confirm your order within hours and handle everything from there.',
+  },
+]
+
+const GALLERY = [
+  { src: '/photo-hero.png',    caption: 'The Carve'   },
+  { src: '/photo-craft.png',   caption: 'The Craft'   },
+  { src: '/photo-slices.png',  caption: 'The Cut'     },
+  { src: '/photo-topdown.png', caption: 'The Product' },
+]
+
+const DELIVERY = [
+  { icon: 'pin',      strong: 'Alabang & South Metro Manila', sub: 'Muntinlupa · Las Piñas · Parañaque'     },
+  { icon: 'calendar', strong: 'Tuesday – Sunday',             sub: 'AM 9AM–12PM · PM 1PM–5PM'               },
+  { icon: 'clock',    strong: '48 Hours Advance',             sub: 'Order at least 2 days before delivery'  },
+  { icon: 'card',     strong: 'GCash & Bank Transfer',        sub: 'BPI · BDO'                              },
+]
+
+function DeliveryIcon({ name }: { name: string }) {
+  const common = {
+    width: 22,
+    height: 22,
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: '#A16207',
+    strokeWidth: 1.25,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+    'aria-hidden': true,
+  }
+  switch (name) {
+    case 'pin':
+      return (
+        <svg {...common}>
+          <path d="M12 21s-7-5.5-7-11a7 7 0 1 1 14 0c0 5.5-7 11-7 11Z" />
+          <circle cx="12" cy="10" r="2.5" />
+        </svg>
+      )
+    case 'calendar':
+      return (
+        <svg {...common}>
+          <rect x="3.5" y="5" width="17" height="16" rx="1.5" />
+          <path d="M3.5 9.5h17M8 2.5V6M16 2.5V6" />
+        </svg>
+      )
+    case 'clock':
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="M12 7.5V12l3 2" />
+        </svg>
+      )
+    case 'card':
+      return (
+        <svg {...common}>
+          <rect x="2.5" y="5.5" width="19" height="13.5" rx="1.5" />
+          <path d="M2.5 9.5h19M6 15h4" />
+        </svg>
+      )
+    default:
+      return null
+  }
+}
 
 export default function HomePage() {
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+  }
+
   return (
-    <div style={{ fontFamily: "'Jost', sans-serif", backgroundColor: WARM_DARK }}>
+    <div style={{ fontFamily: "'Inter', sans-serif", color: '#0C0A09' }}>
 
-      {/* ── 1. NAV ── */}
-      <header className="sticky top-0 z-50" style={{ backgroundColor: BURGUNDY, height: 68 }}>
-        <div className="mx-auto max-w-[1200px] px-6 h-full flex items-center justify-between">
-          <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 600, color: '#fff', letterSpacing: '0.04em' }}>
-            Lavaca MNL
-          </span>
-          <nav className="hidden md:flex items-center gap-8">
-            {['The Menu', 'Our Story', 'How It Works', 'Delivery'].map((label) => (
-              <a key={label} href={`#${label.toLowerCase().replace(/\s+/g, '-')}`}
-                style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, fontWeight: 400, letterSpacing: '0.06em', textDecoration: 'none' }}
-                className="hover:text-white transition-colors">
-                {label}
-              </a>
-            ))}
-          </nav>
-          <Link href="/order"
-            style={{ backgroundColor: GOLD, color: '#fff', padding: '10px 22px', borderRadius: 6, fontSize: 13, fontWeight: 600, letterSpacing: '0.06em', textDecoration: 'none' }}>
-            Order Now
-          </Link>
-        </div>
-      </header>
-
-      {/* ── 2. HERO ── */}
-      <section style={{ position: 'relative', height: '100vh', minHeight: 620, overflow: 'hidden' }}>
-        <Image src="/photo-hero.png" alt="Lavaca MNL — Premium Angus Roast Beef" fill
-          style={{ objectFit: 'cover', objectPosition: 'center 30%' }} priority />
-        {/* Dark gradient overlay */}
-        <div style={{ position: 'absolute', inset: 0,
-          background: 'linear-gradient(90deg, rgba(10,5,3,0.90) 0%, rgba(10,5,3,0.55) 50%, rgba(10,5,3,0.18) 100%)' }} />
-        {/* Text — bottom left */}
-        <div style={{ position: 'absolute', bottom: 72, left: 0, right: 0 }}>
-          <div className="mx-auto max-w-[1200px] px-6">
-            <p style={{ color: GOLD, fontSize: 11, fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 16, fontFamily: "'Jost', sans-serif" }}>
-              Slow-Cooked · 100% Angus · Metro Manila
-            </p>
-            <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(52px, 8vw, 92px)', fontWeight: 600, color: '#fff', lineHeight: 1.05, marginBottom: 20, maxWidth: 680 }}>
-              Premium Angus<br />Roast Beef.
-            </h1>
-            <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 14, fontWeight: 300, letterSpacing: '0.04em', marginBottom: 36, maxWidth: 480, lineHeight: 1.7, fontFamily: "'Jost', sans-serif" }}>
-              Slow-Cooked for 25 Hours. Crafted for Gatherings.<br />Delivered Across Metro Manila.
-            </p>
-            <div className="flex items-center gap-4">
-              <Link href="/order"
-                style={{ backgroundColor: GOLD, color: '#fff', padding: '14px 32px', borderRadius: 6, fontSize: 14, fontWeight: 600, letterSpacing: '0.08em', textDecoration: 'none', display: 'inline-block' }}>
-                Order Now
-              </Link>
-              <a href="#the-menu"
-                style={{ color: '#fff', fontSize: 14, fontWeight: 400, letterSpacing: '0.06em', textDecoration: 'none', borderBottom: `1px solid ${GOLD}`, paddingBottom: 2 }}>
-                View Products
-              </a>
-            </div>
+      {/* ── NAV ── */}
+      <nav className="lv-nav">
+        <div className="lv-nav-inner">
+          <Image src="/lavaca-logo.png" alt="Lavaca MNL" width={120} height={34} style={{ height: 34, width: 'auto' }} priority />
+          <div className="lv-nav-links">
+            <button onClick={() => scrollTo('products-section')} className="lv-nav-link">The Menu</button>
+            <button onClick={() => scrollTo('craft-section')} className="lv-nav-link">Our Story</button>
+            <button onClick={() => scrollTo('process-section')} className="lv-nav-link">How It Works</button>
+            <button onClick={() => scrollTo('delivery-section')} className="lv-nav-link">Delivery</button>
           </div>
+          <Link href="/order" className="lv-nav-cta">Order Now</Link>
         </div>
-      </section>
+      </nav>
 
-      {/* ── 3. TRUST BAR ── */}
-      <section style={{ backgroundColor: WARM_DARK, borderTop: `1px solid rgba(161,98,7,0.2)`, borderBottom: `1px solid rgba(161,98,7,0.2)` }}>
-        <div className="mx-auto max-w-[1200px] px-6 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-0">
-            {[
-              { stat: '25', label: 'Hours Slow-Cooked' },
-              { stat: '100%', label: 'Angus Beef' },
-              { stat: '3', label: 'Sizes Available' },
-              { stat: '48h', label: 'Advance Order' },
-            ].map(({ stat, label }, i) => (
-              <div key={stat} className="flex flex-col items-center py-6"
-                style={{ borderRight: i < 3 ? '1px solid rgba(161,98,7,0.2)' : 'none' }}>
-                <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 38, fontWeight: 600, color: GOLD, lineHeight: 1 }}>
-                  {stat}
-                </span>
-                <span style={{ color: 'rgba(255,255,255,0.55)', fontSize: 12, fontWeight: 400, letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 6, fontFamily: "'Jost', sans-serif" }}>
-                  {label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── 4. PRODUCTS ── */}
-      <section id="the-menu" style={{ backgroundColor: CREAM, padding: '96px 0' }}>
-        <div className="mx-auto max-w-[1200px] px-6">
-          <p style={{ color: GOLD, fontSize: 11, fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 12, textAlign: 'center', fontFamily: "'Jost', sans-serif" }}>
-            The Menu
+      {/* ── HERO ── */}
+      <section className="lv-hero">
+        <Image
+          src="/photo-hero.png"
+          alt="Lavaca MNL Angus Roast Beef"
+          fill
+          style={{ objectFit: 'cover', objectPosition: 'center 30%' }}
+          priority
+        />
+        <div className="hero-overlay" />
+        <div className="lv-hero-content">
+          <div className="lv-hero-rule" />
+          <p className="lv-hero-eyebrow">Slow-Cooked &middot; 100% Angus &middot; Metro Manila</p>
+          <h1 className="lv-hero-headline">
+            Premium<br />Angus<br />Roast Beef.
+          </h1>
+          <p className="lv-hero-body">
+            Slow-Cooked for 25 Hours.<br />
+            Crafted for Gatherings.<br />
+            Delivered Across Metro Manila.
           </p>
-          <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(36px,5vw,56px)', fontWeight: 600, color: WARM_DARK, textAlign: 'center', marginBottom: 56 }}>
-            Choose Your Cut
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { img: '/photo-topdown.png', name: 'Angus Roast Beef', size: '100g · Solo Serving', price: '₱350' },
-              { img: '/photo-slices.png', name: 'Angus Roast Beef', size: '1kg · Serves 4–6', price: '₱3,000' },
-              { img: '/photo-slices.png', name: 'Angus Roast Beef', size: '1.5kg · Serves 6–9', price: '₱4,000' },
-            ].map(({ img, name, size, price }) => (
-              <div key={size} className="product-card" style={{ backgroundColor: '#fff', overflow: 'hidden', cursor: 'pointer' }}>
-                <div style={{ height: 300, position: 'relative', overflow: 'hidden' }}>
-                  <Image src={img} alt={name} fill style={{ objectFit: 'cover' }} />
-                </div>
-                <div style={{ padding: '24px 24px 28px' }}>
-                  <p style={{ fontFamily: "'Jost', sans-serif", fontSize: 11, fontWeight: 500, color: 'rgba(28,25,23,0.5)', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 6 }}>
-                    {size}
-                  </p>
-                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 600, color: WARM_DARK, marginBottom: 8 }}>
-                    {name}
-                  </p>
-                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 34, fontWeight: 600, color: BURGUNDY }}>
-                    {price}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="flex justify-center mt-12">
-            <Link href="/order"
-              style={{ backgroundColor: BURGUNDY, color: '#fff', padding: '14px 40px', borderRadius: 6, fontSize: 14, fontWeight: 600, letterSpacing: '0.08em', textDecoration: 'none' }}>
-              Order Now
-            </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 32, flexWrap: 'wrap' }}>
+            <Link href="/order" className="lv-btn-primary">Order Now</Link>
+            <button onClick={() => scrollTo('products-section')} className="lv-btn-ghost">View Products</button>
           </div>
         </div>
       </section>
 
-      {/* ── 5. CRAFT SECTION ── */}
-      <section id="our-story" style={{ backgroundColor: BURGUNDY, overflow: 'hidden' }}>
-        <div className="mx-auto max-w-[1200px] grid grid-cols-1 md:grid-cols-2">
-          <div style={{ position: 'relative', minHeight: 480 }}>
-            <Image src="/photo-craft.png" alt="The Craft" fill style={{ objectFit: 'cover' }} />
+      {/* ── TRUST BAR ── */}
+      <div className="lv-trust">
+        {TRUST.map(({ num, l1, l2 }, i) => (
+          <div key={i} className="lv-trust-item">
+            <div className="lv-trust-num">{num}</div>
+            <div className="lv-trust-label">{l1}<br />{l2}</div>
           </div>
-          <div style={{ padding: 'clamp(48px,8vw,96px) clamp(32px,6vw,72px)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 16, fontFamily: "'Jost', sans-serif" }}>
-              Our Story
-            </p>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(36px,4vw,52px)', fontWeight: 600, color: '#fff', lineHeight: 1.15, marginBottom: 24 }}>
-              Slow-Cooked<br />for 25 Hours.
-            </h2>
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, fontStyle: 'italic', color: 'rgba(255,255,255,0.75)', lineHeight: 1.7, marginBottom: 20 }}>
-              "Every cut is prepared the same way it always has been — low heat, patience, and nothing to hide behind."
-            </p>
-            <p style={{ fontFamily: "'Jost', sans-serif", fontSize: 14, fontWeight: 300, color: 'rgba(255,255,255,0.65)', lineHeight: 1.8 }}>
-              We use 100% Angus beef, slow-cooked for 25 hours until the fat renders and the grain opens. No shortcuts. No fillers. Just beef, salt, and time — ready to serve at your next gathering.
-            </p>
-          </div>
-        </div>
-      </section>
+        ))}
+      </div>
 
-      {/* ── 6. HOW IT WORKS ── */}
-      <section id="how-it-works" style={{ backgroundColor: CREAM, padding: '96px 0' }}>
-        <div className="mx-auto max-w-[1200px] px-6">
-          <p style={{ color: GOLD, fontSize: 11, fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 12, textAlign: 'center', fontFamily: "'Jost', sans-serif" }}>
-            How It Works
+      {/* ── PRODUCTS ── */}
+      <section id="products-section" className="lv-products">
+        <div style={{ textAlign: 'center', marginBottom: 80 }}>
+          <p className="lv-section-label centered">The Menu</p>
+          <h2 className="lv-section-title">Choose Your Cut</h2>
+          <p className="lv-section-sub">
+            Premium Angus, slow-cooked to order. Select the size that fits your gathering.
           </p>
-          <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(36px,5vw,52px)', fontWeight: 600, color: WARM_DARK, textAlign: 'center', marginBottom: 64 }}>
-            Three Simple Steps
-          </h2>
-          <div className="relative grid grid-cols-1 md:grid-cols-3 gap-12">
-            {/* Connecting gold line (desktop only) */}
-            <div className="hidden md:block absolute top-8 left-[calc(16.67%+16px)] right-[calc(16.67%+16px)] h-px" style={{ backgroundColor: GOLD, opacity: 0.3 }} />
-            {[
-              { num: '01', label: 'Choose Your Cut', desc: 'Select from our 100g, 1kg, or 1.5kg options. Each one slow-cooked the same way.' },
-              { num: '02', label: 'Pick Your Delivery Slot', desc: 'Choose your preferred date and time window. We deliver across Metro Manila.' },
-              { num: '03', label: 'Pay & Confirm', desc: 'Send payment via GCash or bank transfer. We confirm your order within the hour.' },
-            ].map(({ num, label, desc }) => (
-              <div key={num} className="flex flex-col items-center text-center">
-                <div style={{ width: 56, height: 56, borderRadius: '50%', border: `1px solid ${GOLD}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, backgroundColor: CREAM, position: 'relative', zIndex: 1 }}>
-                  <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 600, color: GOLD }}>{num}</span>
-                </div>
-                <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 24, fontWeight: 600, color: WARM_DARK, marginBottom: 12 }}>{label}</h3>
-                <p style={{ fontFamily: "'Jost', sans-serif", fontSize: 14, fontWeight: 300, color: 'rgba(28,25,23,0.65)', lineHeight: 1.7 }}>{desc}</p>
-              </div>
-            ))}
-          </div>
         </div>
-      </section>
-
-      {/* ── 7. GALLERY ── */}
-      <section style={{ backgroundColor: WARM_DARK, padding: '4px' }}>
-        <div className="grid grid-cols-2 gap-1">
-          {[
-            { img: '/photo-hero.png', caption: 'The Carve' },
-            { img: '/photo-craft.png', caption: 'The Craft' },
-            { img: '/photo-slices.png', caption: 'The Cut' },
-            { img: '/photo-topdown.png', caption: 'The Product' },
-          ].map(({ img, caption }) => (
-            <div key={caption} className="relative overflow-hidden group" style={{ aspectRatio: '1/1' }}>
-              <Image src={img} alt={caption} fill style={{ objectFit: 'cover', transition: 'transform 500ms ease' }}
-                className="group-hover:scale-105" />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(10,5,3,0.7) 0%, transparent 50%)' }} />
-              <span style={{ position: 'absolute', bottom: 16, left: 20, color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: 300, letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: "'Jost', sans-serif" }}>
-                {caption}
-              </span>
+        <div className="lv-products-grid">
+          {PRODUCTS.map((p) => (
+            <div key={p.sku} className="lv-product-card">
+              <div className="lv-product-photo">
+                <Image
+                  src={p.photo}
+                  alt={p.name}
+                  fill
+                  style={{ objectFit: 'cover', objectPosition: p.photoPos }}
+                />
+                <div className="lv-product-photo-overlay" />
+              </div>
+              <div className="lv-product-body">
+                <p className="lv-product-sku">{p.sku}</p>
+                <h3 className="lv-product-name">{p.name}</h3>
+                <p className="lv-product-weight">{p.weight}</p>
+                <p className="lv-product-price">{p.price}</p>
+                <p className="lv-product-occasion">{p.occasion}</p>
+                <Link href="/order" className="lv-product-link">Order This Cut</Link>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── 8. ORDER CTA ── */}
-      <section style={{ backgroundColor: BURGUNDY, padding: '96px 24px', textAlign: 'center' }}>
-        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 16, fontFamily: "'Jost', sans-serif" }}>
-          Ready to Order?
-        </p>
-        <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(40px,6vw,68px)', fontWeight: 600, color: '#fff', marginBottom: 32 }}>
-          Reserve Your Delivery.
-        </h2>
-        <Link href="/order"
-          style={{ backgroundColor: GOLD, color: '#fff', padding: '16px 48px', borderRadius: 6, fontSize: 15, fontWeight: 600, letterSpacing: '0.08em', textDecoration: 'none', display: 'inline-block', marginBottom: 24 }}>
-          Order Now
-        </Link>
-        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, fontFamily: "'Jost', sans-serif" }}>
-          Questions? Message us on Messenger
-        </p>
+      {/* ── CRAFT ── */}
+      <section id="craft-section" className="lv-craft">
+        <div className="lv-craft-photo">
+          <Image
+            src="/photo-craft.png"
+            alt="The craft behind Lavaca MNL"
+            fill
+            style={{ objectFit: 'cover', objectPosition: 'center 25%' }}
+          />
+        </div>
+        <div className="lv-craft-panel">
+          <p className="lv-section-label light">The Craft</p>
+          <h2 className="lv-craft-title">
+            Slow-Cooked<br />for 25 Hours.
+          </h2>
+          <p className="lv-craft-quote">
+            &ldquo;Every cut of premium Angus is prepared with obsessive patience — sealed with a spice crust, slow-cooked until the connective tissue surrenders and the flavour deepens into something the family will talk about long after dinner.&rdquo;
+          </p>
+          <p className="lv-craft-body">
+            We believe the best food is never rushed. Lavaca MNL exists to bring that patience to your table — thoughtfully prepared, carefully packaged, and delivered exactly when you need it.
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 18, width: 200 }}>
+            <div style={{ flex: 1, height: 1, background: 'rgba(161,98,7,0.3)' }} />
+            <svg width="7" height="7" viewBox="0 0 8 8" aria-hidden style={{ flexShrink: 0 }}>
+              <rect x="4" y="0" width="5" height="5" transform="rotate(45 4 0)" fill="rgba(161,98,7,0.45)" />
+            </svg>
+            <div style={{ flex: 1, height: 1, background: 'rgba(161,98,7,0.3)' }} />
+          </div>
+        </div>
       </section>
 
-      {/* ── 9. DELIVERY INFO BAR ── */}
-      <section id="delivery" style={{ backgroundColor: WARM_DARK, borderTop: '1px solid rgba(161,98,7,0.15)' }}>
-        <div className="mx-auto max-w-[1200px] px-6 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            {[
-              { label: 'Coverage', value: 'Metro Manila' },
-              { label: 'Schedule', value: 'Tue – Sun' },
-              { label: 'Lead Time', value: '48h Advance' },
-              { label: 'Payment', value: 'GCash · BPI · BDO' },
-            ].map(({ label, value }) => (
-              <div key={label} className="flex flex-col gap-1">
-                <span style={{ fontFamily: "'Jost', sans-serif", fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-                  {label}
-                </span>
-                <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, fontWeight: 500, color: 'rgba(255,255,255,0.85)' }}>
-                  {value}
-                </span>
-              </div>
-            ))}
+      {/* ── PROCESS ── */}
+      <section id="process-section" className="lv-process">
+        <div style={{ marginBottom: 80 }}>
+          <p className="lv-section-label centered">How It Works</p>
+          <h2 className="lv-section-title">Three Simple Steps</h2>
+          <p className="lv-section-sub">
+            From your first click to your table — we handle everything in between.
+          </p>
+        </div>
+        <div className="lv-process-steps">
+          {STEPS.map((s) => (
+            <div key={s.num} className="lv-process-step">
+              <div className="lv-process-num">{s.num}</div>
+              <h3 className="lv-process-title">{s.title}</h3>
+              <p className="lv-process-desc">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── GALLERY ── */}
+      <section className="lv-gallery">
+        {GALLERY.map(({ src, caption }) => (
+          <div key={caption} className="lv-gallery-item">
+            <Image src={src} alt={`Lavaca MNL — ${caption}`} fill style={{ objectFit: 'cover' }} />
+            <div className="lv-gallery-caption">{caption}</div>
+          </div>
+        ))}
+      </section>
+
+      {/* ── DELIVERY BAR ── */}
+      <div id="delivery-section" className="lv-delivery">
+        {DELIVERY.map(({ icon, strong, sub }, i) => (
+          <div key={i} className="lv-delivery-item">
+            <span className="lv-delivery-icon"><DeliveryIcon name={icon} /></span>
+            <div className="lv-delivery-text">
+              <span className="lv-delivery-strong">{strong}</span>
+              <br />{sub}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── ORDER CTA ── */}
+      <section id="order-cta-section" className="lv-order-cta">
+        <Image
+          src="/photo-hero.png"
+          alt=""
+          fill
+          aria-hidden
+          style={{ objectFit: 'cover', objectPosition: 'center 45%' }}
+        />
+        <div className="lv-order-cta-overlay" />
+        <div className="lv-order-cta-content">
+          <p className="lv-section-label centered" style={{ color: 'rgba(161,98,7,0.75)' }}>Ready to Order</p>
+          <h2 className="lv-order-cta-headline">Reserve Your<br />Delivery.</h2>
+          <p className="lv-order-cta-sub">
+            Choose your cut, pick your slot, and let us handle the rest.<br />Your table deserves this.
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
+            <Link href="/order" className="lv-btn-primary">Order Now</Link>
+            <a
+              href="https://m.me/lavacamnl"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="lv-btn-outline"
+            >
+              Message Us on Messenger
+            </a>
           </div>
         </div>
       </section>

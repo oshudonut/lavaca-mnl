@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&family=Jost:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&family=Jost:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Playfair+Display+SC:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -62,6 +62,747 @@
     transform: translateY(-5px);
     box-shadow: 0 12px 40px rgba(0,0,0,0.12), 0 0 0 2px #A16207;
   }
+}
+
+/* ══ LAVACA HOMEPAGE ══ */
+
+/* ── Nav ── */
+
+.lv-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #0C0A09;
+  border-bottom: 1px solid rgba(161,98,7,0.12);
+  height: 72px;
+}
+
+.lv-nav-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 56px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lv-nav-links {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+}
+
+.lv-nav-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 15px;
+  font-weight: 400;
+  color: rgba(250,250,249,0.62);
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+.lv-nav-link:hover { color: #A16207; }
+
+.lv-nav-cta {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 500;
+  background: #A16207;
+  color: #FFFFFF;
+  padding: 10px 28px;
+  border: none;
+  white-space: nowrap;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.lv-nav-cta:hover { background: #B8730A; }
+
+/* ── Hero ── */
+
+.lv-hero {
+  position: relative;
+  height: 100vh;
+  min-height: 680px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(12,10,9,0.92) 0%, rgba(12,10,9,0.68) 42%, rgba(12,10,9,0.18) 100%),
+    linear-gradient(to top, rgba(12,10,9,0.58) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 1;
+}
+.hero-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(161,98,7,0.014) 0px,
+    rgba(161,98,7,0.014) 1px,
+    transparent 1px,
+    transparent 24px
+  );
+}
+
+.lv-hero-content {
+  position: relative;
+  z-index: 2;
+  padding: 0 80px 96px;
+  max-width: 780px;
+}
+
+.lv-hero-rule {
+  width: 36px;
+  height: 1px;
+  background: #A16207;
+  margin-bottom: 18px;
+}
+
+.lv-hero-eyebrow {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: #A16207;
+  margin-bottom: 26px;
+}
+
+.lv-hero-headline {
+  font-family: 'Playfair Display SC', serif;
+  font-size: clamp(56px, 9vw, 110px);
+  font-weight: 400;
+  line-height: 0.94;
+  letter-spacing: -0.01em;
+  color: #FAFAF9;
+  margin-bottom: 36px;
+}
+
+.lv-hero-body {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  line-height: 2.2;
+  color: rgba(250,250,249,0.58);
+  max-width: 420px;
+  margin-bottom: 52px;
+}
+
+/* ── Buttons ── */
+
+.lv-btn-primary {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  background: #A16207;
+  color: #FFFFFF;
+  padding: 19px 46px;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.3s ease;
+}
+.lv-btn-primary:hover { background: #B8730A; }
+
+.lv-btn-ghost {
+  background: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(250,250,249,0.5);
+  cursor: pointer;
+  border: none;
+  border-bottom: 1px solid rgba(161,98,7,0.35);
+  padding: 0 0 3px;
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+.lv-btn-ghost:hover { color: rgba(250,250,249,0.85); border-bottom-color: rgba(161,98,7,0.75); }
+
+.lv-btn-outline {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid rgba(161,98,7,0.45);
+  color: #A16207;
+  padding: 18px 38px;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+  transition: border-color 0.3s ease, color 0.3s ease;
+}
+.lv-btn-outline:hover { border-color: #A16207; color: #C9852C; }
+
+/* ── Section headers ── */
+
+.lv-section-label {
+  font-family: 'Jost', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #A16207;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.lv-section-label::before {
+  content: '';
+  display: inline-block;
+  width: 24px;
+  height: 1px;
+  background: #A16207;
+  opacity: 0.55;
+  flex-shrink: 0;
+}
+.lv-section-label.centered { justify-content: center; }
+.lv-section-label.centered::before { display: none; }
+.lv-section-label.light { color: #C9852C; }
+.lv-section-label.light::before { background: #C9852C; }
+
+.lv-section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 56px;
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  color: #1C1917;
+  margin-bottom: 22px;
+}
+
+.lv-section-sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  line-height: 2;
+  color: #78716C;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* ── Trust bar ── */
+
+.lv-trust {
+  background: #0C0A09;
+  border-top: 1px solid rgba(161,98,7,0.15);
+  border-bottom: 1px solid rgba(161,98,7,0.15);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 56px 80px;
+  text-align: center;
+}
+
+.lv-trust-item {
+  padding: 0 24px;
+}
+.lv-trust-item:not(:last-child) {
+  border-right: 1px solid rgba(161,98,7,0.12);
+}
+
+.lv-trust-num {
+  font-family: 'Playfair Display SC', serif;
+  font-size: 52px;
+  font-weight: 400;
+  color: #A16207;
+  line-height: 1;
+  white-space: nowrap;
+  margin-bottom: 14px;
+}
+
+.lv-trust-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(250,250,249,0.45);
+  line-height: 1.9;
+}
+
+/* ── Products ── */
+
+.lv-products {
+  background: #FAFAF9;
+  padding: 120px 80px;
+}
+
+.lv-products-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.lv-product-card {
+  background: #FFFFFF;
+  border: 1px solid transparent;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+.lv-product-card:hover { border-color: #A16207; }
+
+.lv-product-photo {
+  position: relative;
+  height: 360px;
+  overflow: hidden;
+}
+.lv-product-photo img { transition: transform 0.55s ease; }
+.lv-product-card:hover .lv-product-photo img { transform: scale(1.04); }
+
+.lv-product-photo-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(12,10,9,0.62) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+.lv-product-body {
+  padding: 36px 36px 40px;
+}
+
+.lv-product-sku {
+  font-family: 'Jost', sans-serif;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #A8A29E;
+  margin-bottom: 10px;
+}
+
+.lv-product-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
+  font-weight: 500;
+  color: #1C1917;
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+
+.lv-product-weight {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #78716C;
+  margin-bottom: 24px;
+}
+
+.lv-product-price {
+  font-family: 'Playfair Display SC', serif;
+  font-size: 42px;
+  font-weight: 400;
+  color: #A16207;
+  line-height: 1;
+  margin-bottom: 16px;
+}
+
+.lv-product-occasion {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  line-height: 1.9;
+  color: #57534E;
+  margin-bottom: 28px;
+}
+
+.lv-product-link {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #1C1917;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(161,98,7,0.4);
+  padding-bottom: 3px;
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+.lv-product-link:hover { color: #A16207; border-bottom-color: #A16207; }
+
+/* ── Craft ── */
+
+.lv-craft {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 680px;
+}
+
+.lv-craft-photo {
+  overflow: hidden;
+  position: relative;
+  min-height: 680px;
+}
+.lv-craft-photo img { transition: transform 0.6s ease; }
+.lv-craft:hover .lv-craft-photo img { transform: scale(1.03); }
+
+.lv-craft-panel {
+  background: #0C0A09;
+  padding: 96px 88px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.lv-craft-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 54px;
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: #FAFAF9;
+}
+
+.lv-craft-quote {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.9;
+  color: rgba(250,250,249,0.85);
+  max-width: 480px;
+  margin: 36px 0 28px;
+}
+
+.lv-craft-body {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  line-height: 2;
+  color: rgba(250,250,249,0.5);
+  max-width: 420px;
+  margin-bottom: 48px;
+}
+
+/* ── Process ── */
+
+.lv-process {
+  background: #FFFFFF;
+  padding: 120px 80px;
+  text-align: center;
+}
+
+.lv-process-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 980px;
+  margin: 0 auto;
+  position: relative;
+}
+.lv-process-steps::before {
+  content: '';
+  position: absolute;
+  top: 32px;
+  left: 15%;
+  right: 15%;
+  height: 1px;
+  background: rgba(161,98,7,0.35);
+  pointer-events: none;
+}
+
+.lv-process-step {
+  padding: 0 44px;
+}
+
+.lv-process-num {
+  width: 64px;
+  height: 64px;
+  border: 1px solid rgba(161,98,7,0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 30px;
+  font-family: 'Playfair Display SC', serif;
+  font-size: 24px;
+  font-weight: 400;
+  color: #A16207;
+  background: #FFFFFF;
+  position: relative;
+  z-index: 1;
+}
+
+.lv-process-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 500;
+  color: #1C1917;
+  margin-bottom: 14px;
+}
+
+.lv-process-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  line-height: 1.85;
+  color: #57534E;
+}
+
+/* ── Gallery ── */
+
+.lv-gallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 500px 380px;
+  gap: 4px;
+  background: #0C0A09;
+}
+
+.lv-gallery-item {
+  overflow: hidden;
+  position: relative;
+}
+.lv-gallery-item img { transition: transform 0.55s ease; }
+.lv-gallery-item:hover img { transform: scale(1.04); }
+
+.lv-gallery-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 22px 26px;
+  background: linear-gradient(to top, rgba(12,10,9,0.72) 0%, transparent 100%);
+  font-family: 'Jost', sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgba(250,250,249,0.72);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.lv-gallery-item:hover .lv-gallery-caption {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Delivery bar ── */
+
+.lv-delivery {
+  background: #0C0A09;
+  padding: 36px 56px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.lv-delivery-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 44px;
+}
+.lv-delivery-item:not(:last-child) {
+  border-right: 1px solid rgba(161,98,7,0.12);
+}
+
+.lv-delivery-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.lv-delivery-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(250,250,249,0.42);
+  line-height: 1.8;
+}
+
+.lv-delivery-strong {
+  color: rgba(250,250,249,0.78);
+  font-weight: 500;
+}
+
+/* ── Order CTA ── */
+
+.lv-order-cta {
+  position: relative;
+  padding: 140px 80px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.lv-order-cta-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(12,10,9,0.92) 0%, rgba(12,10,9,0.86) 50%, rgba(12,10,9,0.94) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+.lv-order-cta-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(161,98,7,0.018) 0px,
+    rgba(161,98,7,0.018) 1px,
+    transparent 1px,
+    transparent 22px
+  );
+}
+
+.lv-order-cta-content {
+  position: relative;
+  z-index: 2;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.lv-order-cta-headline {
+  font-family: 'Playfair Display SC', serif;
+  font-size: clamp(44px, 8vw, 72px);
+  font-weight: 400;
+  line-height: 1.02;
+  color: #FAFAF9;
+  margin: 20px 0 26px;
+}
+
+.lv-order-cta-sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  line-height: 2.1;
+  color: rgba(250,250,249,0.55);
+  margin-bottom: 52px;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 1024px) {
+  .lv-hero-content { padding: 0 56px 80px; }
+  .lv-products,
+  .lv-process { padding: 96px 48px; }
+  .lv-trust { padding: 48px 40px; }
+  .lv-craft-panel { padding: 80px 56px; }
+  .lv-order-cta { padding: 112px 48px; }
+}
+
+@media (max-width: 900px) {
+  .lv-craft { grid-template-columns: 1fr; }
+  .lv-craft-photo { min-height: 420px; }
+  .lv-process-steps { grid-template-columns: 1fr; gap: 48px; }
+  .lv-process-steps::before { display: none; }
+}
+
+@media (max-width: 768px) {
+  .lv-nav-inner { padding: 0 24px; }
+  .lv-nav-links { display: none; }
+  .lv-nav-cta { font-size: 14px; padding: 9px 22px; }
+
+  .lv-hero { min-height: 560px; }
+  .lv-hero-content { padding: 0 28px 64px; }
+  .lv-hero-body { margin-bottom: 40px; }
+
+  .lv-trust {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 36px;
+    padding: 40px 20px;
+  }
+  .lv-trust-item { padding: 0 8px; }
+  .lv-trust-item:not(:last-child) { border-right: none; }
+  .lv-trust-item:nth-child(odd) { border-right: 1px solid rgba(161,98,7,0.12); }
+  .lv-trust-num { font-size: 38px; }
+
+  .lv-products { padding: 80px 24px; }
+  .lv-products-grid { grid-template-columns: 1fr; gap: 28px; max-width: 480px; }
+  .lv-section-title { font-size: 42px; }
+
+  .lv-craft-panel { padding: 64px 28px; }
+  .lv-craft-title { font-size: 42px; }
+  .lv-craft-quote { font-size: 19px; }
+
+  .lv-process { padding: 80px 24px; }
+  .lv-process-step { padding: 0 12px; }
+
+  .lv-gallery {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(4, 320px);
+  }
+  .lv-gallery-caption {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .lv-delivery {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 32px 28px;
+  }
+  .lv-delivery-item { padding: 12px 0; }
+  .lv-delivery-item:not(:last-child) { border-right: none; }
+
+  .lv-order-cta { padding: 96px 28px; }
+}
+
+@media (max-width: 480px) {
+  .lv-nav { height: 64px; }
+  .lv-hero-content { padding: 0 24px 60px; }
+  .lv-hero-headline { margin-bottom: 28px; }
+  .lv-hero-body { font-size: 13px; }
+  .lv-btn-primary { padding: 16px 36px; }
+
+  .lv-trust { grid-template-columns: 1fr; row-gap: 32px; padding: 36px 20px; }
+  .lv-trust-item:nth-child(odd) { border-right: none; }
+  .lv-trust-num { font-size: 36px; }
+
+  .lv-products { padding: 60px 16px; }
+  .lv-product-photo { height: 260px; }
+  .lv-product-body { padding: 22px 18px 26px; }
+  .lv-product-name { font-size: 28px; }
+  .lv-product-price { font-size: 36px; }
+  .lv-section-title { font-size: 34px; }
+
+  .lv-craft-panel { padding: 56px 20px; }
+  .lv-craft-title { font-size: 36px; }
+
+  .lv-process { padding: 64px 18px; }
+
+  .lv-gallery { grid-template-rows: repeat(4, 240px); }
+
+  .lv-delivery { padding: 28px 20px; }
+
+  .lv-order-cta { padding: 80px 20px; }
+  .lv-btn-outline { padding: 16px 28px; }
 }
 
 @layer utilities {
