@@ -114,7 +114,8 @@ export function OrderPage({ products }: Props) {
       <div className="mx-auto max-w-lg px-4 py-10 space-y-8">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Place Your Order</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <div className="mt-2 h-0.5 w-10 bg-primary rounded-full" />
+          <p className="mt-2 text-sm text-muted-foreground">
             Fresh lavaca delivered to your door in Metro Manila.
           </p>
         </div>

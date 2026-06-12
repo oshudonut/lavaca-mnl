@@ -61,7 +61,7 @@ export function ProductSelector({ products, cart, onChange }: Props) {
                   {product.name}
                   <span className="font-normal text-muted-foreground"> · {product.weight_label}</span>
                 </p>
-                <p className="mt-0.5 text-sm font-medium text-primary">
+                <p className="mt-0.5 text-sm font-semibold text-primary tracking-wide">
                   {formatCurrency(product.price)}
                 </p>
                 {product.description && (

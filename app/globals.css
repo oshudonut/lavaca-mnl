@@ -13,9 +13,9 @@
     --card-foreground: 20 6% 6%;
     --popover: 60 9% 98%;
     --popover-foreground: 20 6% 6%;
-    --primary: 20 7% 10%;           /* #1C1917 premium black */
+    --primary: 32 93% 32%;           /* #A16207 gold — CTAs, prices, highlights */
     --primary-foreground: 0 0% 100%;
-    --secondary: 20 5% 25%;         /* #44403C dark stone */
+    --secondary: 20 7% 10%;         /* #1C1917 premium black */
     --secondary-foreground: 0 0% 100%;
     --muted: 210 17% 93%;           /* #E8ECF0 */
     --muted-foreground: 20 5% 40%;

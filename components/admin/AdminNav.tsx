@@ -28,7 +28,9 @@ export function AdminNav() {
       <div className="mx-auto max-w-6xl px-4">
         <div className="flex h-14 items-center justify-between gap-6">
           <div className="flex items-center gap-6">
-            <span className="font-bold text-foreground text-sm">Lavaca MNL Admin</span>
+            <span className="font-bold text-foreground text-sm">
+              <span className="text-primary">Lavaca</span> MNL
+            </span>
             <nav className="flex items-center gap-1">
               {NAV_LINKS.map(({ href, label, exact }) => {
                 const isActive = exact ? pathname === href : pathname.startsWith(href)

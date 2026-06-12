@@ -163,7 +163,7 @@ export function AvailabilityCalendar({ slotsData, selectedDate, onSelectDate }: 
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
                 // Selected
                 isSelected &&
-                  'ring-2 ring-primary bg-primary text-primary-foreground',
+                  'ring-2 ring-primary bg-primary text-white font-semibold',
                 // Available (not selected)
                 !isSelected && state === 'available' &&
                   'bg-white border border-green-300 text-foreground cursor-pointer hover:bg-green-50 hover:border-green-500',
