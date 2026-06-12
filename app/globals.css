@@ -39,11 +39,43 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
     font-family: 'Inter', sans-serif;
+    background-color: #FAFAF9;
+    background-image:
+      radial-gradient(ellipse at 15% 40%, rgba(161, 98, 7, 0.09) 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 15%, rgba(161, 98, 7, 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 85%, rgba(28, 25, 23, 0.04) 0%, transparent 50%);
+    background-attachment: fixed;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Playfair Display', serif;
+  }
+}
+
+@layer utilities {
+  .glass {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07), inset 0 1px 0 rgba(255,255,255,0.8);
+  }
+
+  .glass-strong {
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.10), inset 0 1px 0 rgba(255,255,255,0.9);
+  }
+
+  .glass-nav {
+    background: rgba(250, 250, 249, 0.80);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.50);
+    box-shadow: 0 1px 20px rgba(0, 0, 0, 0.06);
   }
 }

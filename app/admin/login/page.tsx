@@ -41,7 +41,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30 flex items-center justify-center px-4">
+    <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Lavaca MNL</h1>
@@ -50,7 +50,7 @@ export default function LoginPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-4"
+          className="glass-strong rounded-2xl p-6 space-y-4"
         >
           <div className="space-y-1.5">
             <Label htmlFor="email">Email</Label>

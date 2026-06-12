@@ -24,7 +24,7 @@ export function AdminNav() {
   }
 
   return (
-    <header className="border-b border-border bg-card">
+    <header className="sticky top-0 z-50 glass-nav">
       <div className="mx-auto max-w-6xl px-4">
         <div className="flex h-14 items-center justify-between gap-6">
           <div className="flex items-center gap-6">

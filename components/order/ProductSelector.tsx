@@ -53,7 +53,7 @@ export function ProductSelector({ products, cart, onChange }: Props) {
         return (
           <div
             key={product.id}
-            className="rounded-lg border border-border bg-card p-4 shadow-sm"
+            className="rounded-xl glass p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">

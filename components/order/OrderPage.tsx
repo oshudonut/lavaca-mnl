@@ -110,19 +110,19 @@ export function OrderPage({ products }: Props) {
   }
 
   return (
-    <main className="min-h-screen bg-background">
-      <div className="mx-auto max-w-lg px-4 py-10 space-y-8">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Place Your Order</h1>
+    <main className="min-h-screen">
+      <div className="mx-auto max-w-lg px-4 py-10 space-y-6">
+        <div className="px-1">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Place Your Order</h1>
           <div className="mt-2 h-0.5 w-10 bg-primary rounded-full" />
           <p className="mt-2 text-sm text-muted-foreground">
             Fresh lavaca delivered to your door in Metro Manila.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} noValidate className="space-y-8">
+        <form onSubmit={handleSubmit} noValidate className="space-y-5">
           {/* Products */}
-          <section className="space-y-3">
+          <section className="glass rounded-2xl p-5 space-y-3">
             <h2 className="font-semibold text-foreground">Choose your items</h2>
             <ProductSelector products={products} cart={cart} onChange={setCart} />
             {formErrors.cart && (
@@ -131,7 +131,7 @@ export function OrderPage({ products }: Props) {
           </section>
 
           {/* Calendar / Closure Banner */}
-          <section className="space-y-3">
+          <section className="glass rounded-2xl p-5 space-y-3">
             <h2 className="font-semibold text-foreground">Select delivery date</h2>
             {loadingSlots ? (
               <div className="h-64 rounded-lg border border-border bg-muted animate-pulse" />
@@ -158,7 +158,7 @@ export function OrderPage({ products }: Props) {
 
           {/* Slot window picker — only shown after a date is selected */}
           {selectedDateData && !slotsData?.closure_active && (
-            <section className="space-y-3">
+            <section className="glass rounded-2xl p-5 space-y-3">
               <h2 className="font-semibold text-foreground">Select delivery time</h2>
               <SlotWindowPicker
                 slots={selectedDateData.slots}
@@ -172,7 +172,7 @@ export function OrderPage({ products }: Props) {
           )}
 
           {/* Customer details */}
-          <section className="space-y-3">
+          <section className="glass rounded-2xl p-5 space-y-3">
             <h2 className="font-semibold text-foreground">Your details</h2>
             <CustomerForm
               value={customer}
