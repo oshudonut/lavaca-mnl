@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@/lib/utils'
+import { useState } from 'react'
 import type { SlotWindow } from '@/lib/delivery/slots'
 
 type Props = {
@@ -23,6 +23,8 @@ function capacityText(slot: SlotWindow): string {
 }
 
 export function SlotWindowPicker({ slots, selectedWindow, onSelectWindow }: Props) {
+  const [hoveredKey, setHoveredKey] = useState<'AM' | 'PM' | null>(null)
+
   const amSlot = slots.find((s) => s.window === 'AM')
   const pmSlot = slots.find((s) => s.window === 'PM')
 
@@ -37,52 +39,104 @@ export function SlotWindowPicker({ slots, selectedWindow, onSelectWindow }: Prop
 
   if (!anyAvailable) {
     return (
-      <div className="w-full rounded-lg border border-border bg-muted px-4 py-5 text-center text-muted-foreground text-sm">
+      <div
+        style={{
+          width: '100%',
+          background: '#FFFFFF',
+          border: '1px solid #D6D3D1',
+          padding: 20,
+          textAlign: 'center',
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 13,
+          color: '#57534E',
+        }}
+      >
         No slots available for this date.
       </div>
     )
   }
 
   return (
-    <div className="flex gap-3 w-full">
+    <div style={{ display: 'flex', gap: 12, width: '100%' }}>
       {windows.map(({ key, slot }) => {
         const isDisabled = !slot || !slot.is_open || slot.remaining === 0
         const isSelected = selectedWindow === key
         const capacity = slot ? capacityText(slot) : 'Unavailable'
         const isFull = capacity === 'Full' || capacity === 'Unavailable'
+        const isHovered = hoveredKey === key
+
+        const buttonStyle: React.CSSProperties = {
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 4,
+          padding: '20px 12px',
+          border: 'none',
+          cursor: 'pointer',
+          transition: 'all 0.2s',
+          borderRadius: 0,
+        }
+
+        if (isSelected && !isDisabled) {
+          Object.assign(buttonStyle, {
+            background: '#A16207',
+            color: '#FFFFFF',
+            outline: '2px solid #A16207',
+          })
+        } else if (!isDisabled) {
+          Object.assign(buttonStyle, {
+            background: '#FFFFFF',
+            border: `1px solid ${isHovered ? '#A16207' : '#D6D3D1'}`,
+            color: '#1C1917',
+          })
+        } else {
+          Object.assign(buttonStyle, {
+            background: '#F5F4F2',
+            color: '#A8A29E',
+            cursor: 'not-allowed',
+            opacity: 0.6,
+            border: '1px solid #F5F4F2',
+          })
+        }
+
+        let capacityColor = '#A8A29E'
+        if (isSelected && !isDisabled) {
+          capacityColor = 'rgba(255,255,255,0.8)'
+        } else if (!isDisabled && !isFull) {
+          capacityColor = slot && slot.remaining <= 2 ? '#92400E' : '#57534E'
+        }
 
         return (
           <button
             key={key}
+            type="button"
             disabled={isDisabled}
             onClick={() => !isDisabled && onSelectWindow(key)}
-            className={cn(
-              'flex-1 flex flex-col items-center justify-center gap-1 rounded-lg border-2 px-4 py-4 transition-colors',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
-              // Selected
-              isSelected && !isDisabled &&
-                'border-primary bg-primary text-primary-foreground',
-              // Available (not selected)
-              !isSelected && !isDisabled &&
-                'border-input bg-white text-foreground cursor-pointer hover:border-primary/60 hover:bg-accent',
-              // Disabled
-              isDisabled &&
-                'border-border bg-muted text-muted-foreground cursor-not-allowed opacity-60',
-            )}
+            onMouseEnter={() => setHoveredKey(key)}
+            onMouseLeave={() => setHoveredKey(null)}
+            style={buttonStyle}
             aria-pressed={isSelected}
             aria-label={`${WINDOW_LABELS[key].label}, ${WINDOW_LABELS[key].time}, ${capacity}`}
           >
-            <span className="font-semibold text-base leading-none">
+            <span
+              style={{
+                fontFamily: "'Playfair Display', serif",
+                fontSize: 16,
+                fontWeight: 500,
+                lineHeight: 1,
+              }}
+            >
               {WINDOW_LABELS[key].time}
             </span>
             <span
-              className={cn(
-                'text-xs font-medium leading-none',
-                isSelected && !isDisabled && 'text-primary-foreground/80',
-                !isSelected && !isDisabled && !isFull && 'text-green-600',
-                !isSelected && !isDisabled && slot?.remaining === 1 && 'text-amber-600',
-                isFull && 'text-muted-foreground',
-              )}
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 11,
+                lineHeight: 1,
+                color: capacityColor,
+              }}
             >
               {capacity}
             </span>

@@ -7,7 +7,6 @@ import { SlotWindowPicker } from '@/components/calendar/SlotWindowPicker'
 import { ClosureBanner } from '@/components/calendar/ClosureBanner'
 import { ProductSelector } from '@/components/order/ProductSelector'
 import { CustomerForm } from '@/components/order/CustomerForm'
-import { Button } from '@/components/ui/button'
 import type { SlotsResponse } from '@/lib/delivery/slots'
 import type { Product, CartItem } from '@/components/order/ProductSelector'
 import type { CustomerDetails } from '@/components/order/CustomerForm'
@@ -22,6 +21,28 @@ const EMPTY_CUSTOMER: CustomerDetails = {
   email: '',
   delivery_address: '',
   payment_method: 'gcash',
+}
+
+const cardStyle: React.CSSProperties = {
+  background: '#FFFFFF',
+  border: '1px solid #D6D3D1',
+  padding: 28,
+  borderRadius: 0,
+}
+
+const sectionHeadingStyle: React.CSSProperties = {
+  fontFamily: "'Playfair Display', serif",
+  fontSize: 20,
+  fontWeight: 500,
+  color: '#1C1917',
+  marginBottom: 20,
+}
+
+const fieldErrorStyle: React.CSSProperties = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 11,
+  color: '#DC2626',
+  marginTop: 10,
 }
 
 export function OrderPage({ products }: Props) {
@@ -110,31 +131,83 @@ export function OrderPage({ products }: Props) {
   }
 
   return (
-    <main className="min-h-screen">
-      <div className="mx-auto max-w-lg px-4 py-10 space-y-6">
-        <div className="px-1">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Place Your Order</h1>
-          <div className="mt-2 h-0.5 w-10 bg-primary rounded-full" />
-          <p className="mt-2 text-sm text-muted-foreground">
-            Fresh lavaca delivered to your door in Metro Manila.
-          </p>
-        </div>
+    <main style={{ background: '#FAFAF9', minHeight: '100vh' }}>
+      {/* Dark hero header — full width */}
+      <div style={{ background: '#0C0A09', padding: '48px 24px 44px', textAlign: 'center' }}>
+        <div
+          style={{
+            width: 36,
+            height: 2,
+            background: '#A16207',
+            margin: '0 auto 12px',
+          }}
+        />
+        <p
+          style={{
+            fontFamily: "'Jost', sans-serif",
+            fontSize: 9,
+            letterSpacing: '0.28em',
+            textTransform: 'uppercase',
+            color: '#A16207',
+            margin: '0 0 16px',
+          }}
+        >
+          Place Your Order
+        </p>
+        <h1
+          style={{
+            fontFamily: "'Playfair Display SC', serif",
+            fontSize: 36,
+            fontWeight: 500,
+            color: '#FAFAF9',
+            whiteSpace: 'pre-line',
+            margin: '0 0 14px',
+            lineHeight: 1.2,
+          }}
+        >
+          {'Fresh Angus\nDelivered.'}
+        </h1>
+        <p
+          style={{
+            fontFamily: "'Inter', sans-serif",
+            fontWeight: 300,
+            fontSize: 12,
+            color: 'rgba(250,250,249,0.5)',
+            margin: 0,
+          }}
+        >
+          Metro Manila delivery · Tue–Sat
+        </p>
+      </div>
 
-        <form onSubmit={handleSubmit} noValidate className="space-y-5">
+      {/* Content */}
+      <div
+        style={{
+          maxWidth: 540,
+          margin: '0 auto',
+          padding: '40px 24px 80px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 24,
+        }}
+      >
+        <form
+          onSubmit={handleSubmit}
+          noValidate
+          style={{ display: 'flex', flexDirection: 'column', gap: 24 }}
+        >
           {/* Products */}
-          <section className="glass rounded-2xl p-5 space-y-3">
-            <h2 className="font-semibold text-foreground">Choose your items</h2>
+          <section style={cardStyle}>
+            <h2 style={sectionHeadingStyle}>Choose your items</h2>
             <ProductSelector products={products} cart={cart} onChange={setCart} />
-            {formErrors.cart && (
-              <p className="text-xs text-destructive">{formErrors.cart}</p>
-            )}
+            {formErrors.cart && <p style={fieldErrorStyle}>{formErrors.cart}</p>}
           </section>
 
           {/* Calendar / Closure Banner */}
-          <section className="glass rounded-2xl p-5 space-y-3">
-            <h2 className="font-semibold text-foreground">Select delivery date</h2>
+          <section style={cardStyle}>
+            <h2 style={sectionHeadingStyle}>Select delivery date</h2>
             {loadingSlots ? (
-              <div className="h-64 rounded-lg border border-border bg-muted animate-pulse" />
+              <div style={{ background: '#F5F4F2', height: 200, width: '100%' }} />
             ) : slotsData?.closure_active ? (
               <ClosureBanner
                 message={slotsData.closure_message ?? null}
@@ -149,31 +222,27 @@ export function OrderPage({ products }: Props) {
                     onSelectDate={handleSelectDate}
                   />
                 )}
-                {formErrors.date && (
-                  <p className="text-xs text-destructive">{formErrors.date}</p>
-                )}
+                {formErrors.date && <p style={fieldErrorStyle}>{formErrors.date}</p>}
               </>
             )}
           </section>
 
           {/* Slot window picker — only shown after a date is selected */}
           {selectedDateData && !slotsData?.closure_active && (
-            <section className="glass rounded-2xl p-5 space-y-3">
-              <h2 className="font-semibold text-foreground">Select delivery time</h2>
+            <section style={cardStyle}>
+              <h2 style={sectionHeadingStyle}>Select delivery time</h2>
               <SlotWindowPicker
                 slots={selectedDateData.slots}
                 selectedWindow={selectedWindow}
                 onSelectWindow={setSelectedWindow}
               />
-              {formErrors.window && (
-                <p className="text-xs text-destructive">{formErrors.window}</p>
-              )}
+              {formErrors.window && <p style={fieldErrorStyle}>{formErrors.window}</p>}
             </section>
           )}
 
           {/* Customer details */}
-          <section className="glass rounded-2xl p-5 space-y-3">
-            <h2 className="font-semibold text-foreground">Your details</h2>
+          <section style={cardStyle}>
+            <h2 style={sectionHeadingStyle}>Your details</h2>
             <CustomerForm
               value={customer}
               onChange={setCustomer}
@@ -187,18 +256,43 @@ export function OrderPage({ products }: Props) {
           </section>
 
           {/* Submit */}
-          <div className="space-y-3 pb-4">
+          <div>
             {submitError && (
-              <p className="text-sm text-destructive text-center">{submitError}</p>
+              <p
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 12,
+                  color: '#DC2626',
+                  textAlign: 'center',
+                  marginBottom: 8,
+                }}
+              >
+                {submitError}
+              </p>
             )}
-            <Button
+            <button
               type="submit"
               disabled={isSubmitting || !!slotsData?.closure_active}
-              className="w-full"
-              size="lg"
+              style={{
+                width: '100%',
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: '0.22em',
+                textTransform: 'uppercase',
+                background:
+                  isSubmitting || slotsData?.closure_active ? '#D6D3D1' : '#A16207',
+                color: isSubmitting || slotsData?.closure_active ? '#8C7B6B' : '#FFFFFF',
+                border: 'none',
+                padding: '18px 0',
+                cursor:
+                  isSubmitting || slotsData?.closure_active ? 'not-allowed' : 'pointer',
+                transition: 'background 0.2s',
+                marginTop: 8,
+              }}
             >
               {isSubmitting ? 'Placing order…' : 'Place Order'}
-            </Button>
+            </button>
           </div>
         </form>
       </div>

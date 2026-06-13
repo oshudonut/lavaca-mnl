@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
+import { useState } from 'react'
 
 export type Product = {
   id: string
@@ -27,7 +27,25 @@ type Props = {
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(amount)
 
+const qtyButtonStyle = (disabled: boolean): React.CSSProperties => ({
+  width: 32,
+  height: 32,
+  border: '1px solid #D6D3D1',
+  background: '#FFFFFF',
+  color: disabled ? '#D6D3D1' : '#1C1917',
+  fontSize: 18,
+  cursor: disabled ? 'not-allowed' : 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  transition: 'border-color 0.2s',
+  borderRadius: 0,
+  padding: 0,
+})
+
 export function ProductSelector({ products, cart, onChange }: Props) {
+  const [hoveredId, setHoveredId] = useState<string | null>(null)
+
   const getQuantity = (productId: string) =>
     cart.find((item) => item.product_id === productId)?.quantity ?? 0
 
@@ -47,68 +65,163 @@ export function ProductSelector({ products, cart, onChange }: Props) {
   const hasItems = cart.length > 0
 
   return (
-    <div className="space-y-4">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {products.map((product) => {
         const qty = getQuantity(product.id)
+        const isHovered = hoveredId === product.id
         return (
           <div
             key={product.id}
-            className="rounded-xl glass p-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
+            onMouseEnter={() => setHoveredId(product.id)}
+            onMouseLeave={() => setHoveredId(null)}
+            style={{
+              background: '#FFFFFF',
+              border: `1px solid ${isHovered ? '#A16207' : '#D6D3D1'}`,
+              padding: '18px 20px',
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              gap: 16,
+              transition: 'border-color 0.2s',
+            }}
           >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-card-foreground">
-                  {product.name}
-                  <span className="font-normal text-muted-foreground"> · {product.weight_label}</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p
+                style={{
+                  fontFamily: "'Playfair Display', serif",
+                  fontSize: 17,
+                  color: '#1C1917',
+                  margin: 0,
+                }}
+              >
+                {product.name}
+                <span
+                  style={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: 12,
+                    color: '#8C7B6B',
+                  }}
+                >
+                  {' '}
+                  · {product.weight_label}
+                </span>
+              </p>
+              <p
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 13,
+                  color: '#A16207',
+                  fontWeight: 600,
+                  margin: '4px 0 0',
+                }}
+              >
+                {formatCurrency(product.price)}
+              </p>
+              {product.description && (
+                <p
+                  style={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: 12,
+                    color: '#57534E',
+                    margin: '6px 0 0',
+                  }}
+                >
+                  {product.description}
                 </p>
-                <p className="mt-0.5 text-sm font-semibold text-primary tracking-wide">
-                  {formatCurrency(product.price)}
-                </p>
-                {product.description && (
-                  <p className="mt-1 text-sm text-muted-foreground">{product.description}</p>
-                )}
-              </div>
+              )}
+            </div>
 
-              <div className="flex flex-col items-end gap-1 shrink-0">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8 text-base"
-                    onClick={() => handleChange(product, -1)}
-                    disabled={qty === 0}
-                    aria-label={`Decrease quantity of ${product.name}`}
-                  >
-                    −
-                  </Button>
-                  <span className="w-6 text-center text-sm font-medium tabular-nums">{qty}</span>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8 text-base"
-                    onClick={() => handleChange(product, 1)}
-                    aria-label={`Increase quantity of ${product.name}`}
-                  >
-                    +
-                  </Button>
-                </div>
-                {qty > 0 && (
-                  <p className="text-xs text-muted-foreground tabular-nums">
-                    {formatCurrency(product.price)} × {qty} = {formatCurrency(product.price * qty)}
-                  </p>
-                )}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                gap: 4,
+                flexShrink: 0,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <button
+                  type="button"
+                  onClick={() => handleChange(product, -1)}
+                  disabled={qty === 0}
+                  aria-label={`Decrease quantity of ${product.name}`}
+                  style={qtyButtonStyle(qty === 0)}
+                >
+                  −
+                </button>
+                <span
+                  style={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: 14,
+                    color: '#1C1917',
+                    fontWeight: 500,
+                    width: 28,
+                    textAlign: 'center',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
+                  {qty}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleChange(product, 1)}
+                  aria-label={`Increase quantity of ${product.name}`}
+                  style={qtyButtonStyle(false)}
+                >
+                  +
+                </button>
               </div>
+              {qty > 0 && (
+                <p
+                  style={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: 11,
+                    color: '#8C7B6B',
+                    fontVariantNumeric: 'tabular-nums',
+                    margin: 0,
+                  }}
+                >
+                  {formatCurrency(product.price)} × {qty} = {formatCurrency(product.price * qty)}
+                </p>
+              )}
             </div>
           </div>
         )
       })}
 
       {hasItems && (
-        <div className="flex justify-end border-t border-border pt-4">
-          <p className="text-sm font-semibold text-card-foreground">
-            Subtotal:{' '}
-            <span className="text-primary tabular-nums">{formatCurrency(subtotal)}</span>
-          </p>
+        <div
+          style={{
+            borderTop: '1px solid #D6D3D1',
+            paddingTop: 16,
+            marginTop: 4,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "'Jost', sans-serif",
+              fontSize: 9,
+              letterSpacing: '0.28em',
+              textTransform: 'uppercase',
+              color: '#A16207',
+            }}
+          >
+            Subtotal
+          </span>
+          <span
+            style={{
+              fontFamily: "'Playfair Display SC', serif",
+              fontSize: 22,
+              color: '#A16207',
+              fontVariantNumeric: 'tabular-nums',
+            }}
+          >
+            {formatCurrency(subtotal)}
+          </span>
         </div>
       )}
     </div>

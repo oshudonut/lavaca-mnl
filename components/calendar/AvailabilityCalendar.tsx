@@ -14,8 +14,6 @@ import {
   isBefore,
   isToday,
 } from 'date-fns'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 import type { SlotsResponse, AvailableDate } from '@/lib/delivery/slots'
 
 type Props = {
@@ -64,6 +62,75 @@ function getDateState(
 
 const DAY_HEADERS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
+const navButtonStyle = (disabled: boolean): React.CSSProperties => ({
+  width: 32,
+  height: 32,
+  background: '#FFFFFF',
+  border: `1px solid ${disabled ? '#F5F4F2' : '#D6D3D1'}`,
+  color: disabled ? '#D6D3D1' : '#1C1917',
+  fontSize: 20,
+  cursor: disabled ? 'not-allowed' : 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  transition: 'border-color 0.2s',
+  borderRadius: 0,
+  padding: 0,
+})
+
+function dayCellStyle(
+  state: DateState,
+  isSelected: boolean,
+  isSelectable: boolean,
+): React.CSSProperties {
+  const base: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '6px 2px',
+    position: 'relative',
+    border: '1px solid transparent',
+    borderRadius: 0,
+    transition: 'all 0.2s',
+    cursor: isSelectable ? 'pointer' : 'not-allowed',
+  }
+
+  if (isSelected) {
+    return {
+      ...base,
+      outline: '2px solid #A16207',
+      outlineOffset: 1,
+      background: '#A16207',
+      color: '#FFFFFF',
+      fontWeight: 600,
+    }
+  }
+  if (state === 'available') {
+    return {
+      ...base,
+      border: '1px solid #86EFAC',
+      background: '#F0FDF4',
+      color: '#14532D',
+    }
+  }
+  if (state === 'limited') {
+    return {
+      ...base,
+      border: '1px solid #FCD34D',
+      background: '#FFFBEB',
+      color: '#92400E',
+    }
+  }
+  // fully-booked / closed / disabled
+  return {
+    ...base,
+    background: '#F5F4F2',
+    color: '#A8A29E',
+    opacity: 0.6,
+  }
+}
+
 export function AvailabilityCalendar({ slotsData, selectedDate, onSelectDate }: Props) {
   const today = new Date()
   const [viewMonth, setViewMonth] = useState(() => startOfMonth(today))
@@ -89,39 +156,62 @@ export function AvailabilityCalendar({ slotsData, selectedDate, onSelectDate }: 
   }
 
   const currentMonthStart = startOfMonth(today)
+  const prevDisabled = !isBefore(currentMonthStart, viewMonth)
 
   return (
-    <div className="w-full max-w-sm mx-auto select-none">
+    <div style={{ width: '100%', maxWidth: 384, margin: '0 auto', userSelect: 'none' }}>
       {/* Month navigation */}
-      <div className="flex items-center justify-between mb-4">
-        <Button
-          variant="outline"
-          size="icon"
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: 20,
+        }}
+      >
+        <button
+          type="button"
           onClick={() => setViewMonth((m) => subMonths(m, 1))}
-          disabled={!isBefore(currentMonthStart, viewMonth)}
+          disabled={prevDisabled}
           aria-label="Previous month"
+          style={navButtonStyle(prevDisabled)}
         >
           &#8249;
-        </Button>
-        <span className="text-base font-semibold text-foreground">
+        </button>
+        <span
+          style={{
+            fontFamily: "'Playfair Display', serif",
+            fontSize: 16,
+            fontWeight: 500,
+            color: '#1C1917',
+          }}
+        >
           {format(viewMonth, 'MMMM yyyy')}
         </span>
-        <Button
-          variant="outline"
-          size="icon"
+        <button
+          type="button"
           onClick={() => setViewMonth((m) => addMonths(m, 1))}
           aria-label="Next month"
+          style={navButtonStyle(false)}
         >
           &#8250;
-        </Button>
+        </button>
       </div>
 
       {/* Day-of-week headers */}
-      <div className="grid grid-cols-7 mb-1">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: 4 }}>
         {DAY_HEADERS.map((d) => (
           <div
             key={d}
-            className="text-center text-xs font-medium text-muted-foreground py-1"
+            style={{
+              fontFamily: "'Jost', sans-serif",
+              fontSize: 9,
+              letterSpacing: '0.28em',
+              textTransform: 'uppercase',
+              color: '#A16207',
+              textAlign: 'center',
+              padding: '6px 0',
+            }}
           >
             {d}
           </div>
@@ -129,7 +219,7 @@ export function AvailabilityCalendar({ slotsData, selectedDate, onSelectDate }: 
       </div>
 
       {/* Calendar grid */}
-      <div className="grid grid-cols-7 gap-y-1">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', rowGap: 4 }}>
         {gridDays.map((day) => {
           const isCurrentMonth = isSameMonth(day, viewMonth)
           const dayStr = format(day, 'yyyy-MM-dd')
@@ -156,32 +246,33 @@ export function AvailabilityCalendar({ slotsData, selectedDate, onSelectDate }: 
           return (
             <button
               key={dayStr}
+              type="button"
               disabled={!isSelectable}
               onClick={() => isSelectable && onSelectDate(dayStr)}
-              className={cn(
-                'relative flex flex-col items-center justify-center rounded-md py-1.5 text-sm transition-colors',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
-                // Selected
-                isSelected &&
-                  'ring-2 ring-primary bg-primary text-white font-semibold',
-                // Available (not selected)
-                !isSelected && state === 'available' &&
-                  'bg-white border border-green-300 text-foreground cursor-pointer hover:bg-green-50 hover:border-green-500',
-                // Limited
-                !isSelected && state === 'limited' &&
-                  'bg-amber-50 border border-amber-400 text-amber-900 cursor-pointer hover:bg-amber-100',
-                // Fully booked / closed / disabled
-                (state === 'fully-booked' || state === 'closed' || state === 'disabled') &&
-                  'bg-muted text-muted-foreground cursor-not-allowed opacity-60',
-                // Today highlight (subtle underline)
-                isToday(day) && !isSelected && 'font-bold underline decoration-dotted',
-              )}
+              style={dayCellStyle(state, isSelected, isSelectable)}
               aria-label={`${dayStr}${label ? `, ${label}` : ''}`}
               aria-pressed={isSelected}
             >
-              <span className="leading-none">{format(day, 'd')}</span>
+              <span
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 13,
+                  lineHeight: 1,
+                  textDecoration:
+                    isToday(day) && !isSelected ? 'underline dotted' : undefined,
+                }}
+              >
+                {format(day, 'd')}
+              </span>
               {label && (
-                <span className="text-[10px] leading-none mt-0.5 font-medium">
+                <span
+                  style={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: 9,
+                    lineHeight: 1,
+                    marginTop: 2,
+                  }}
+                >
                   {label}
                 </span>
               )}
@@ -191,17 +282,52 @@ export function AvailabilityCalendar({ slotsData, selectedDate, onSelectDate }: 
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-3 mt-4 text-xs text-muted-foreground justify-center">
-        <span className="flex items-center gap-1">
-          <span className="inline-block w-3 h-3 rounded border border-green-300 bg-white" />
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 12,
+          marginTop: 16,
+          justifyContent: 'center',
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 10,
+          color: '#8C7B6B',
+        }}
+      >
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span
+            style={{
+              display: 'inline-block',
+              width: 10,
+              height: 10,
+              border: '1px solid #86EFAC',
+              background: '#F0FDF4',
+            }}
+          />
           Available
         </span>
-        <span className="flex items-center gap-1">
-          <span className="inline-block w-3 h-3 rounded border border-amber-400 bg-amber-50" />
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span
+            style={{
+              display: 'inline-block',
+              width: 10,
+              height: 10,
+              border: '1px solid #FCD34D',
+              background: '#FFFBEB',
+            }}
+          />
           Limited
         </span>
-        <span className="flex items-center gap-1">
-          <span className="inline-block w-3 h-3 rounded bg-muted" />
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <span
+            style={{
+              display: 'inline-block',
+              width: 10,
+              height: 10,
+              border: '1px solid #D6D3D1',
+              background: '#F5F4F2',
+            }}
+          />
           Unavailable
         </span>
       </div>

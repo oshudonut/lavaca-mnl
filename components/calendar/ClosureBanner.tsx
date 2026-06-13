@@ -13,12 +13,47 @@ export function ClosureBanner({ message, closed_until }: Props) {
     : 'We will announce our return on our Facebook page.'
 
   return (
-    <div className="w-full rounded-lg bg-amber-50 border border-amber-300 px-6 py-5 text-center shadow-sm">
+    <div
+      style={{
+        width: '100%',
+        background: '#1C1917',
+        borderLeft: '3px solid #A16207',
+        padding: '20px 24px',
+      }}
+    >
       {message && (
-        <p className="text-amber-900 font-semibold text-lg mb-2">{message}</p>
+        <p
+          style={{
+            fontFamily: "'Playfair Display', serif",
+            fontStyle: 'italic',
+            fontSize: 16,
+            color: '#FAFAF9',
+            margin: '0 0 8px',
+          }}
+        >
+          {message}
+        </p>
       )}
-      <p className="text-amber-800 text-base mb-1">{resumeText}</p>
-      <p className="text-amber-700 text-sm">
+      <p
+        style={{
+          fontFamily: "'Inter', sans-serif",
+          fontWeight: 300,
+          fontSize: 13,
+          color: 'rgba(250,250,249,0.65)',
+          margin: '0 0 4px',
+        }}
+      >
+        {resumeText}
+      </p>
+      <p
+        style={{
+          fontFamily: "'Inter', sans-serif",
+          fontWeight: 300,
+          fontSize: 13,
+          color: 'rgba(250,250,249,0.65)',
+          margin: 0,
+        }}
+      >
         For inquiries, message us on Messenger.
       </p>
     </div>
