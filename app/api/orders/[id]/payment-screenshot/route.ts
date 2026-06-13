@@ -118,11 +118,10 @@ export async function POST(
     return NextResponse.json({ error: 'Failed to update order.' }, { status: 500 })
   }
 
-  // Fire ADMIN-02 email non-blocking
   const customer = Array.isArray(order.customers) ? order.customers[0] : order.customers
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
-  sendEmail({
+  await sendEmail({
     to: process.env.OWNER_EMAIL ?? '',
     subject: `Payment Screenshot Uploaded — ${order.order_number}`,
     react: React.createElement(Admin02, {
@@ -134,7 +133,7 @@ export async function POST(
     }),
     orderId,
     templateId: 'ADMIN-02',
-  }).catch((err) => console.error('[payment-screenshot] ADMIN-02 send error:', err))
+  })
 
   return NextResponse.json({ success: true })
 }

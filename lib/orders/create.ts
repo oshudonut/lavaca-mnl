@@ -267,45 +267,46 @@ export async function createOrder(
   const admin_url = `${baseUrl}/admin/orders/${order_id}`
 
   // -------------------------------------------------------------------------
-  // Fire emails non-blocking (failures must not block order creation)
+  // Send emails — await both so the serverless function doesn't exit first
   // -------------------------------------------------------------------------
-  sendEmail({
-    to: customer.email,
-    subject: `We received your order! Lavaca MNL ${order_number}`,
-    react: React.createElement(Cust01, {
-      order_number,
-      customer_name: customer.name,
-      delivery_date: deliveryDate,
-      delivery_window: WINDOW_LABELS[slot_window],
-      items: emailItems,
-      total_amount,
-      payment_url,
-      payment_method: customer.payment_method,
+  await Promise.allSettled([
+    sendEmail({
+      to: customer.email,
+      subject: `We received your order! Lavaca MNL ${order_number}`,
+      react: React.createElement(Cust01, {
+        order_number,
+        customer_name: customer.name,
+        delivery_date: deliveryDate,
+        delivery_window: WINDOW_LABELS[slot_window],
+        items: emailItems,
+        total_amount,
+        payment_url,
+        payment_method: customer.payment_method,
+      }),
+      orderId: order_id,
+      templateId: 'CUST-01',
     }),
-    orderId: order_id,
-    templateId: 'CUST-01',
-  }).catch((err) => console.error('[createOrder] CUST-01 send error:', err))
-
-  sendEmail({
-    to: process.env.OWNER_EMAIL ?? '',
-    subject: `New Order ${order_number} — ${customer.name}`,
-    react: React.createElement(Admin01, {
-      order_id,
-      order_number,
-      customer_name: customer.name,
-      customer_email: customer.email,
-      customer_phone: customer.phone,
-      delivery_address: customer.delivery_address,
-      delivery_date: deliveryDate,
-      delivery_window: WINDOW_LABELS[slot_window],
-      items: emailItems,
-      total_amount,
-      payment_method: customer.payment_method,
-      admin_url,
+    sendEmail({
+      to: process.env.OWNER_EMAIL ?? '',
+      subject: `New Order ${order_number} — ${customer.name}`,
+      react: React.createElement(Admin01, {
+        order_id,
+        order_number,
+        customer_name: customer.name,
+        customer_email: customer.email,
+        customer_phone: customer.phone,
+        delivery_address: customer.delivery_address,
+        delivery_date: deliveryDate,
+        delivery_window: WINDOW_LABELS[slot_window],
+        items: emailItems,
+        total_amount,
+        payment_method: customer.payment_method,
+        admin_url,
+      }),
+      orderId: order_id,
+      templateId: 'ADMIN-01',
     }),
-    orderId: order_id,
-    templateId: 'ADMIN-01',
-  }).catch((err) => console.error('[createOrder] ADMIN-01 send error:', err))
+  ])
 
   return { data: { order_id, order_number } }
 }
