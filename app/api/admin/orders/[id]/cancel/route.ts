@@ -6,7 +6,7 @@ import { sendEmail } from '@/lib/resend/send'
 import Cust05 from '@/lib/resend/templates/cust-05'
 import { deleteCalendarEvent } from '@/lib/calendar/service'
 
-const TERMINAL = ['CONFIRMED', 'DELIVERED', 'CANCELLED', 'EXPIRED']
+const TERMINAL = ['DELIVERED', 'CANCELLED', 'EXPIRED']
 
 export async function POST(
   request: NextRequest,
@@ -62,7 +62,7 @@ export async function POST(
 
   const customer = Array.isArray(order.customers) ? order.customers[0] : order.customers
 
-  sendEmail({
+  await sendEmail({
     to: customer?.email ?? '',
     subject: `Your order has been cancelled — Lavaca MNL ${order.order_number}`,
     react: React.createElement(Cust05, {
@@ -72,7 +72,7 @@ export async function POST(
     }),
     orderId: params.id,
     templateId: 'CUST-05',
-  }).catch((err) => console.error('[cancel] CUST-05 send error:', err))
+  })
 
   return NextResponse.json({ success: true })
 }

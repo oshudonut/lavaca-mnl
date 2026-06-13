@@ -10,7 +10,8 @@ interface Props {
   status: string
 }
 
-const TERMINAL = ['CONFIRMED', 'DELIVERED', 'CANCELLED', 'EXPIRED']
+const TERMINAL      = ['CONFIRMED', 'DELIVERED', 'CANCELLED', 'EXPIRED']
+const NO_CANCEL     = ['DELIVERED', 'CANCELLED', 'EXPIRED']
 
 export function OrderActions({ orderId, status }: Props) {
   const router = useRouter()
@@ -41,7 +42,7 @@ export function OrderActions({ orderId, status }: Props) {
 
   const canConfirm = status === 'PAYMENT_REVIEW'
   const canReject  = status === 'PAYMENT_REVIEW'
-  const canCancel  = !TERMINAL.includes(status)
+  const canCancel  = !NO_CANCEL.includes(status)
 
   if (!canConfirm && !canReject && !canCancel) {
     return (
