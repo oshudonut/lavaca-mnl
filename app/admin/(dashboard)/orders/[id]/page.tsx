@@ -1,17 +1,21 @@
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { getOrderSummary } from '@/lib/orders/get'
 import { AdminScreenshotViewer } from '@/components/admin/AdminScreenshotViewer'
 import { OrderActions } from '@/components/admin/OrderActions'
-import { cn } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
-const STATUS_STYLES: Record<string, string> = {
-  PENDING_PAYMENT: 'bg-yellow-100 text-yellow-800',
-  PAYMENT_REVIEW:  'bg-blue-100 text-blue-800',
-  CONFIRMED:       'bg-green-100 text-green-800',
-  CANCELLED:       'bg-red-100 text-red-700',
-  EXPIRED:         'bg-gray-100 text-gray-500',
+type StatusStyle = { bg: string; color: string }
+const STATUS_STYLES: Record<string, StatusStyle> = {
+  PENDING_PAYMENT:  { bg: '#FEF3C7', color: '#92400E' },
+  PAYMENT_REVIEW:   { bg: '#DBEAFE', color: '#1E40AF' },
+  CONFIRMED:        { bg: '#D1FAE5', color: '#065F46' },
+  AWAITING_PICKUP:  { bg: '#EDE9FE', color: '#5B21B6' },
+  OUT_FOR_DELIVERY: { bg: '#E0E7FF', color: '#3730A3' },
+  DELIVERED:        { bg: '#F3F4F6', color: '#4B5563' },
+  CANCELLED:        { bg: '#FEE2E2', color: '#B91C1C' },
+  EXPIRED:          { bg: '#F3F4F6', color: '#6B7280' },
 }
 
 const WINDOW_LABELS: Record<string, string> = {
@@ -36,74 +40,173 @@ export default async function AdminOrderDetailPage({ params }: Props) {
       })
     : '—'
 
+  const statusStyle = STATUS_STYLES[order.status] ?? { bg: '#F3F4F6', color: '#6B7280' }
+
+  const cardStyle: React.CSSProperties = {
+    background: '#FFFFFF',
+    border: '1px solid #D6D3D1',
+    padding: '22px 24px',
+    marginBottom: 16,
+  }
+
+  const sectionHeading: React.CSSProperties = {
+    fontFamily: "'Playfair Display SC', serif",
+    fontSize: 15,
+    fontWeight: 400,
+    color: '#1C1917',
+    margin: '0 0 16px',
+    letterSpacing: '0.01em',
+  }
+
+  const fieldRow: React.CSSProperties = {
+    display: 'flex',
+    gap: 8,
+    marginBottom: 8,
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 13,
+    lineHeight: 1.5,
+  }
+
   return (
-    <div className="max-w-2xl space-y-8">
+    <div style={{ maxWidth: 680 }}>
+      {/* Back link */}
+      <Link
+        href="/admin/orders"
+        style={{
+          fontFamily: "'Jost', sans-serif",
+          fontSize: 9,
+          letterSpacing: '0.22em',
+          textTransform: 'uppercase',
+          color: '#A16207',
+          textDecoration: 'none',
+          display: 'inline-block',
+          marginBottom: 28,
+        }}
+      >
+        ← Orders
+      </Link>
+
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 32, flexWrap: 'wrap' }}>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">{order.order_number}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h1 style={{
+            fontFamily: "'Playfair Display SC', serif",
+            fontSize: 22,
+            fontWeight: 400,
+            color: '#1C1917',
+            margin: '0 0 6px',
+            letterSpacing: '0.01em',
+          }}>
+            {order.order_number}
+          </h1>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#8C7B6B', margin: 0 }}>
             Placed {new Date(order.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila' })}
           </p>
         </div>
-        <span className={cn('rounded-full px-3 py-1 text-xs font-semibold', STATUS_STYLES[order.status] ?? 'bg-gray-100 text-gray-600')}>
+        <span style={{
+          fontFamily: "'Jost', sans-serif",
+          fontSize: 9,
+          fontWeight: 500,
+          letterSpacing: '0.2em',
+          textTransform: 'uppercase',
+          background: statusStyle.bg,
+          color: statusStyle.color,
+          padding: '5px 10px',
+          flexShrink: 0,
+        }}>
           {order.status.replace(/_/g, ' ')}
         </span>
       </div>
 
       {/* Customer */}
-      <section className="rounded-xl border border-border bg-card p-5 space-y-2">
-        <h2 className="font-semibold text-foreground">Customer</h2>
-        <div className="text-sm space-y-1 text-muted-foreground">
-          <p><span className="font-medium text-foreground">Name:</span> {order.customer.name}</p>
-          <p><span className="font-medium text-foreground">Email:</span> {order.customer.email}</p>
-          <p><span className="font-medium text-foreground">Phone:</span> {order.customer.phone}</p>
-          <p><span className="font-medium text-foreground">Address:</span> {order.delivery_address}</p>
-          <p><span className="font-medium text-foreground">Payment method:</span> {order.payment_method === 'gcash' ? 'GCash' : 'Bank Transfer'}</p>
-        </div>
-      </section>
-
-      {/* Delivery */}
-      <section className="rounded-xl border border-border bg-card p-5 space-y-2">
-        <h2 className="font-semibold text-foreground">Delivery</h2>
-        <div className="text-sm space-y-1 text-muted-foreground">
-          <p><span className="font-medium text-foreground">Date:</span> {deliveryDateLabel}</p>
-          <p><span className="font-medium text-foreground">Time:</span> {WINDOW_LABELS[order.slot_window] ?? order.slot_window}</p>
-        </div>
-      </section>
-
-      {/* Items */}
-      <section className="rounded-xl border border-border bg-card p-5 space-y-3">
-        <h2 className="font-semibold text-foreground">Items</h2>
-        <div className="space-y-2">
-          {order.items.map((item, i) => (
-            <div key={i} className="flex justify-between text-sm">
-              <span className="text-muted-foreground">
-                {item.product_name} · {item.weight_label} × {item.quantity}
-              </span>
-              <span className="font-medium tabular-nums">{fmt(item.subtotal)}</span>
+      <div style={cardStyle}>
+        <h2 style={sectionHeading}>Customer</h2>
+        <div>
+          {[
+            ['Name',           order.customer.name],
+            ['Email',          order.customer.email],
+            ['Phone',          order.customer.phone],
+            ['Address',        order.delivery_address],
+            ['Payment method', order.payment_method === 'gcash' ? 'GCash' : 'Bank Transfer'],
+          ].map(([label, value]) => (
+            <div key={label} style={fieldRow}>
+              <span style={{ fontWeight: 600, color: '#1C1917', flexShrink: 0, minWidth: 110 }}>{label}</span>
+              <span style={{ color: '#57534E' }}>{value ?? '—'}</span>
             </div>
           ))}
         </div>
-        <div className="flex justify-between text-sm font-semibold border-t border-border pt-3">
-          <span>Total</span>
-          <span className="tabular-nums">{fmt(order.total_amount)}</span>
+      </div>
+
+      {/* Delivery */}
+      <div style={cardStyle}>
+        <h2 style={sectionHeading}>Delivery</h2>
+        <div>
+          {[
+            ['Date', deliveryDateLabel],
+            ['Time', WINDOW_LABELS[order.slot_window] ?? order.slot_window],
+          ].map(([label, value]) => (
+            <div key={label} style={fieldRow}>
+              <span style={{ fontWeight: 600, color: '#1C1917', flexShrink: 0, minWidth: 110 }}>{label}</span>
+              <span style={{ color: '#57534E' }}>{value}</span>
+            </div>
+          ))}
         </div>
-      </section>
+      </div>
+
+      {/* Items */}
+      <div style={cardStyle}>
+        <h2 style={sectionHeading}>Items</h2>
+        <div>
+          {order.items.map((item, i) => (
+            <div key={i} style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'baseline',
+              gap: 12,
+              paddingBottom: 10,
+              marginBottom: 10,
+              borderBottom: '1px solid #F5F4F2',
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 13,
+            }}>
+              <span style={{ color: '#57534E' }}>
+                {item.product_name} · {item.weight_label} × {item.quantity}
+              </span>
+              <span style={{ fontWeight: 600, color: '#1C1917', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
+                {fmt(item.subtotal)}
+              </span>
+            </div>
+          ))}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'baseline',
+            gap: 12,
+            paddingTop: 4,
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 14,
+            fontWeight: 700,
+            color: '#1C1917',
+          }}>
+            <span>Total</span>
+            <span style={{ fontVariantNumeric: 'tabular-nums' }}>{fmt(order.total_amount)}</span>
+          </div>
+        </div>
+      </div>
 
       {/* Payment screenshot */}
       {order.status !== 'PENDING_PAYMENT' && (
-        <section className="rounded-xl border border-border bg-card p-5 space-y-3">
-          <h2 className="font-semibold text-foreground">Payment Screenshot</h2>
+        <div style={cardStyle}>
+          <h2 style={sectionHeading}>Payment Screenshot</h2>
           <AdminScreenshotViewer orderId={params.id} />
-        </section>
+        </div>
       )}
 
       {/* Actions */}
-      <section className="rounded-xl border border-border bg-card p-5 space-y-3">
-        <h2 className="font-semibold text-foreground">Actions</h2>
+      <div style={cardStyle}>
+        <h2 style={sectionHeading}>Actions</h2>
         <OrderActions orderId={params.id} status={order.status} />
-      </section>
+      </div>
     </div>
   )
 }

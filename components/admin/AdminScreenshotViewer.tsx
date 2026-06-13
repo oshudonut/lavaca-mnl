@@ -23,37 +23,76 @@ export function AdminScreenshotViewer({ orderId }: Props) {
   }, [orderId])
 
   if (loading) {
-    return <div className="h-48 rounded-lg bg-muted animate-pulse" />
+    return (
+      <div style={{
+        height: 160,
+        background: '#F5F4F2',
+        animation: 'pulse 1.5s ease-in-out infinite',
+      }} />
+    )
   }
+
   if (error) {
-    return <p className="text-sm text-muted-foreground">{error}</p>
+    return (
+      <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#8C7B6B', margin: 0 }}>
+        {error}
+      </p>
+    )
   }
+
   if (!signedUrl) return null
 
   const isPdf = signedUrl.includes('.pdf') || signedUrl.includes('application%2Fpdf')
 
   return (
-    <div className="space-y-2">
+    <div>
       {isPdf ? (
         <a
           href={signedUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-md border border-border bg-muted px-4 py-2 text-sm font-medium hover:bg-accent transition-colors"
+          style={{
+            display: 'inline-block',
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            color: '#A16207',
+            background: '#FAFAF9',
+            border: '1px solid #D6D3D1',
+            padding: '10px 16px',
+            textDecoration: 'none',
+            transition: 'border-color 0.2s',
+          }}
         >
           Open PDF Screenshot
         </a>
       ) : (
-        <a href={signedUrl} target="_blank" rel="noopener noreferrer">
+        <a href={signedUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'block' }}>
           <img
             src={signedUrl}
             alt="Payment screenshot"
-            className="max-w-full rounded-lg border border-border shadow-sm"
-            style={{ maxHeight: '480px', objectFit: 'contain' }}
+            style={{
+              maxWidth: '100%',
+              maxHeight: 480,
+              objectFit: 'contain',
+              border: '1px solid #D6D3D1',
+              display: 'block',
+            }}
           />
         </a>
       )}
-      <p className="text-xs text-muted-foreground">Click to open full size · Link expires in 1 hour</p>
+      <p style={{
+        fontFamily: "'Jost', sans-serif",
+        fontSize: 9,
+        letterSpacing: '0.16em',
+        color: '#8C7B6B',
+        marginTop: 10,
+        marginBottom: 0,
+      }}>
+        Click to open full size · Link expires in 1 hour
+      </p>
     </div>
   )
 }
