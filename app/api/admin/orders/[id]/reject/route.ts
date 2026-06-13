@@ -45,7 +45,7 @@ export async function POST(
   const customer = Array.isArray(order.customers) ? order.customers[0] : order.customers
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
-  sendEmail({
+  await sendEmail({
     to: customer?.email ?? '',
     subject: `Your payment was not accepted — Lavaca MNL ${order.order_number}`,
     react: React.createElement(Cust03, {
@@ -56,7 +56,7 @@ export async function POST(
     }),
     orderId: params.id,
     templateId: 'CUST-03',
-  }).catch((err) => console.error('[reject] CUST-03 send error:', err))
+  })
 
   return NextResponse.json({ success: true })
 }

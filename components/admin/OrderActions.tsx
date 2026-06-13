@@ -20,6 +20,7 @@ export function OrderActions({ orderId, status }: Props) {
   const [reason, setReason] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [successMsg, setSuccessMsg] = useState<string | null>(null)
   const [focusedField, setFocusedField] = useState<string | null>(null)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -67,8 +68,14 @@ export function OrderActions({ orderId, status }: Props) {
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error ?? 'Something went wrong.'); return }
-      router.refresh()
+      const msgs: Record<string, string> = {
+        confirm: 'Payment confirmed — customer notified.',
+        reject:  'Screenshot rejected — customer notified to re-upload.',
+        cancel:  'Order cancelled — customer notified.',
+      }
+      setSuccessMsg(msgs[activeAction ?? ''] ?? 'Done.')
       setActiveAction(null)
+      router.refresh()
     } catch {
       setError('Network error. Please try again.')
     } finally {
@@ -110,6 +117,20 @@ export function OrderActions({ orderId, status }: Props) {
 
   return (
     <div>
+      {successMsg && (
+        <p style={{
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 12,
+          color: '#065F46',
+          background: '#D1FAE5',
+          border: '1px solid #6EE7B7',
+          padding: '10px 14px',
+          margin: '0 0 16px',
+        }}>
+          {successMsg}
+        </p>
+      )}
+
       {/* Action buttons */}
       {!activeAction && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
