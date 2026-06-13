@@ -34,9 +34,29 @@ function DateCell({ date, record, isMonday, isPast, isSelected, onClick }: CellP
 
   if (isMonday) {
     return (
-      <div className="min-h-[72px] rounded-lg bg-muted/40 border border-border/50 p-2 flex flex-col">
-        <span className="text-xs font-medium text-muted-foreground/50">{day}</span>
-        <span className="mt-auto text-xs text-muted-foreground/40">Rest day</span>
+      <div style={{
+        minHeight: 60,
+        background: '#F5F4F2',
+        border: '1px solid #E8E5E3',
+        padding: '6px 5px',
+        display: 'flex',
+        flexDirection: 'column',
+        opacity: 0.55,
+      }}>
+        <span style={{
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 11,
+          fontWeight: 500,
+          color: '#8C7B6B',
+        }}>{day}</span>
+        <span style={{
+          marginTop: 'auto',
+          fontFamily: "'Jost', sans-serif",
+          fontSize: 8,
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+          color: '#8C7B6B',
+        }}>Rest</span>
       </div>
     )
   }
@@ -45,52 +65,100 @@ function DateCell({ date, record, isMonday, isPast, isSelected, onClick }: CellP
   const totalBooked = slots.reduce((sum, s) => sum + (s.booked_count ?? 0), 0)
   const totalMax = record?.max_orders_total ?? 0
 
+  const borderColor = isSelected
+    ? '#A16207'
+    : record?.is_open
+    ? '#86EFAC'
+    : record
+    ? '#FCA5A5'
+    : '#D6D3D1'
+
+  const bgColor = isSelected
+    ? 'rgba(161,98,7,0.05)'
+    : record?.is_open
+    ? 'rgba(220,252,231,0.5)'
+    : record
+    ? 'rgba(254,226,226,0.5)'
+    : '#FFFFFF'
+
   return (
     <button
       onClick={onClick}
-      className={[
-        'min-h-[72px] w-full rounded-lg border p-2 text-left transition-all flex flex-col',
-        isSelected
-          ? 'border-primary ring-2 ring-primary/30 bg-primary/5'
-          : 'hover:border-primary/40 hover:bg-muted/30',
-        record?.is_open
-          ? 'border-green-300 bg-green-50/60'
-          : record
-          ? 'border-red-300 bg-red-50/60'
-          : 'border-border bg-background',
-        isPast ? 'opacity-50' : '',
-      ]
-        .filter(Boolean)
-        .join(' ')}
+      style={{
+        minHeight: 60,
+        width: '100%',
+        background: bgColor,
+        border: `1px solid ${borderColor}`,
+        padding: '6px 5px',
+        textAlign: 'left',
+        display: 'flex',
+        flexDirection: 'column',
+        cursor: 'pointer',
+        outline: isSelected ? '1px solid #A16207' : 'none',
+        outlineOffset: -1,
+        opacity: isPast ? 0.5 : 1,
+        transition: 'border-color 0.15s',
+        boxSizing: 'border-box',
+      }}
     >
-      <span className={`text-xs font-semibold ${isPast ? 'text-muted-foreground' : 'text-foreground'}`}>
-        {day}
-      </span>
+      <span style={{
+        fontFamily: "'Inter', sans-serif",
+        fontSize: 11,
+        fontWeight: 600,
+        color: isPast ? '#8C7B6B' : '#1C1917',
+      }}>{day}</span>
 
       {record?.is_open ? (
         <>
-          <span className="mt-1 inline-block rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-semibold text-green-700 leading-none">
-            Open
-          </span>
+          <span style={{
+            marginTop: 3,
+            fontFamily: "'Jost', sans-serif",
+            fontSize: 8,
+            fontWeight: 500,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            color: '#15803D',
+            display: 'inline-block',
+          }}>Open</span>
           {totalMax > 0 && (
-            <span className="mt-auto text-[10px] text-muted-foreground tabular-nums">
-              {totalBooked}/{totalMax}
-            </span>
+            <span style={{
+              marginTop: 'auto',
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 9,
+              color: '#57534E',
+              fontVariantNumeric: 'tabular-nums',
+            }}>{totalBooked}/{totalMax}</span>
           )}
         </>
       ) : record ? (
         <>
-          <span className="mt-1 inline-block rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-700 leading-none">
-            Closed
-          </span>
+          <span style={{
+            marginTop: 3,
+            fontFamily: "'Jost', sans-serif",
+            fontSize: 8,
+            fontWeight: 500,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            color: '#B91C1C',
+            display: 'inline-block',
+          }}>Closed</span>
           {record.closure_type && (
-            <span className="mt-auto text-[10px] text-muted-foreground capitalize">
-              {record.closure_type}
-            </span>
+            <span style={{
+              marginTop: 'auto',
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 9,
+              color: '#8C7B6B',
+              textTransform: 'capitalize',
+            }}>{record.closure_type}</span>
           )}
         </>
       ) : (
-        <span className="mt-auto text-[10px] text-muted-foreground/60">No slot</span>
+        <span style={{
+          marginTop: 'auto',
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 9,
+          color: '#C4B8B0',
+        }}>No slot</span>
       )}
     </button>
   )
@@ -103,6 +171,14 @@ export function DeliveryCalendarGrid() {
   const [loading, setLoading] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [genMsg, setGenMsg] = useState<string | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   const fetchDates = useCallback(async (month: string) => {
     setLoading(true)
@@ -182,124 +258,173 @@ export function DeliveryCalendarGrid() {
   for (let d = 1; d <= totalDays; d++) {
     cells.push({ date: `${currentMonth}-${String(d).padStart(2, '0')}` })
   }
-  // pad to complete last row
   while (cells.length % 7 !== 0) cells.push({ date: null })
 
   const selectedRecord = selectedDate ? (dateMap.get(selectedDate) ?? null) : null
 
+  const navBtnStyle: React.CSSProperties = {
+    background: '#FFFFFF',
+    border: '1px solid #D6D3D1',
+    padding: '7px 9px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'background 0.15s',
+    flexShrink: 0,
+  }
+
   return (
-    <div className="flex gap-6 items-start">
-      {/* Calendar */}
-      <div className="flex-1 min-w-0">
-        {/* Navigation */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={prevMonth}
-              className="rounded-lg border border-border p-1.5 hover:bg-muted transition-colors"
-              aria-label="Previous month"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <h2 className="text-base font-semibold text-foreground w-44 text-center">{monthLabel}</h2>
-            <button
-              onClick={nextMonth}
-              className="rounded-lg border border-border p-1.5 hover:bg-muted transition-colors"
-              aria-label="Next month"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
+    <div>
+      {/* Mobile backdrop */}
+      {selectedDate && isMobile && (
+        <div
+          onClick={() => setSelectedDate(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(12,10,9,0.5)',
+            zIndex: 40,
+          }}
+        />
+      )}
 
-          <div className="flex items-center gap-3">
-            {genMsg && (
-              <span className="text-xs text-muted-foreground">{genMsg}</span>
-            )}
-            <button
-              onClick={handleGenerate}
-              disabled={generating}
-              className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50"
-            >
-              {generating ? 'Generating...' : 'Generate month'}
-            </button>
-          </div>
-        </div>
-
-        {/* Day headers */}
-        <div className="grid grid-cols-7 gap-1 mb-1">
-          {DOW_LABELS.map(d => (
-            <div key={d} className="py-1 text-center text-xs font-medium text-muted-foreground">
-              {d}
+      <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+        {/* Calendar */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {/* Navigation */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button onClick={prevMonth} style={navBtnStyle} aria-label="Previous month">
+                <svg width={14} height={14} fill="none" stroke="#1C1917" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <span style={{
+                fontFamily: "'Playfair Display SC', serif",
+                fontSize: 15,
+                fontWeight: 400,
+                color: '#1C1917',
+                width: 160,
+                textAlign: 'center',
+                letterSpacing: '0.01em',
+              }}>{monthLabel}</span>
+              <button onClick={nextMonth} style={navBtnStyle} aria-label="Next month">
+                <svg width={14} height={14} fill="none" stroke="#1C1917" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
-          ))}
-        </div>
 
-        {/* Calendar grid */}
-        {loading ? (
-          <div className="grid grid-cols-7 gap-1">
-            {Array.from({ length: 35 }).map((_, i) => (
-              <div key={i} className="min-h-[72px] rounded-lg bg-muted/30 animate-pulse" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {genMsg && (
+                <span style={{ fontFamily: "'Jost', sans-serif", fontSize: 10, letterSpacing: '0.1em', color: '#8C7B6B' }}>{genMsg}</span>
+              )}
+              <button
+                onClick={handleGenerate}
+                disabled={generating}
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  background: generating ? '#D6D3D1' : '#A16207',
+                  color: generating ? '#8C7B6B' : '#FFFFFF',
+                  border: 'none',
+                  padding: '8px 14px',
+                  cursor: generating ? 'not-allowed' : 'pointer',
+                  transition: 'background 0.2s',
+                  opacity: generating ? 0.7 : 1,
+                }}
+              >
+                {generating ? 'Generating…' : 'Generate month'}
+              </button>
+            </div>
+          </div>
+
+          {/* Day headers */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2, marginBottom: 2 }}>
+            {DOW_LABELS.map(d => (
+              <div key={d} style={{
+                padding: '6px 0',
+                textAlign: 'center',
+                fontFamily: "'Jost', sans-serif",
+                fontSize: 9,
+                fontWeight: 400,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                color: '#8C7B6B',
+              }}>{d}</div>
             ))}
           </div>
-        ) : (
-          <div className="grid grid-cols-7 gap-1">
-            {cells.map((cell, i) => {
-              if (!cell.date) {
-                return <div key={i} className="min-h-[72px]" />
-              }
-              const dow = new Date(cell.date + 'T00:00:00Z').getUTCDay()
-              const isMonday = dow === 1
-              const isPast = cell.date < today
-              const record = dateMap.get(cell.date) ?? null
 
-              return (
-                <DateCell
-                  key={cell.date}
-                  date={cell.date}
-                  record={record}
-                  isMonday={isMonday}
-                  isPast={isPast}
-                  isSelected={selectedDate === cell.date}
-                  onClick={() => {
-                    if (!isMonday) setSelectedDate(cell.date === selectedDate ? null : cell.date)
-                  }}
-                />
-              )
-            })}
+          {/* Calendar grid */}
+          {loading ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
+              {Array.from({ length: 35 }).map((_, i) => (
+                <div key={i} style={{ minHeight: 60, background: '#EDE9E8' }} />
+              ))}
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
+              {cells.map((cell, i) => {
+                if (!cell.date) return <div key={i} style={{ minHeight: 60 }} />
+                const dow = new Date(cell.date + 'T00:00:00Z').getUTCDay()
+                const isMonday = dow === 1
+                const isPast = cell.date < today
+                const record = dateMap.get(cell.date) ?? null
+                return (
+                  <DateCell
+                    key={cell.date}
+                    date={cell.date}
+                    record={record}
+                    isMonday={isMonday}
+                    isPast={isPast}
+                    isSelected={selectedDate === cell.date}
+                    onClick={() => {
+                      if (!isMonday) setSelectedDate(cell.date === selectedDate ? null : cell.date!)
+                    }}
+                  />
+                )
+              })}
+            </div>
+          )}
+
+          {/* Legend */}
+          <div style={{ marginTop: 16, display: 'flex', gap: 20 }}>
+            {[
+              { color: '#86EFAC', label: 'Open' },
+              { color: '#FCA5A5', label: 'Closed' },
+              { color: '#D6D3D1', label: 'Not set up' },
+            ].map(({ color, label }) => (
+              <span key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 10, height: 10, background: color, display: 'inline-block', flexShrink: 0 }} />
+                <span style={{ fontFamily: "'Jost', sans-serif", fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#8C7B6B' }}>{label}</span>
+              </span>
+            ))}
           </div>
-        )}
-
-        {/* Legend */}
-        <div className="mt-4 flex gap-4 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-green-300 inline-block" />
-            Open
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-red-300 inline-block" />
-            Closed
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-muted inline-block" />
-            Not set up
-          </span>
         </div>
+
+        {/* Side panel — desktop only inline, mobile is fixed overlay */}
+        {selectedDate && !isMobile && (
+          <DateSidePanel
+            date={selectedDate}
+            record={selectedRecord}
+            onClose={() => setSelectedDate(null)}
+            onSaved={handleSaved}
+          />
+        )}
       </div>
 
-      {/* Side panel */}
-      {selectedDate && (
+      {/* Mobile side panel — fixed bottom sheet */}
+      {selectedDate && isMobile && (
         <DateSidePanel
           date={selectedDate}
           record={selectedRecord}
           onClose={() => setSelectedDate(null)}
-          onSaved={record => {
-            handleSaved(record)
-            // keep panel open so user can see updated state
-          }}
+          onSaved={handleSaved}
+          isMobileOverlay
         />
       )}
     </div>

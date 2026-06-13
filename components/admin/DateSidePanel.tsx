@@ -28,6 +28,7 @@ interface Props {
   record: AdminDateRecord | null
   onClose: () => void
   onSaved: (updated: AdminDateRecord) => void
+  isMobileOverlay?: boolean
 }
 
 interface FormState {
@@ -79,10 +80,11 @@ const DATE_LABEL_OPTIONS: Intl.DateTimeFormatOptions = {
   timeZone: 'UTC',
 }
 
-export function DateSidePanel({ date, record, onClose, onSaved }: Props) {
+export function DateSidePanel({ date, record, onClose, onSaved, isMobileOverlay }: Props) {
   const [form, setForm] = useState<FormState>(() => defaultForm(record))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [focusedField, setFocusedField] = useState<string | null>(null)
 
   useEffect(() => {
     setForm(defaultForm(record))
@@ -153,53 +155,132 @@ export function DateSidePanel({ date, record, onClose, onSaved }: Props) {
   const amSlot = slots.find(s => s.slot_window === 'AM')
   const pmSlot = slots.find(s => s.slot_window === 'PM')
 
+  const inputStyle = (field: string): React.CSSProperties => ({
+    width: '100%',
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 13,
+    color: '#1C1917',
+    background: '#FAFAF9',
+    border: `1px solid ${focusedField === field ? '#A16207' : '#D6D3D1'}`,
+    padding: '10px 12px',
+    outline: 'none',
+    borderRadius: 0,
+    boxSizing: 'border-box',
+    transition: 'border-color 0.2s',
+  })
+
+  const labelStyle: React.CSSProperties = {
+    display: 'block',
+    fontFamily: "'Jost', sans-serif",
+    fontSize: 9,
+    fontWeight: 400,
+    letterSpacing: '0.22em',
+    textTransform: 'uppercase',
+    color: '#8C7B6B',
+    marginBottom: 8,
+  }
+
+  const toggleBtn = (active: boolean, activeStyle: { border: string; bg: string; color: string }): React.CSSProperties => ({
+    flex: 1,
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 12,
+    fontWeight: active ? 600 : 400,
+    background: active ? activeStyle.bg : '#FFFFFF',
+    color: active ? activeStyle.color : '#8C7B6B',
+    border: `1px solid ${active ? activeStyle.border : '#D6D3D1'}`,
+    padding: '9px 0',
+    cursor: 'pointer',
+    borderRadius: 0,
+    transition: 'all 0.15s',
+  })
+
+  const panelStyle: React.CSSProperties = isMobileOverlay
+    ? {
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 50,
+        background: '#FFFFFF',
+        borderTop: '2px solid #A16207',
+        maxHeight: '85vh',
+        overflowY: 'auto',
+      }
+    : {
+        width: 304,
+        flexShrink: 0,
+        background: '#FFFFFF',
+        border: '1px solid #D6D3D1',
+        overflowY: 'auto',
+        maxHeight: 'calc(100vh - 120px)',
+        position: 'sticky',
+        top: 80,
+      }
+
   return (
-    <aside className="w-80 shrink-0 rounded-xl border border-border bg-card shadow-sm overflow-y-auto">
+    <aside style={panelStyle}>
       {/* Header */}
-      <div className="flex items-start justify-between gap-2 p-4 border-b border-border">
+      <div style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'space-between',
+        gap: 8,
+        padding: '16px 20px',
+        borderBottom: '1px solid #D6D3D1',
+      }}>
         <div>
-          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
-            {date}
-          </p>
-          <h2 className="font-semibold text-foreground leading-tight mt-0.5">{dateLabel}</h2>
+          <p style={{
+            fontFamily: "'Jost', sans-serif",
+            fontSize: 9,
+            letterSpacing: '0.22em',
+            textTransform: 'uppercase',
+            color: '#A16207',
+            margin: '0 0 4px',
+          }}>{date}</p>
+          <h2 style={{
+            fontFamily: "'Playfair Display SC', serif",
+            fontSize: 14,
+            fontWeight: 400,
+            color: '#1C1917',
+            margin: 0,
+            letterSpacing: '0.01em',
+          }}>{dateLabel}</h2>
         </div>
         <button
           onClick={onClose}
-          className="mt-0.5 rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           aria-label="Close"
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: 4,
+            color: '#8C7B6B',
+            flexShrink: 0,
+            marginTop: 2,
+          }}
         >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <svg width={16} height={16} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
 
-      <div className="p-4 space-y-5">
+      <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
         {/* Open / Closed toggle */}
         <div>
-          <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-            Status
-          </label>
-          <div className="flex gap-2">
+          <label style={labelStyle}>Status</label>
+          <div style={{ display: 'flex', gap: 4 }}>
             <button
               type="button"
               onClick={() => set('is_open', true)}
-              className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
-                form.is_open
-                  ? 'border-green-600 bg-green-50 text-green-700'
-                  : 'border-border bg-background text-muted-foreground hover:bg-muted'
-              }`}
+              style={toggleBtn(form.is_open, { border: '#16A34A', bg: '#F0FDF4', color: '#15803D' })}
             >
               Open
             </button>
             <button
               type="button"
               onClick={() => set('is_open', false)}
-              className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
-                !form.is_open
-                  ? 'border-red-500 bg-red-50 text-red-700'
-                  : 'border-border bg-background text-muted-foreground hover:bg-muted'
-              }`}
+              style={toggleBtn(!form.is_open, { border: '#DC2626', bg: '#FEF2F2', color: '#B91C1C' })}
             >
               Closed
             </button>
@@ -210,137 +291,80 @@ export function DateSidePanel({ date, record, onClose, onSaved }: Props) {
           <>
             {/* Max orders */}
             <div>
-              <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
-                Max orders (day total)
-              </label>
+              <label style={labelStyle}>Max orders (day total)</label>
               <input
                 type="number"
                 min={0}
                 max={999}
                 value={form.max_orders_total}
                 onChange={e => set('max_orders_total', e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                onFocus={() => setFocusedField('maxTotal')}
+                onBlur={() => setFocusedField(null)}
+                style={inputStyle('maxTotal')}
               />
             </div>
 
             {/* AM slot */}
-            <div className="rounded-lg border border-border p-3 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-foreground">AM Slot</span>
-                <span className="text-xs text-muted-foreground">9:00 AM – 12:00 PM</span>
-              </div>
-              {amSlot && (
-                <p className="text-xs text-muted-foreground">
-                  {amSlot.booked_count} booked of {amSlot.max_orders}
-                </p>
-              )}
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => set('am_enabled', true)}
-                  className={`flex-1 rounded border py-1.5 text-xs font-medium transition-colors ${
-                    form.am_enabled
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border bg-background text-muted-foreground hover:bg-muted'
-                  }`}
-                >
-                  On
-                </button>
-                <button
-                  type="button"
-                  onClick={() => set('am_enabled', false)}
-                  className={`flex-1 rounded border py-1.5 text-xs font-medium transition-colors ${
-                    !form.am_enabled
-                      ? 'border-destructive bg-destructive/10 text-destructive'
-                      : 'border-border bg-background text-muted-foreground hover:bg-muted'
-                  }`}
-                >
-                  Off
-                </button>
-              </div>
-              {form.am_enabled && (
-                <div>
-                  <label className="block text-xs text-muted-foreground mb-1">Max orders</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={999}
-                    value={form.am_max}
-                    onChange={e => set('am_max', e.target.value)}
-                    className="w-full rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-                </div>
-              )}
-            </div>
+            <SlotSection
+              label="AM Slot"
+              time="9:00 AM – 12:00 PM"
+              slot={amSlot}
+              enabled={form.am_enabled}
+              maxVal={form.am_max}
+              enabledKey="am_enabled"
+              maxKey="am_max"
+              focusKey="am_max_input"
+              focusedField={focusedField}
+              setFocusedField={setFocusedField}
+              onToggle={(v) => set('am_enabled', v)}
+              onMaxChange={(v) => set('am_max', v)}
+            />
 
             {/* PM slot */}
-            <div className="rounded-lg border border-border p-3 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-foreground">PM Slot</span>
-                <span className="text-xs text-muted-foreground">1:00 PM – 5:00 PM</span>
-              </div>
-              {pmSlot && (
-                <p className="text-xs text-muted-foreground">
-                  {pmSlot.booked_count} booked of {pmSlot.max_orders}
-                </p>
-              )}
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => set('pm_enabled', true)}
-                  className={`flex-1 rounded border py-1.5 text-xs font-medium transition-colors ${
-                    form.pm_enabled
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border bg-background text-muted-foreground hover:bg-muted'
-                  }`}
-                >
-                  On
-                </button>
-                <button
-                  type="button"
-                  onClick={() => set('pm_enabled', false)}
-                  className={`flex-1 rounded border py-1.5 text-xs font-medium transition-colors ${
-                    !form.pm_enabled
-                      ? 'border-destructive bg-destructive/10 text-destructive'
-                      : 'border-border bg-background text-muted-foreground hover:bg-muted'
-                  }`}
-                >
-                  Off
-                </button>
-              </div>
-              {form.pm_enabled && (
-                <div>
-                  <label className="block text-xs text-muted-foreground mb-1">Max orders</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={999}
-                    value={form.pm_max}
-                    onChange={e => set('pm_max', e.target.value)}
-                    className="w-full rounded border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-                </div>
-              )}
-            </div>
+            <SlotSection
+              label="PM Slot"
+              time="1:00 PM – 5:00 PM"
+              slot={pmSlot}
+              enabled={form.pm_enabled}
+              maxVal={form.pm_max}
+              enabledKey="pm_enabled"
+              maxKey="pm_max"
+              focusKey="pm_max_input"
+              focusedField={focusedField}
+              setFocusedField={setFocusedField}
+              onToggle={(v) => set('pm_enabled', v)}
+              onMaxChange={(v) => set('pm_max', v)}
+            />
           </>
         ) : (
           <>
             {/* Closure type */}
             <div>
-              <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
-                Closure type
-              </label>
+              <label style={labelStyle}>Closure type</label>
               <select
                 value={form.closure_type}
                 onChange={e => set('closure_type', e.target.value as FormState['closure_type'])}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                onFocus={() => setFocusedField('closureType')}
+                onBlur={() => setFocusedField(null)}
+                style={{
+                  width: '100%',
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 13,
+                  color: '#1C1917',
+                  background: '#FAFAF9',
+                  border: `1px solid ${focusedField === 'closureType' ? '#A16207' : '#D6D3D1'}`,
+                  padding: '10px 12px',
+                  outline: 'none',
+                  borderRadius: 0,
+                  cursor: 'pointer',
+                }}
               >
                 <option value="operational">Operational</option>
                 <option value="holiday">Holiday</option>
                 <option value="vacation">Vacation</option>
               </select>
               {form.closure_type !== 'operational' && (
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p style={{ marginTop: 6, fontFamily: "'Inter', sans-serif", fontSize: 11, color: '#8C7B6B' }}>
                   A calendar event will be created for this closure.
                 </p>
               )}
@@ -348,32 +372,197 @@ export function DateSidePanel({ date, record, onClose, onSaved }: Props) {
 
             {/* Closure reason */}
             <div>
-              <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
-                Closure reason (optional)
-              </label>
+              <label style={labelStyle}>Closure reason (optional)</label>
               <textarea
                 rows={3}
                 value={form.closure_reason}
                 onChange={e => set('closure_reason', e.target.value)}
+                onFocus={() => setFocusedField('reason')}
+                onBlur={() => setFocusedField(null)}
                 placeholder="e.g. National holiday, staff leave..."
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                style={{
+                  ...inputStyle('reason'),
+                  resize: 'none',
+                  lineHeight: 1.5,
+                }}
               />
             </div>
           </>
         )}
 
         {error && (
-          <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
+          <p style={{
+            background: '#FEF2F2',
+            border: '1px solid #FCA5A5',
+            padding: '10px 12px',
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 12,
+            color: '#B91C1C',
+            margin: 0,
+          }}>{error}</p>
         )}
 
         <button
           onClick={handleSave}
           disabled={saving}
-          className="w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition-opacity disabled:opacity-60 hover:opacity-90"
+          style={{
+            width: '100%',
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: '0.22em',
+            textTransform: 'uppercase',
+            background: saving ? '#D6D3D1' : '#A16207',
+            color: saving ? '#8C7B6B' : '#FFFFFF',
+            border: 'none',
+            padding: '14px 0',
+            cursor: saving ? 'not-allowed' : 'pointer',
+            borderRadius: 0,
+            transition: 'background 0.2s',
+          }}
         >
-          {saving ? 'Saving...' : 'Save'}
+          {saving ? 'Saving…' : 'Save'}
         </button>
       </div>
     </aside>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// SlotSection sub-component
+// ---------------------------------------------------------------------------
+
+interface SlotSectionProps {
+  label: string
+  time: string
+  slot: DateSlot | undefined
+  enabled: boolean
+  maxVal: string
+  enabledKey: string
+  maxKey: string
+  focusKey: string
+  focusedField: string | null
+  setFocusedField: (f: string | null) => void
+  onToggle: (v: boolean) => void
+  onMaxChange: (v: string) => void
+}
+
+function SlotSection({
+  label, time, slot, enabled, maxVal,
+  focusKey, focusedField, setFocusedField, onToggle, onMaxChange,
+}: SlotSectionProps) {
+  return (
+    <div style={{
+      border: '1px solid #D6D3D1',
+      padding: '14px 14px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 10,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 13,
+          fontWeight: 600,
+          color: '#1C1917',
+        }}>{label}</span>
+        <span style={{
+          fontFamily: "'Jost', sans-serif",
+          fontSize: 9,
+          letterSpacing: '0.12em',
+          color: '#8C7B6B',
+        }}>{time}</span>
+      </div>
+
+      {slot && (
+        <p style={{
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 11,
+          color: '#57534E',
+          margin: 0,
+        }}>
+          {slot.booked_count} booked of {slot.max_orders}
+        </p>
+      )}
+
+      <div style={{ display: 'flex', gap: 4 }}>
+        <button
+          type="button"
+          onClick={() => onToggle(true)}
+          style={{
+            flex: 1,
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 11,
+            fontWeight: enabled ? 600 : 400,
+            background: enabled ? 'rgba(161,98,7,0.08)' : '#FFFFFF',
+            color: enabled ? '#A16207' : '#8C7B6B',
+            border: `1px solid ${enabled ? '#A16207' : '#D6D3D1'}`,
+            padding: '7px 0',
+            cursor: 'pointer',
+            borderRadius: 0,
+            transition: 'all 0.15s',
+          }}
+        >
+          On
+        </button>
+        <button
+          type="button"
+          onClick={() => onToggle(false)}
+          style={{
+            flex: 1,
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 11,
+            fontWeight: !enabled ? 600 : 400,
+            background: !enabled ? '#FEF2F2' : '#FFFFFF',
+            color: !enabled ? '#B91C1C' : '#8C7B6B',
+            border: `1px solid ${!enabled ? '#DC2626' : '#D6D3D1'}`,
+            padding: '7px 0',
+            cursor: 'pointer',
+            borderRadius: 0,
+            transition: 'all 0.15s',
+          }}
+        >
+          Off
+        </button>
+      </div>
+
+      {enabled && (
+        <div>
+          <label style={{
+            display: 'block',
+            fontFamily: "'Jost', sans-serif",
+            fontSize: 9,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: '#8C7B6B',
+            marginBottom: 6,
+          }}>
+            Max orders
+          </label>
+          <input
+            type="number"
+            min={0}
+            max={999}
+            value={maxVal}
+            onChange={e => onMaxChange(e.target.value)}
+            onFocus={() => setFocusedField(focusKey)}
+            onBlur={() => setFocusedField(null)}
+            style={{
+              width: '100%',
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 13,
+              color: '#1C1917',
+              background: '#FAFAF9',
+              border: `1px solid ${focusedField === focusKey ? '#A16207' : '#D6D3D1'}`,
+              padding: '8px 10px',
+              outline: 'none',
+              borderRadius: 0,
+              boxSizing: 'border-box',
+              transition: 'border-color 0.2s',
+            }}
+          />
+        </div>
+      )}
+    </div>
   )
 }
