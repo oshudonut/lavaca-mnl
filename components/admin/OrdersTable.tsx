@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 type StatusStyle = { bg: string; color: string }
 
@@ -38,9 +39,14 @@ interface Props {
 }
 
 export function OrdersTable({ orders }: Props) {
+  const router = useRouter()
   const [statusFilter, setStatusFilter] = useState('ALL')
   const [search, setSearch] = useState('')
   const [focusedField, setFocusedField] = useState<string | null>(null)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [deleting, setDeleting] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
@@ -50,6 +56,53 @@ export function OrdersTable({ orders }: Props) {
       return true
     })
   }, [orders, statusFilter, search])
+
+  const allFilteredSelected = filtered.length > 0 && filtered.every((o) => selected.has(o.id))
+
+  function toggleOne(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  function toggleAll() {
+    if (allFilteredSelected) {
+      setSelected((prev) => {
+        const next = new Set(prev)
+        filtered.forEach((o) => next.delete(o.id))
+        return next
+      })
+    } else {
+      setSelected((prev) => {
+        const next = new Set(prev)
+        filtered.forEach((o) => next.add(o.id))
+        return next
+      })
+    }
+  }
+
+  async function handleDeleteSelected() {
+    setDeleting(true)
+    setConfirmDelete(false)
+    setDeleteError(null)
+    const ids = Array.from(selected)
+    const results = await Promise.all(
+      ids.map((id) =>
+        fetch(`/api/admin/orders/${id}/delete`, { method: 'DELETE' })
+          .then((r) => r.json())
+          .catch(() => ({ error: 'Network error' }))
+      )
+    )
+    const failed = results.filter((r) => r.error)
+    if (failed.length > 0) {
+      setDeleteError(`${failed.length} order(s) could not be deleted: ${failed[0].error}`)
+    }
+    setSelected(new Set())
+    setDeleting(false)
+    router.refresh()
+  }
 
   const inputBase: React.CSSProperties = {
     fontFamily: "'Inter', sans-serif",
@@ -63,9 +116,11 @@ export function OrdersTable({ orders }: Props) {
     transition: 'border-color 0.2s',
   }
 
+  const selectedCount = selected.size
+
   return (
     <div>
-      {/* Filters */}
+      {/* Filters row */}
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginBottom: 20 }}>
         <input
           type="text"
@@ -96,6 +151,7 @@ export function OrdersTable({ orders }: Props) {
             <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
           ))}
         </select>
+
         <span style={{
           fontFamily: "'Jost', sans-serif",
           fontSize: 10,
@@ -105,14 +161,90 @@ export function OrdersTable({ orders }: Props) {
         }}>
           {filtered.length} order{filtered.length !== 1 ? 's' : ''}
         </span>
+
+        {deleteError && (
+          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: '#B91C1C', marginLeft: 'auto' }}>
+            {deleteError}
+          </span>
+        )}
+
+        {/* Delete selected */}
+        {selectedCount > 0 && !confirmDelete && (
+          <button
+            onClick={() => setConfirmDelete(true)}
+            disabled={deleting}
+            style={{
+              marginLeft: 'auto',
+              fontFamily: "'Jost', sans-serif",
+              fontSize: 10,
+              fontWeight: 600,
+              letterSpacing: '0.16em',
+              textTransform: 'uppercase',
+              background: '#FEE2E2',
+              color: '#B91C1C',
+              border: '1px solid #FECACA',
+              padding: '8px 16px',
+              cursor: 'pointer',
+            }}
+          >
+            Delete {selectedCount} selected
+          </button>
+        )}
+
+        {/* Confirm dialog inline */}
+        {confirmDelete && (
+          <div style={{
+            marginLeft: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            background: '#FEF2F2',
+            border: '1px solid #FECACA',
+            padding: '8px 14px',
+          }}>
+            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#B91C1C' }}>
+              Delete {selectedCount} order{selectedCount !== 1 ? 's' : ''}? This cannot be undone.
+            </span>
+            <button
+              onClick={handleDeleteSelected}
+              disabled={deleting}
+              style={{
+                fontFamily: "'Jost', sans-serif",
+                fontSize: 10,
+                fontWeight: 600,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                background: '#B91C1C',
+                color: '#FFFFFF',
+                border: 'none',
+                padding: '6px 14px',
+                cursor: deleting ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {deleting ? 'Deleting…' : 'Confirm'}
+            </button>
+            <button
+              onClick={() => setConfirmDelete(false)}
+              style={{
+                fontFamily: "'Jost', sans-serif",
+                fontSize: 10,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                background: 'transparent',
+                color: '#78716C',
+                border: '1px solid #D6D3D1',
+                padding: '6px 14px',
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Table */}
-      <div style={{
-        background: '#FFFFFF',
-        border: '1px solid #D6D3D1',
-        overflow: 'hidden',
-      }}>
+      <div style={{ background: '#FFFFFF', border: '1px solid #D6D3D1', overflow: 'hidden' }}>
         {filtered.length === 0 ? (
           <p style={{
             padding: '40px 24px',
@@ -129,6 +261,14 @@ export function OrdersTable({ orders }: Props) {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid #D6D3D1', background: '#F5F4F2' }}>
+                  <th style={{ padding: '12px 16px', width: 36 }}>
+                    <input
+                      type="checkbox"
+                      checked={allFilteredSelected}
+                      onChange={toggleAll}
+                      style={{ cursor: 'pointer', accentColor: '#A16207' }}
+                    />
+                  </th>
                   {['Order #', 'Customer', 'Items', 'Delivery', 'Status', 'Total', 'Placed'].map((col, i) => (
                     <th
                       key={col}
@@ -152,13 +292,23 @@ export function OrdersTable({ orders }: Props) {
               <tbody>
                 {filtered.map((order, i) => {
                   const statusStyle = STATUS_STYLES[order.status] ?? { bg: '#F3F4F6', color: '#6B7280' }
+                  const isSelected = selected.has(order.id)
                   return (
                     <tr
                       key={order.id}
                       style={{
                         borderTop: i === 0 ? 'none' : '1px solid #F5F4F2',
+                        background: isSelected ? '#FFFBEB' : undefined,
                       }}
                     >
+                      <td style={{ padding: '14px 16px' }}>
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleOne(order.id)}
+                          style={{ cursor: 'pointer', accentColor: '#A16207' }}
+                        />
+                      </td>
                       <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
                         <Link
                           href={`/admin/orders/${order.id}`}
@@ -173,12 +323,7 @@ export function OrdersTable({ orders }: Props) {
                           {order.order_number}
                         </Link>
                       </td>
-                      <td style={{
-                        padding: '14px 16px',
-                        fontFamily: "'Inter', sans-serif",
-                        color: '#1C1917',
-                        whiteSpace: 'nowrap',
-                      }}>
+                      <td style={{ padding: '14px 16px', fontFamily: "'Inter', sans-serif", color: '#1C1917', whiteSpace: 'nowrap' }}>
                         {order.customer_name}
                       </td>
                       <td style={{
@@ -192,12 +337,7 @@ export function OrdersTable({ orders }: Props) {
                       }}>
                         {order.items_summary}
                       </td>
-                      <td style={{
-                        padding: '14px 16px',
-                        fontFamily: "'Inter', sans-serif",
-                        color: '#57534E',
-                        whiteSpace: 'nowrap',
-                      }}>
+                      <td style={{ padding: '14px 16px', fontFamily: "'Inter', sans-serif", color: '#57534E', whiteSpace: 'nowrap' }}>
                         {order.delivery_date} · {order.slot_window}
                       </td>
                       <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
@@ -225,12 +365,7 @@ export function OrdersTable({ orders }: Props) {
                       }}>
                         {fmt(order.total_amount)}
                       </td>
-                      <td style={{
-                        padding: '14px 16px',
-                        fontFamily: "'Inter', sans-serif",
-                        color: '#57534E',
-                        whiteSpace: 'nowrap',
-                      }}>
+                      <td style={{ padding: '14px 16px', fontFamily: "'Inter', sans-serif", color: '#57534E', whiteSpace: 'nowrap' }}>
                         {new Date(order.created_at).toLocaleDateString('en-PH', {
                           month: 'short',
                           day: 'numeric',

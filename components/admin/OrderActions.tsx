@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 type Action = 'confirm' | 'reject' | 'cancel' | null
 
@@ -12,12 +13,31 @@ interface Props {
 const TERMINAL = ['CONFIRMED', 'DELIVERED', 'CANCELLED', 'EXPIRED']
 
 export function OrderActions({ orderId, status }: Props) {
+  const router = useRouter()
   const [activeAction, setActiveAction] = useState<Action>(null)
   const [paymentReference, setPaymentReference] = useState('')
   const [reason, setReason] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [focusedField, setFocusedField] = useState<string | null>(null)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+
+  async function handleDelete() {
+    setIsDeleting(true)
+    setDeleteError(null)
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}/delete`, { method: 'DELETE' })
+      const data = await res.json()
+      if (!res.ok) { setDeleteError(data.error ?? 'Delete failed'); setIsDeleting(false); return }
+      router.push('/admin/orders')
+      router.refresh()
+    } catch {
+      setDeleteError('Network error. Please try again.')
+      setIsDeleting(false)
+    }
+  }
 
   const canConfirm = status === 'PAYMENT_REVIEW'
   const canReject  = status === 'PAYMENT_REVIEW'
@@ -246,6 +266,65 @@ export function OrderActions({ orderId, status }: Props) {
               Back
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Delete order — always visible */}
+      {!activeAction && (
+        <div style={{ marginTop: 28, paddingTop: 20, borderTop: '1px solid #F5F4F2' }}>
+          {!confirmingDelete ? (
+            <button
+              onClick={() => setConfirmingDelete(true)}
+              style={{
+                fontFamily: "'Jost', sans-serif",
+                fontSize: 9,
+                fontWeight: 600,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                background: 'transparent',
+                color: '#B91C1C',
+                border: '1px solid #FECACA',
+                padding: '7px 14px',
+                cursor: 'pointer',
+              }}
+            >
+              Delete Order
+            </button>
+          ) : (
+            <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', padding: '14px 16px' }}>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#B91C1C', margin: '0 0 12px' }}>
+                Permanently delete this order? This cannot be undone.
+              </p>
+              {deleteError && (
+                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#B91C1C', margin: '0 0 10px' }}>
+                  {deleteError}
+                </p>
+              )}
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  style={{
+                    fontFamily: "'Jost', sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: '0.16em',
+                    textTransform: 'uppercase', background: '#B91C1C', color: '#FFFFFF',
+                    border: 'none', padding: '8px 16px', cursor: isDeleting ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {isDeleting ? 'Deleting…' : 'Delete'}
+                </button>
+                <button
+                  onClick={() => setConfirmingDelete(false)}
+                  style={{
+                    fontFamily: "'Jost', sans-serif", fontSize: 9, letterSpacing: '0.16em',
+                    textTransform: 'uppercase', background: 'transparent', color: '#78716C',
+                    border: '1px solid #D6D3D1', padding: '8px 14px', cursor: 'pointer',
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

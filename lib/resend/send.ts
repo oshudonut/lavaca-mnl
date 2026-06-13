@@ -17,7 +17,7 @@ export async function sendEmail({
   orderId,
   templateId,
 }: SendEmailOptions): Promise<{ success: boolean; error?: string }> {
-  const from = process.env.RESEND_FROM_EMAIL ?? 'orders@lavacamnl.com'
+  const from = process.env.RESEND_FROM_EMAIL ?? 'onboarding@resend.dev'
 
   async function attempt(): Promise<{ success: boolean; error?: string }> {
     try {

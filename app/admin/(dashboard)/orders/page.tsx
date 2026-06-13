@@ -1,10 +1,14 @@
 import { createServiceClient } from '@/lib/supabase/service'
+import { expireStaleOrders } from '@/lib/orders/expire'
 import { OrdersTable } from '@/components/admin/OrdersTable'
 import type { OrderTableRow } from '@/components/admin/OrdersTable'
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminOrdersPage() {
+  // Expire stale orders on every admin page load so the list stays current
+  await expireStaleOrders()
+
   const supabase = createServiceClient()
 
   const { data: rows } = await supabase
