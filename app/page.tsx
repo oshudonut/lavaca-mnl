@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { LogoIntro } from '@/components/LogoIntro'
 
 const PRODUCTS = [
   {
@@ -125,6 +126,7 @@ export default function HomePage() {
 
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", color: '#0C0A09' }}>
+      <LogoIntro />
 
       {/* ── NAV ── */}
       <nav className="lv-nav">

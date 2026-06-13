@@ -32,6 +32,7 @@ export function AnnouncementEditor() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [focusedField, setFocusedField] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/admin/announcements')
@@ -76,49 +77,97 @@ export function AnnouncementEditor() {
     }
   }
 
+  const inputStyle = (field: string): React.CSSProperties => ({
+    width: '100%',
+    border: focusedField === field ? '1px solid #A16207' : '1px solid #D6D3D1',
+    background: '#FAFAF8',
+    padding: '9px 12px',
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 13,
+    color: '#1C1917',
+    outline: 'none',
+    boxSizing: 'border-box',
+    boxShadow: focusedField === field ? '0 0 0 2px #FEF3C7' : 'none',
+  })
+
   if (loading) {
     return (
-      <div className="space-y-3">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {[1, 2, 3].map(i => (
-          <div key={i} className="h-10 rounded-lg bg-muted/40 animate-pulse" />
+          <div key={i} style={{
+            height: 40,
+            background: '#F5F5F4',
+            animation: 'pulse 1.5s ease-in-out infinite',
+          }} />
         ))}
       </div>
     )
   }
 
+  const labelStyle: React.CSSProperties = {
+    display: 'block',
+    fontFamily: "'Jost', sans-serif",
+    fontSize: 9,
+    fontWeight: 600,
+    letterSpacing: '0.18em',
+    textTransform: 'uppercase',
+    color: '#78716C',
+    marginBottom: 8,
+  }
+
   return (
-    <div className="space-y-5">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Active toggle */}
       <div>
-        <label className="block text-sm font-medium text-foreground mb-2">
-          Announcement status
-        </label>
-        <div className="flex gap-2">
+        <label style={labelStyle}>Announcement status</label>
+        <div style={{ display: 'flex', gap: 8 }}>
           <button
             type="button"
             onClick={() => set('is_active', false)}
-            className={`flex-1 rounded-lg border py-2.5 text-sm font-medium transition-colors ${
-              !form.is_active
-                ? 'border-primary bg-primary/10 text-primary'
-                : 'border-border bg-background text-muted-foreground hover:bg-muted'
-            }`}
+            style={{
+              flex: 1,
+              border: !form.is_active ? '1px solid #D6D3D1' : '1px solid #E7E5E4',
+              background: !form.is_active ? '#1C1917' : '#FAFAF8',
+              color: !form.is_active ? '#FAFAF8' : '#78716C',
+              padding: '10px 0',
+              fontFamily: "'Jost', sans-serif",
+              fontSize: 12,
+              fontWeight: 600,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              cursor: 'pointer',
+            }}
           >
             Inactive
           </button>
           <button
             type="button"
             onClick={() => set('is_active', true)}
-            className={`flex-1 rounded-lg border py-2.5 text-sm font-medium transition-colors ${
-              form.is_active
-                ? 'border-amber-500 bg-amber-50 text-amber-700'
-                : 'border-border bg-background text-muted-foreground hover:bg-muted'
-            }`}
+            style={{
+              flex: 1,
+              border: form.is_active ? '1px solid #A16207' : '1px solid #E7E5E4',
+              background: form.is_active ? '#A16207' : '#FAFAF8',
+              color: form.is_active ? '#FFFFFF' : '#78716C',
+              padding: '10px 0',
+              fontFamily: "'Jost', sans-serif",
+              fontSize: 12,
+              fontWeight: 600,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              cursor: 'pointer',
+            }}
           >
             Active
           </button>
         </div>
         {form.is_active && (
-          <p className="mt-2 text-xs text-amber-600">
+          <p style={{
+            fontFamily: "'Jost', sans-serif",
+            fontSize: 11,
+            color: '#92400E',
+            margin: '8px 0 0',
+            lineHeight: 1.5,
+          }}>
             When active, the order page shows the closure banner instead of the availability calendar.
           </p>
         )}
@@ -126,71 +175,111 @@ export function AnnouncementEditor() {
 
       {/* Message */}
       <div>
-        <label className="block text-sm font-medium text-foreground mb-1.5">
-          Banner message
-        </label>
+        <label style={labelStyle}>Banner message</label>
         <textarea
           rows={3}
           value={form.message}
           onChange={e => set('message', e.target.value)}
+          onFocus={() => setFocusedField('message')}
+          onBlur={() => setFocusedField(null)}
           placeholder="e.g. We are currently taking a short break from deliveries."
-          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+          style={{ ...inputStyle('message'), resize: 'none' }}
         />
-        <p className="mt-1 text-xs text-muted-foreground">
+        <p style={{ fontFamily: "'Jost', sans-serif", fontSize: 11, color: '#A8A29E', margin: '6px 0 0', lineHeight: 1.5 }}>
           Shown at the top of the banner. Leave blank to show the resume/return message only.
         </p>
       </div>
 
       {/* Dates */}
-      <div className="grid grid-cols-2 gap-4">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1.5">
-            Closed from
-          </label>
+          <label style={labelStyle}>Closed from</label>
           <input
             type="date"
             value={form.closed_from}
             onChange={e => set('closed_from', e.target.value)}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            onFocus={() => setFocusedField('closed_from')}
+            onBlur={() => setFocusedField(null)}
+            style={inputStyle('closed_from')}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1.5">
-            Resumes on <span className="text-muted-foreground font-normal">(optional)</span>
+          <label style={labelStyle}>
+            Resumes on{' '}
+            <span style={{ color: '#A8A29E', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>optional</span>
           </label>
           <input
             type="date"
             value={form.closed_until}
             onChange={e => set('closed_until', e.target.value)}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            onFocus={() => setFocusedField('closed_until')}
+            onBlur={() => setFocusedField(null)}
+            style={inputStyle('closed_until')}
           />
-          <p className="mt-1 text-xs text-muted-foreground">
-            Leave blank to show "We will announce our return on Facebook."
+          <p style={{ fontFamily: "'Jost', sans-serif", fontSize: 11, color: '#A8A29E', margin: '6px 0 0', lineHeight: 1.5 }}>
+            Leave blank to show &ldquo;We will announce our return on Facebook.&rdquo;
           </p>
         </div>
       </div>
 
       {/* Preview */}
       {form.is_active && (
-        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm">
-          <p className="text-xs font-semibold uppercase tracking-wide text-amber-700 mb-2">Banner preview</p>
+        <div style={{
+          border: '1px solid #FDE68A',
+          background: '#FFFBEB',
+          padding: '14px 16px',
+        }}>
+          <p style={{
+            fontFamily: "'Jost', sans-serif",
+            fontSize: 9,
+            fontWeight: 600,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: '#92400E',
+            margin: '0 0 8px',
+          }}>
+            Banner preview
+          </p>
           {form.message && (
-            <p className="text-amber-900 font-semibold mb-1">{form.message}</p>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, color: '#78350F', margin: '0 0 4px' }}>
+              {form.message}
+            </p>
           )}
-          <p className="text-amber-800">
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#92400E', margin: '0 0 4px' }}>
             {form.closed_until
               ? `Lavaca MNL will resume accepting deliveries on ${new Date(form.closed_until + 'T00:00:00').toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}.`
               : 'We will announce our return on our Facebook page.'}
           </p>
-          <p className="text-amber-700 text-xs mt-1">For inquiries, message us on Messenger.</p>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: '#A16207', margin: 0 }}>
+            For inquiries, message us on Messenger.
+          </p>
         </div>
       )}
 
       {error && (
-        <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
+        <p style={{
+          border: '1px solid #FECACA',
+          background: '#FEF2F2',
+          padding: '10px 14px',
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 13,
+          color: '#B91C1C',
+          margin: 0,
+        }}>
+          {error}
+        </p>
       )}
+
       {success && (
-        <p className="rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-sm text-green-700">
+        <p style={{
+          border: '1px solid #BBF7D0',
+          background: '#F0FDF4',
+          padding: '10px 14px',
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 13,
+          color: '#15803D',
+          margin: 0,
+        }}>
           Announcement saved.
         </p>
       )}
@@ -198,7 +287,19 @@ export function AnnouncementEditor() {
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition-opacity disabled:opacity-60 hover:opacity-90"
+        style={{
+          width: '100%',
+          background: saving ? '#D6D3D1' : '#1C1917',
+          color: '#FAFAF8',
+          border: 'none',
+          padding: '12px 0',
+          fontFamily: "'Jost', sans-serif",
+          fontSize: 11,
+          fontWeight: 600,
+          letterSpacing: '0.18em',
+          textTransform: 'uppercase',
+          cursor: saving ? 'not-allowed' : 'pointer',
+        }}
       >
         {saving ? 'Saving...' : 'Save announcement'}
       </button>
