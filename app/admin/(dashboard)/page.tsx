@@ -35,7 +35,6 @@ async function getDashboardStats() {
   const in14Days = addDays(today, 14)
   const startOfMonth = manilaStartOfMonth()
 
-  // Slot IDs for today
   const { data: todayDateRows } = await supabase
     .from('delivery_dates')
     .select('id')
@@ -49,7 +48,6 @@ async function getDashboardStats() {
 
   const todaySlotIds = (todaySlotRows ?? []).map((r) => r.id)
 
-  // Slot IDs for next 7 days
   const { data: weekDateRows } = await supabase
     .from('delivery_dates')
     .select('id')
@@ -64,7 +62,6 @@ async function getDashboardStats() {
 
   const weekSlotIds = (weekSlotRows ?? []).map((r) => r.id)
 
-  // 1. Today's pending payments
   const { count: pendingPaymentsCount } = todaySlotIds.length
     ? await supabase
         .from('orders')
@@ -73,7 +70,6 @@ async function getDashboardStats() {
         .in('delivery_slot_id', todaySlotIds)
     : { count: 0 }
 
-  // 2. This week's confirmed deliveries
   const { count: weekConfirmedCount } = weekSlotIds.length
     ? await supabase
         .from('orders')
@@ -82,13 +78,11 @@ async function getDashboardStats() {
         .in('delivery_slot_id', weekSlotIds)
     : { count: 0 }
 
-  // 3. Total active orders
   const { count: activeOrdersCount } = await supabase
     .from('orders')
     .select('*', { count: 'exact', head: true })
     .not('status', 'in', '("DELIVERED","CANCELLED","EXPIRED")')
 
-  // 4. Revenue this month (CONFIRMED orders)
   const { data: revenueRows } = await supabase
     .from('orders')
     .select('total_amount')
@@ -100,7 +94,6 @@ async function getDashboardStats() {
     0
   )
 
-  // 5. Capacity utilisation next 14 days
   const { data: capacityDates } = await supabase
     .from('delivery_dates')
     .select('date, max_orders_total, delivery_slots(slot_window, max_orders, booked_count)')
@@ -124,14 +117,38 @@ type CapacityDate = {
 }
 
 // ---------------------------------------------------------------------------
-// Stat card component
+// Stat card
 // ---------------------------------------------------------------------------
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</p>
-      <p className="mt-2 text-3xl font-bold text-foreground tabular-nums">{value}</p>
+    <div style={{
+      background: '#FFFFFF',
+      border: '1px solid #D6D3D1',
+      padding: '24px 22px',
+    }}>
+      <p style={{
+        fontFamily: "'Jost', sans-serif",
+        fontSize: 9,
+        fontWeight: 400,
+        letterSpacing: '0.24em',
+        textTransform: 'uppercase',
+        color: '#A16207',
+        margin: '0 0 12px',
+      }}>
+        {label}
+      </p>
+      <p style={{
+        fontFamily: "'Playfair Display SC', serif",
+        fontSize: 32,
+        fontWeight: 400,
+        color: '#1C1917',
+        margin: 0,
+        lineHeight: 1,
+        letterSpacing: '-0.01em',
+      }}>
+        {value}
+      </p>
     </div>
   )
 }
@@ -144,44 +161,94 @@ export default async function AdminDashboard() {
   const stats = await getDashboardStats()
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Operations overview</p>
+    <div>
+      {/* Page heading */}
+      <div style={{ marginBottom: 40 }}>
+        <p style={{
+          fontFamily: "'Jost', sans-serif",
+          fontSize: 9,
+          fontWeight: 400,
+          letterSpacing: '0.28em',
+          textTransform: 'uppercase',
+          color: '#A16207',
+          margin: '0 0 10px',
+        }}>
+          Operations
+        </p>
+        <h1 style={{
+          fontFamily: "'Playfair Display SC', serif",
+          fontSize: 28,
+          fontWeight: 400,
+          color: '#1C1917',
+          margin: 0,
+          letterSpacing: '0.01em',
+        }}>
+          Dashboard
+        </h1>
       </div>
 
-      {/* Top 4 stat cards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard
-          label="Pending payments today"
-          value={stats.pendingPaymentsCount}
-        />
-        <StatCard
-          label="Confirmed this week"
-          value={stats.weekConfirmedCount}
-        />
-        <StatCard
-          label="Active orders"
-          value={stats.activeOrdersCount}
-        />
-        <StatCard
-          label="Revenue this month"
-          value={fmt(stats.revenueThisMonth)}
-        />
+      {/* Stat cards */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gap: 1,
+        marginBottom: 40,
+        background: '#D6D3D1',
+        border: '1px solid #D6D3D1',
+      }}>
+        <StatCard label="Pending payments today"  value={stats.pendingPaymentsCount} />
+        <StatCard label="Confirmed this week"      value={stats.weekConfirmedCount} />
+        <StatCard label="Active orders"            value={stats.activeOrdersCount} />
+        <StatCard label="Revenue this month"       value={fmt(stats.revenueThisMonth)} />
       </div>
 
-      {/* Capacity utilisation next 14 days */}
-      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-border">
-          <h2 className="font-semibold text-foreground">Capacity — next 14 days</h2>
+      {/* Capacity — next 14 days */}
+      <div style={{
+        background: '#FFFFFF',
+        border: '1px solid #D6D3D1',
+        overflow: 'hidden',
+      }}>
+        {/* Section header */}
+        <div style={{
+          padding: '20px 24px',
+          borderBottom: '1px solid #D6D3D1',
+          display: 'flex',
+          alignItems: 'baseline',
+          gap: 16,
+        }}>
+          <h2 style={{
+            fontFamily: "'Playfair Display SC', serif",
+            fontSize: 16,
+            fontWeight: 400,
+            color: '#1C1917',
+            margin: 0,
+          }}>
+            Capacity
+          </h2>
+          <span style={{
+            fontFamily: "'Jost', sans-serif",
+            fontSize: 9,
+            letterSpacing: '0.22em',
+            textTransform: 'uppercase',
+            color: '#8C7B6B',
+          }}>
+            Next 14 days
+          </span>
         </div>
+
         {stats.capacityDates.length === 0 ? (
-          <p className="px-5 py-6 text-sm text-muted-foreground">
+          <p style={{
+            padding: '32px 24px',
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 13,
+            color: '#8C7B6B',
+            margin: 0,
+          }}>
             No delivery dates configured for the next 14 days.
           </p>
         ) : (
-          <div className="divide-y divide-border">
-            {stats.capacityDates.map((row) => {
+          <div>
+            {stats.capacityDates.map((row, i) => {
               const dateLabel = new Date(`${row.date}T00:00:00+08:00`).toLocaleDateString('en-PH', {
                 weekday: 'short',
                 month: 'short',
@@ -192,35 +259,73 @@ export default async function AdminDashboard() {
               const pct = row.max_orders_total > 0
                 ? Math.round((totalBooked / row.max_orders_total) * 100)
                 : 0
+              const barColor = pct >= 100 ? '#DC2626' : pct >= 75 ? '#D97706' : '#16A34A'
 
               return (
-                <div key={row.date} className="flex items-center gap-4 px-5 py-3">
-                  <span className="w-28 shrink-0 text-sm font-medium text-foreground">
+                <div
+                  key={row.date}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 16,
+                    padding: '14px 24px',
+                    borderTop: i === 0 ? 'none' : '1px solid #F5F4F2',
+                  }}
+                >
+                  {/* Date */}
+                  <span style={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: '#1C1917',
+                    width: 108,
+                    flexShrink: 0,
+                  }}>
                     {dateLabel}
                   </span>
 
-                  {/* Per-slot breakdown */}
-                  <div className="flex gap-3 text-xs text-muted-foreground">
+                  {/* Slot breakdown */}
+                  <div style={{ display: 'flex', gap: 12, flexShrink: 0 }}>
                     {row.delivery_slots
                       .sort((a, b) => (a.slot_window < b.slot_window ? -1 : 1))
                       .map((sl) => (
-                        <span key={sl.slot_window}>
-                          {sl.slot_window}: {sl.booked_count}/{sl.max_orders}
+                        <span
+                          key={sl.slot_window}
+                          style={{
+                            fontFamily: "'Jost', sans-serif",
+                            fontSize: 10,
+                            letterSpacing: '0.1em',
+                            color: '#8C7B6B',
+                          }}
+                        >
+                          {sl.slot_window} {sl.booked_count}/{sl.max_orders}
                         </span>
                       ))}
                   </div>
 
                   {/* Progress bar */}
-                  <div className="flex-1 flex items-center gap-2">
-                    <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all ${
-                          pct >= 100 ? 'bg-destructive' : pct >= 75 ? 'bg-amber-500' : 'bg-green-500'
-                        }`}
-                        style={{ width: `${Math.min(pct, 100)}%` }}
-                      />
+                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{
+                      flex: 1,
+                      height: 3,
+                      background: '#EDE9E8',
+                      overflow: 'hidden',
+                    }}>
+                      <div style={{
+                        height: '100%',
+                        width: `${Math.min(pct, 100)}%`,
+                        background: barColor,
+                        transition: 'width 0.3s',
+                      }} />
                     </div>
-                    <span className="text-xs tabular-nums text-muted-foreground w-10 text-right">
+                    <span style={{
+                      fontFamily: "'Inter', sans-serif",
+                      fontSize: 11,
+                      color: '#8C7B6B',
+                      width: 32,
+                      textAlign: 'right',
+                      flexShrink: 0,
+                    }}>
                       {pct}%
                     </span>
                   </div>

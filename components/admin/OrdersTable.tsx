@@ -2,17 +2,18 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { cn } from '@/lib/utils'
 
-const STATUS_STYLES: Record<string, string> = {
-  PENDING_PAYMENT: 'bg-yellow-100 text-yellow-800',
-  PAYMENT_REVIEW:  'bg-blue-100 text-blue-800',
-  CONFIRMED:       'bg-green-100 text-green-800',
-  AWAITING_PICKUP: 'bg-purple-100 text-purple-800',
-  OUT_FOR_DELIVERY:'bg-indigo-100 text-indigo-800',
-  DELIVERED:       'bg-gray-100 text-gray-600',
-  CANCELLED:       'bg-red-100 text-red-700',
-  EXPIRED:         'bg-gray-100 text-gray-500',
+type StatusStyle = { bg: string; color: string }
+
+const STATUS_STYLES: Record<string, StatusStyle> = {
+  PENDING_PAYMENT:  { bg: '#FEF3C7', color: '#92400E' },
+  PAYMENT_REVIEW:   { bg: '#DBEAFE', color: '#1E40AF' },
+  CONFIRMED:        { bg: '#D1FAE5', color: '#065F46' },
+  AWAITING_PICKUP:  { bg: '#EDE9FE', color: '#5B21B6' },
+  OUT_FOR_DELIVERY: { bg: '#E0E7FF', color: '#3730A3' },
+  DELIVERED:        { bg: '#F3F4F6', color: '#4B5563' },
+  CANCELLED:        { bg: '#FEE2E2', color: '#B91C1C' },
+  EXPIRED:          { bg: '#F3F4F6', color: '#6B7280' },
 }
 
 const ALL_STATUSES = Object.keys(STATUS_STYLES)
@@ -39,6 +40,7 @@ interface Props {
 export function OrdersTable({ orders }: Props) {
   const [statusFilter, setStatusFilter] = useState('ALL')
   const [search, setSearch] = useState('')
+  const [focusedField, setFocusedField] = useState<string | null>(null)
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
@@ -49,72 +51,195 @@ export function OrdersTable({ orders }: Props) {
     })
   }, [orders, statusFilter, search])
 
+  const inputBase: React.CSSProperties = {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 13,
+    color: '#1C1917',
+    background: '#FFFFFF',
+    border: '1px solid #D6D3D1',
+    padding: '9px 12px',
+    outline: 'none',
+    borderRadius: 0,
+    transition: 'border-color 0.2s',
+  }
+
   return (
-    <div className="space-y-4">
+    <div>
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginBottom: 20 }}>
         <input
           type="text"
           placeholder="Search order # or customer…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="rounded-md border border-input bg-background px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring w-56"
+          onFocus={() => setFocusedField('search')}
+          onBlur={() => setFocusedField(null)}
+          style={{
+            ...inputBase,
+            borderColor: focusedField === 'search' ? '#A16207' : '#D6D3D1',
+            width: 220,
+          }}
         />
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-md border border-input bg-background px-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          onFocus={() => setFocusedField('status')}
+          onBlur={() => setFocusedField(null)}
+          style={{
+            ...inputBase,
+            borderColor: focusedField === 'status' ? '#A16207' : '#D6D3D1',
+            cursor: 'pointer',
+          }}
         >
           <option value="ALL">All statuses</option>
           {ALL_STATUSES.map((s) => (
             <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
           ))}
         </select>
-        <span className="text-sm text-muted-foreground">{filtered.length} order{filtered.length !== 1 ? 's' : ''}</span>
+        <span style={{
+          fontFamily: "'Jost', sans-serif",
+          fontSize: 10,
+          letterSpacing: '0.16em',
+          textTransform: 'uppercase',
+          color: '#8C7B6B',
+        }}>
+          {filtered.length} order{filtered.length !== 1 ? 's' : ''}
+        </span>
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
+      <div style={{
+        background: '#FFFFFF',
+        border: '1px solid #D6D3D1',
+        overflow: 'hidden',
+      }}>
         {filtered.length === 0 ? (
-          <p className="px-5 py-8 text-sm text-muted-foreground text-center">No orders found.</p>
+          <p style={{
+            padding: '40px 24px',
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 13,
+            color: '#8C7B6B',
+            textAlign: 'center',
+            margin: 0,
+          }}>
+            No orders found.
+          </p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
-                <tr className="border-b border-border bg-muted/40">
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Order #</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Customer</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Items</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Delivery</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Status</th>
-                  <th className="px-4 py-3 text-right font-medium text-muted-foreground">Total</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Placed</th>
+                <tr style={{ borderBottom: '1px solid #D6D3D1', background: '#F5F4F2' }}>
+                  {['Order #', 'Customer', 'Items', 'Delivery', 'Status', 'Total', 'Placed'].map((col, i) => (
+                    <th
+                      key={col}
+                      style={{
+                        padding: '12px 16px',
+                        fontFamily: "'Jost', sans-serif",
+                        fontSize: 9,
+                        fontWeight: 400,
+                        letterSpacing: '0.2em',
+                        textTransform: 'uppercase',
+                        color: '#8C7B6B',
+                        textAlign: i === 5 ? 'right' : 'left',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {col}
+                    </th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
-                {filtered.map((order) => (
-                  <tr key={order.id} className="hover:bg-muted/20 transition-colors">
-                    <td className="px-4 py-3">
-                      <Link href={`/admin/orders/${order.id}`} className="font-medium text-primary hover:underline">
-                        {order.order_number}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-foreground">{order.customer_name}</td>
-                    <td className="px-4 py-3 text-muted-foreground max-w-[180px] truncate">{order.items_summary}</td>
-                    <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
-                      {order.delivery_date} · {order.slot_window}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium', STATUS_STYLES[order.status] ?? 'bg-gray-100 text-gray-600')}>
-                        {order.status.replace(/_/g, ' ')}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right tabular-nums font-medium">{fmt(order.total_amount)}</td>
-                    <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
-                      {new Date(order.created_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', timeZone: 'Asia/Manila' })}
-                    </td>
-                  </tr>
-                ))}
+              <tbody>
+                {filtered.map((order, i) => {
+                  const statusStyle = STATUS_STYLES[order.status] ?? { bg: '#F3F4F6', color: '#6B7280' }
+                  return (
+                    <tr
+                      key={order.id}
+                      style={{
+                        borderTop: i === 0 ? 'none' : '1px solid #F5F4F2',
+                      }}
+                    >
+                      <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
+                        <Link
+                          href={`/admin/orders/${order.id}`}
+                          style={{
+                            fontFamily: "'Inter', sans-serif",
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: '#A16207',
+                            textDecoration: 'none',
+                          }}
+                        >
+                          {order.order_number}
+                        </Link>
+                      </td>
+                      <td style={{
+                        padding: '14px 16px',
+                        fontFamily: "'Inter', sans-serif",
+                        color: '#1C1917',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {order.customer_name}
+                      </td>
+                      <td style={{
+                        padding: '14px 16px',
+                        fontFamily: "'Inter', sans-serif",
+                        color: '#57534E',
+                        maxWidth: 180,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {order.items_summary}
+                      </td>
+                      <td style={{
+                        padding: '14px 16px',
+                        fontFamily: "'Inter', sans-serif",
+                        color: '#57534E',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {order.delivery_date} · {order.slot_window}
+                      </td>
+                      <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
+                        <span style={{
+                          fontFamily: "'Jost', sans-serif",
+                          fontSize: 9,
+                          fontWeight: 500,
+                          letterSpacing: '0.16em',
+                          textTransform: 'uppercase',
+                          background: statusStyle.bg,
+                          color: statusStyle.color,
+                          padding: '3px 8px',
+                        }}>
+                          {order.status.replace(/_/g, ' ')}
+                        </span>
+                      </td>
+                      <td style={{
+                        padding: '14px 16px',
+                        fontFamily: "'Inter', sans-serif",
+                        fontWeight: 600,
+                        color: '#1C1917',
+                        textAlign: 'right',
+                        whiteSpace: 'nowrap',
+                        fontVariantNumeric: 'tabular-nums',
+                      }}>
+                        {fmt(order.total_amount)}
+                      </td>
+                      <td style={{
+                        padding: '14px 16px',
+                        fontFamily: "'Inter', sans-serif",
+                        color: '#57534E',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {new Date(order.created_at).toLocaleDateString('en-PH', {
+                          month: 'short',
+                          day: 'numeric',
+                          timeZone: 'Asia/Manila',
+                        })}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
