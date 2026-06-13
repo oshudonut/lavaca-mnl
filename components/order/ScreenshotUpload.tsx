@@ -2,7 +2,6 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'application/pdf']
 const MAX_SIZE_BYTES = 5 * 1024 * 1024  // 5 MB
@@ -19,6 +18,7 @@ export function ScreenshotUpload({ orderId }: Props) {
   const [fileError, setFileError] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [hovered, setHovered] = useState(false)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFileError(null)
@@ -80,42 +80,133 @@ export function ScreenshotUpload({ orderId }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <div
-          className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-muted/30 px-6 py-8 cursor-pointer hover:border-primary/50 transition-colors"
-          onClick={() => inputRef.current?.click()}
-        >
-          {file ? (
-            <>
-              <p className="text-sm font-medium text-foreground">{file.name}</p>
-              <p className="text-xs text-muted-foreground">
-                {(file.size / 1024).toFixed(0)} KB · Click to change
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="text-sm text-muted-foreground">Click to select your screenshot</p>
-              <p className="text-xs text-muted-foreground">JPEG, PNG, or PDF · max 5 MB</p>
-            </>
-          )}
-        </div>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/jpeg,image/png,application/pdf"
-          onChange={handleFileChange}
-          className="sr-only"
-          aria-label="Payment screenshot"
-        />
-        {fileError && <p className="text-xs text-destructive">{fileError}</p>}
+    <form onSubmit={handleSubmit}>
+      <div
+        onClick={() => inputRef.current?.click()}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+          border: hovered ? '1.5px dashed #A16207' : '1.5px dashed #D6D3D1',
+          background: '#FAFAF9',
+          padding: '40px 24px',
+          cursor: 'pointer',
+          transition: 'border-color 0.2s',
+        }}
+      >
+        {file ? (
+          <>
+            <p
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 13,
+                fontWeight: 700,
+                color: '#1C1917',
+                margin: 0,
+              }}
+            >
+              {file.name}
+            </p>
+            <p
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 11,
+                color: '#8C7B6B',
+                margin: 0,
+              }}
+            >
+              {(file.size / 1024).toFixed(0)} KB · Tap to change
+            </p>
+          </>
+        ) : (
+          <>
+            <p
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 13,
+                color: '#8C7B6B',
+                margin: 0,
+              }}
+            >
+              Click to select your screenshot
+            </p>
+            <p
+              style={{
+                fontFamily: "'Jost', sans-serif",
+                fontSize: 9,
+                letterSpacing: '0.28em',
+                textTransform: 'uppercase',
+                color: '#A8A29E',
+                margin: 0,
+              }}
+            >
+              JPEG · PNG · PDF · MAX 5 MB
+            </p>
+          </>
+        )}
       </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/jpeg,image/png,application/pdf"
+        onChange={handleFileChange}
+        style={{ display: 'none' }}
+        aria-label="Payment screenshot"
+      />
+      {fileError && (
+        <p
+          style={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 11,
+            color: '#DC2626',
+            marginTop: 8,
+            marginBottom: 0,
+          }}
+        >
+          {fileError}
+        </p>
+      )}
 
-      {uploadError && <p className="text-sm text-destructive text-center">{uploadError}</p>}
+      {uploadError && (
+        <p
+          style={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 12,
+            color: '#DC2626',
+            textAlign: 'center',
+            marginTop: 12,
+            marginBottom: 0,
+          }}
+        >
+          {uploadError}
+        </p>
+      )}
 
-      <Button type="submit" disabled={isUploading || !file} className="w-full">
+      <button
+        type="submit"
+        disabled={isUploading || !file}
+        style={{
+          width: '100%',
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 11,
+          fontWeight: 600,
+          letterSpacing: '0.22em',
+          textTransform: 'uppercase',
+          background: isUploading || !file ? '#D6D3D1' : '#A16207',
+          color: isUploading || !file ? '#8C7B6B' : '#FFFFFF',
+          border: 'none',
+          padding: '18px 0',
+          cursor: isUploading || !file ? 'not-allowed' : 'pointer',
+          transition: 'background 0.2s',
+          marginTop: 16,
+        }}
+      >
         {isUploading ? 'Uploading…' : 'Submit Payment Screenshot'}
-      </Button>
+      </button>
     </form>
   )
 }

@@ -38,50 +38,133 @@ export default async function PaymentPage({ searchParams }: Props) {
       })
     : '—'
 
+  const cardStyle: React.CSSProperties = {
+    background: '#FFFFFF',
+    border: '1px solid #D6D3D1',
+    padding: 28,
+  }
+
+  const sectionLabelStyle: React.CSSProperties = {
+    fontFamily: "'Jost', sans-serif",
+    fontSize: 9,
+    letterSpacing: '0.28em',
+    textTransform: 'uppercase',
+    color: '#A16207',
+    margin: 0,
+  }
+
   return (
-    <main className="min-h-screen bg-background">
-      <div className="mx-auto max-w-lg px-4 py-10 space-y-8">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Send Your Payment</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Order <span className="font-medium text-foreground">{order.order_number}</span>
-          </p>
-        </div>
+    <main style={{ background: '#FAFAF9', minHeight: '100vh' }}>
+      {/* Dark hero header */}
+      <header style={{ background: '#0C0A09', padding: '48px 24px 44px', textAlign: 'center' }}>
+        <div style={{ width: 36, height: 1, background: '#A16207', margin: '0 auto 18px' }} />
+        <p style={sectionLabelStyle}>Send Your Payment</p>
+        <h1
+          style={{
+            fontFamily: "'Playfair Display SC', serif",
+            fontSize: 32,
+            fontWeight: 400,
+            color: '#FAFAF9',
+            whiteSpace: 'pre-line',
+            lineHeight: 1.25,
+            margin: '14px 0 10px',
+          }}
+        >
+          {`Order\n${order.order_number}`}
+        </h1>
+        <p
+          style={{
+            fontFamily: "'Inter', sans-serif",
+            fontWeight: 300,
+            fontSize: 12,
+            color: 'rgba(250,250,249,0.5)',
+            margin: 0,
+          }}
+        >
+          Complete your payment to confirm your order.
+        </p>
+      </header>
 
-        {/* Countdown */}
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
-          <CountdownTimer createdAt={order.created_at} />
-        </div>
+      {/* Countdown strip */}
+      <div
+        style={{
+          background: '#1C1917',
+          padding: '14px 24px',
+          textAlign: 'center',
+          borderBottom: '1px solid rgba(161,98,7,0.15)',
+        }}
+      >
+        <CountdownTimer createdAt={order.created_at} />
+      </div>
 
+      {/* Content */}
+      <div
+        style={{
+          maxWidth: 540,
+          margin: '0 auto',
+          padding: '40px 24px 80px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 32,
+        }}
+      >
         {/* Order summary */}
-        <section className="rounded-lg border border-border bg-card p-4 space-y-3">
-          <h2 className="font-semibold text-foreground text-sm">Order Summary</h2>
-          <div className="space-y-1.5">
+        <section style={cardStyle}>
+          <p style={{ ...sectionLabelStyle, marginBottom: 18 }}>Order Summary</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {order.items.map((item, i) => (
-              <div key={i} className="flex justify-between text-sm">
-                <span className="text-muted-foreground">
+              <div
+                key={i}
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}
+              >
+                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#1C1917' }}>
                   {item.product_name} · {item.weight_label} × {item.quantity}
                 </span>
-                <span className="font-medium tabular-nums">{fmt(item.subtotal)}</span>
+                <span
+                  style={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: 13,
+                    color: '#1C1917',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
+                  {fmt(item.subtotal)}
+                </span>
               </div>
             ))}
           </div>
-          <div className="flex justify-between text-sm font-semibold border-t border-border pt-2">
-            <span>Total</span>
-            <span className="tabular-nums">{fmt(order.total_amount)}</span>
+          <div style={{ borderTop: '1px solid #D6D3D1', margin: '16px 0 14px' }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+            <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, fontWeight: 700, color: '#1C1917' }}>
+              Total
+            </span>
+            <span
+              style={{
+                fontFamily: "'Playfair Display', serif",
+                fontSize: 16,
+                fontWeight: 700,
+                color: '#A16207',
+                fontVariantNumeric: 'tabular-nums',
+              }}
+            >
+              {fmt(order.total_amount)}
+            </span>
           </div>
-          <div className="text-xs text-muted-foreground pt-1 space-y-0.5">
-            <p><span className="font-medium">Delivery:</span> {deliveryDateLabel}</p>
-            <p><span className="font-medium">Time:</span> {WINDOW_LABELS[order.slot_window]}</p>
+          <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: '#57534E', margin: 0 }}>
+              Delivery: {deliveryDateLabel}
+            </p>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: '#57534E', margin: 0 }}>
+              Time: {WINDOW_LABELS[order.slot_window]}
+            </p>
           </div>
         </section>
 
-        {/* Payment instructions */}
-        <section className="space-y-3">
-          <h2 className="font-semibold text-foreground">Payment Details</h2>
-          <p className="text-sm text-muted-foreground">
-            Send the exact amount shown above and take a screenshot of the confirmation.
+        {/* Payment details */}
+        <section style={cardStyle}>
+          <p style={{ ...sectionLabelStyle, marginBottom: 10 }}>Payment Details</p>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#57534E', margin: '0 0 20px' }}>
+            Send the exact amount shown above and take a screenshot of your confirmation.
           </p>
           <PaymentInstructions
             defaultMethod={order.payment_method}
@@ -95,11 +178,8 @@ export default async function PaymentPage({ searchParams }: Props) {
         </section>
 
         {/* Screenshot upload */}
-        <section className="space-y-3">
-          <h2 className="font-semibold text-foreground">Upload Screenshot</h2>
-          <p className="text-sm text-muted-foreground">
-            Upload your payment screenshot to complete your order.
-          </p>
+        <section style={cardStyle}>
+          <p style={{ ...sectionLabelStyle, marginBottom: 18 }}>Upload Screenshot</p>
           <ScreenshotUpload orderId={orderId} />
         </section>
       </div>

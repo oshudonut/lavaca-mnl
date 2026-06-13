@@ -31,10 +31,26 @@ export function CountdownTimer({ createdAt, expiryHours = 2 }: Props) {
   const isExpired = remaining <= 0
 
   return (
-    <p className={`text-sm ${isExpired ? 'text-destructive' : 'text-muted-foreground'}`}>
-      {isExpired
-        ? 'Your order has expired.'
-        : `Your order will expire in ${formatDuration(remaining)}.`}
+    <p
+      style={{
+        fontFamily: "'Inter', sans-serif",
+        fontSize: 13,
+        fontWeight: 300,
+        letterSpacing: '0.02em',
+        color: isExpired ? '#DC2626' : 'rgba(250,250,249,0.65)',
+        margin: 0,
+      }}
+    >
+      {isExpired ? (
+        'Your order has expired.'
+      ) : (
+        <>
+          Your order expires in{' '}
+          <span style={{ fontFamily: "'Playfair Display SC', serif", color: '#A16207', fontWeight: 400 }}>
+            {formatDuration(remaining)}
+          </span>
+        </>
+      )}
     </p>
   )
 }
