@@ -67,7 +67,8 @@ export function OrderActions({ orderId, status }: Props) {
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error ?? 'Something went wrong.'); return }
-      window.location.reload()
+      router.refresh()
+      setActiveAction(null)
     } catch {
       setError('Network error. Please try again.')
     } finally {
