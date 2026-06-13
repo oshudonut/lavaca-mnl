@@ -28,63 +28,32 @@ export function AdminNav() {
       background: '#5C1A1A',
       borderBottom: '1px solid rgba(212,149,74,0.15)',
     }}>
-      <div style={{ maxWidth: 1152, margin: '0 auto', padding: '0 24px' }}>
+      <div style={{ maxWidth: 1152, margin: '0 auto', padding: '0 20px' }}>
+
+        {/* Top row: brand + sign out */}
         <div style={{
           display: 'flex',
-          height: 56,
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: 16,
+          height: 44,
         }}>
+          <Link href="/admin" style={{ textDecoration: 'none' }}>
+            <span style={{
+              fontFamily: "'Playfair Display SC', serif",
+              fontSize: 14,
+              fontWeight: 400,
+              color: '#FAFAF9',
+              letterSpacing: '0.03em',
+            }}>
+              Lavaca MNL
+            </span>
+          </Link>
 
-          {/* Brand + nav */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 28, overflow: 'hidden' }}>
-            <Link href="/admin" style={{ textDecoration: 'none', flexShrink: 0 }}>
-              <span style={{
-                fontFamily: "'Playfair Display SC', serif",
-                fontSize: 15,
-                fontWeight: 400,
-                color: '#FAFAF9',
-                letterSpacing: '0.03em',
-              }}>
-                Lavaca MNL
-              </span>
-            </Link>
-
-            <nav style={{ display: 'flex', alignItems: 'center', gap: 0, overflowX: 'auto' }}>
-              {NAV_LINKS.map(({ href, label, exact }) => {
-                const isActive = exact ? pathname === href : pathname.startsWith(href)
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: 11,
-                      fontWeight: isActive ? 600 : 400,
-                      letterSpacing: '0.12em',
-                      textTransform: 'uppercase',
-                      color: isActive ? '#D4954A' : 'rgba(250,250,249,0.6)',
-                      textDecoration: 'none',
-                      padding: '6px 12px',
-                      borderBottom: isActive ? '1px solid #D4954A' : '1px solid transparent',
-                      transition: 'color 0.15s',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {label}
-                  </Link>
-                )
-              })}
-            </nav>
-          </div>
-
-          {/* Sign out */}
           <button
             onClick={handleSignOut}
             style={{
               fontFamily: "'Inter', sans-serif",
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: 400,
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
@@ -92,14 +61,50 @@ export function AdminNav() {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              padding: '6px 0',
-              flexShrink: 0,
+              padding: 0,
               transition: 'color 0.15s',
             }}
           >
             Sign Out
           </button>
         </div>
+
+        {/* Bottom row: nav links (scrollable) */}
+        <div style={{
+          display: 'flex',
+          overflowX: 'auto',
+          borderTop: '1px solid rgba(212,149,74,0.1)',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch',
+        } as React.CSSProperties}>
+          {NAV_LINKS.map(({ href, label, exact }) => {
+            const isActive = exact ? pathname === href : pathname.startsWith(href)
+            return (
+              <Link
+                key={href}
+                href={href}
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 10,
+                  fontWeight: isActive ? 600 : 400,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  color: isActive ? '#D4954A' : 'rgba(250,250,249,0.55)',
+                  textDecoration: 'none',
+                  padding: '10px 14px',
+                  borderBottom: isActive ? '2px solid #D4954A' : '2px solid transparent',
+                  transition: 'color 0.15s',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                }}
+              >
+                {label}
+              </Link>
+            )
+          })}
+        </div>
+
       </div>
     </header>
   )

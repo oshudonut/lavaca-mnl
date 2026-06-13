@@ -46,10 +46,29 @@ export default async function AdminOrdersPage() {
   })
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Orders</h1>
-        <p className="mt-1 text-sm text-muted-foreground">All customer orders</p>
+    <div>
+      <div style={{ marginBottom: 32 }}>
+        <p style={{
+          fontFamily: "'Jost', sans-serif",
+          fontSize: 9,
+          fontWeight: 400,
+          letterSpacing: '0.28em',
+          textTransform: 'uppercase',
+          color: '#A16207',
+          margin: '0 0 10px',
+        }}>
+          Operations
+        </p>
+        <h1 style={{
+          fontFamily: "'Playfair Display SC', serif",
+          fontSize: 28,
+          fontWeight: 400,
+          color: '#1C1917',
+          margin: 0,
+          letterSpacing: '0.01em',
+        }}>
+          Orders
+        </h1>
       </div>
       <OrdersTable orders={orders} />
     </div>
