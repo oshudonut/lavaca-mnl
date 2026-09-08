@@ -76,10 +76,20 @@ export function OrderPage({ products }: Props) {
 
   const selectedDateData = slotsData?.dates.find((d) => d.date === selectedDate) ?? null
 
+  const excludedCartProducts = selectedDateData
+    ? cart
+        .filter((item) => selectedDateData.unavailable_product_ids.includes(item.product_id))
+        .map((item) => products.find((p) => p.id === item.product_id))
+        .filter((p): p is NonNullable<typeof p> => Boolean(p))
+    : []
+
   const validate = (): Record<string, string> => {
     const errors: Record<string, string> = {}
     if (!cart.length) errors.cart = 'Please add at least one item.'
     if (!selectedDate) errors.date = 'Please select a delivery date.'
+    if (excludedCartProducts.length > 0) {
+      errors.date = `${excludedCartProducts.map((p) => `${p.name} (${p.weight_label})`).join(', ')} ${excludedCartProducts.length > 1 ? 'are' : 'is'} not available on the selected date.`
+    }
     if (!selectedWindow) errors.window = 'Please select a delivery time.'
     if (!customer.name.trim()) errors.name = 'Full name is required.'
     if (!customer.phone.trim()) errors.phone = 'Phone number is required.'
@@ -222,7 +232,16 @@ export function OrderPage({ products }: Props) {
                     onSelectDate={handleSelectDate}
                   />
                 )}
-                {formErrors.date && <p style={fieldErrorStyle}>{formErrors.date}</p>}
+                {excludedCartProducts.length > 0 && (
+                  <p style={fieldErrorStyle}>
+                    {excludedCartProducts.map((p) => `${p.name} (${p.weight_label})`).join(', ')}{' '}
+                    {excludedCartProducts.length > 1 ? 'are' : 'is'} not available on this date. Remove{' '}
+                    {excludedCartProducts.length > 1 ? 'them' : 'it'} or choose a different date.
+                  </p>
+                )}
+                {formErrors.date && excludedCartProducts.length === 0 && (
+                  <p style={fieldErrorStyle}>{formErrors.date}</p>
+                )}
               </>
             )}
           </section>
