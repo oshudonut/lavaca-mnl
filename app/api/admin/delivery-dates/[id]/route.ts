@@ -38,6 +38,7 @@ export async function PATCH(
     am_max,
     pm_enabled,
     pm_max,
+    unavailable_product_ids,
   } = body
 
   const updates: Record<string, unknown> = { is_open }
@@ -82,6 +83,16 @@ export async function PATCH(
       if (pm_enabled !== undefined) slotUpd.is_open = pm_enabled
       if (pm_max !== undefined) slotUpd.max_orders = pm_max
       await supabase.from('delivery_slots').update(slotUpd).eq('id', pmSlot.id)
+    }
+  }
+
+  // Sync product exclusions for this date, if provided
+  if (unavailable_product_ids !== undefined) {
+    await supabase.from('date_product_exclusions').delete().eq('delivery_date_id', params.id)
+    if (unavailable_product_ids.length > 0) {
+      await supabase.from('date_product_exclusions').insert(
+        unavailable_product_ids.map((product_id: string) => ({ delivery_date_id: params.id, product_id }))
+      )
     }
   }
 
@@ -132,10 +143,19 @@ export async function PATCH(
     .from('delivery_dates')
     .select(`
       id, date, is_open, max_orders_total, closure_reason, closure_type, cal_availability_event_id,
-      delivery_slots ( id, slot_window, max_orders, booked_count, is_open, window_start, window_end )
+      delivery_slots ( id, slot_window, max_orders, booked_count, is_open, window_start, window_end ),
+      date_product_exclusions ( product_id )
     `)
     .eq('id', params.id)
     .single()
 
-  return NextResponse.json(updated)
+  const responseBody = updated
+    ? {
+        ...updated,
+        unavailable_product_ids: ((updated as any).date_product_exclusions ?? []).map((e: any) => e.product_id),
+        date_product_exclusions: undefined,
+      }
+    : updated
+
+  return NextResponse.json(responseBody)
 }

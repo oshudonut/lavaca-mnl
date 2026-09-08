@@ -23,7 +23,8 @@ export async function GET(request: NextRequest) {
     .from('delivery_dates')
     .select(`
       id, date, is_open, max_orders_total, closure_reason, closure_type, cal_availability_event_id,
-      delivery_slots ( id, slot_window, max_orders, booked_count, is_open, window_start, window_end )
+      delivery_slots ( id, slot_window, max_orders, booked_count, is_open, window_start, window_end ),
+      date_product_exclusions ( product_id )
     `)
     .gte('date', from)
     .lte('date', to)
@@ -31,7 +32,13 @@ export async function GET(request: NextRequest) {
 
   if (error) return NextResponse.json({ error: 'Failed to fetch delivery dates' }, { status: 500 })
 
-  return NextResponse.json(data ?? [])
+  const rows = (data ?? []).map((row: any) => ({
+    ...row,
+    unavailable_product_ids: (row.date_product_exclusions ?? []).map((e: any) => e.product_id),
+    date_product_exclusions: undefined,
+  }))
+
+  return NextResponse.json(rows)
 }
 
 export async function POST(request: NextRequest) {
@@ -51,6 +58,7 @@ export async function POST(request: NextRequest) {
     am_max = 5,
     pm_enabled = true,
     pm_max = 5,
+    unavailable_product_ids,
   } = body
 
   const supabase = createServiceClient()
@@ -127,6 +135,16 @@ export async function POST(request: NextRequest) {
     })
   }
 
+  // Sync product exclusions for this date, if provided
+  if (unavailable_product_ids !== undefined) {
+    await supabase.from('date_product_exclusions').delete().eq('delivery_date_id', dateId)
+    if (unavailable_product_ids.length > 0) {
+      await supabase.from('date_product_exclusions').insert(
+        unavailable_product_ids.map((product_id: string) => ({ delivery_date_id: dateId, product_id }))
+      )
+    }
+  }
+
   // EVT-008: non-blocking GCal sync
   const syncGcal = async () => {
     let eventId: string | null = null
@@ -149,10 +167,19 @@ export async function POST(request: NextRequest) {
     .from('delivery_dates')
     .select(`
       id, date, is_open, max_orders_total, closure_reason, closure_type, cal_availability_event_id,
-      delivery_slots ( id, slot_window, max_orders, booked_count, is_open, window_start, window_end )
+      delivery_slots ( id, slot_window, max_orders, booked_count, is_open, window_start, window_end ),
+      date_product_exclusions ( product_id )
     `)
     .eq('id', dateId)
     .single()
 
-  return NextResponse.json(updated, { status: isNew ? 201 : 200 })
+  const responseBody = updated
+    ? {
+        ...updated,
+        unavailable_product_ids: ((updated as any).date_product_exclusions ?? []).map((e: any) => e.product_id),
+        date_product_exclusions: undefined,
+      }
+    : updated
+
+  return NextResponse.json(responseBody, { status: isNew ? 201 : 200 })
 }
