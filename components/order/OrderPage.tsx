@@ -140,6 +140,30 @@ export function OrderPage({ products }: Props) {
     }
   }
 
+  // When a sitewide closure/maintenance announcement is active, the whole
+  // ordering flow is unavailable — show only the maintenance notice.
+  if (!loadingSlots && slotsData?.closure_active) {
+    return (
+      <main
+        style={{
+          background: '#FAFAF9',
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '48px 24px',
+        }}
+      >
+        <div style={{ width: '100%', maxWidth: 540 }}>
+          <ClosureBanner
+            message={slotsData.closure_message ?? null}
+            closed_until={slotsData.closed_until ?? null}
+          />
+        </div>
+      </main>
+    )
+  }
+
   return (
     <main style={{ background: '#FAFAF9', minHeight: '100vh' }}>
       {/* Dark hero header — full width */}
@@ -218,11 +242,6 @@ export function OrderPage({ products }: Props) {
             <h2 style={sectionHeadingStyle}>Select delivery date</h2>
             {loadingSlots ? (
               <div style={{ background: '#F5F4F2', height: 200, width: '100%' }} />
-            ) : slotsData?.closure_active ? (
-              <ClosureBanner
-                message={slotsData.closure_message ?? null}
-                closed_until={slotsData.closed_until ?? null}
-              />
             ) : (
               <>
                 {slotsData && (
@@ -247,7 +266,7 @@ export function OrderPage({ products }: Props) {
           </section>
 
           {/* Slot window picker — only shown after a date is selected */}
-          {selectedDateData && !slotsData?.closure_active && (
+          {selectedDateData && (
             <section style={cardStyle}>
               <h2 style={sectionHeadingStyle}>Select delivery time</h2>
               <SlotWindowPicker
@@ -291,7 +310,7 @@ export function OrderPage({ products }: Props) {
             )}
             <button
               type="submit"
-              disabled={isSubmitting || !!slotsData?.closure_active}
+              disabled={isSubmitting}
               style={{
                 width: '100%',
                 fontFamily: "'Inter', sans-serif",
@@ -299,13 +318,11 @@ export function OrderPage({ products }: Props) {
                 fontWeight: 600,
                 letterSpacing: '0.22em',
                 textTransform: 'uppercase',
-                background:
-                  isSubmitting || slotsData?.closure_active ? '#D6D3D1' : '#A16207',
-                color: isSubmitting || slotsData?.closure_active ? '#8C7B6B' : '#FFFFFF',
+                background: isSubmitting ? '#D6D3D1' : '#A16207',
+                color: isSubmitting ? '#8C7B6B' : '#FFFFFF',
                 border: 'none',
                 padding: '18px 0',
-                cursor:
-                  isSubmitting || slotsData?.closure_active ? 'not-allowed' : 'pointer',
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
                 transition: 'background 0.2s',
                 marginTop: 8,
               }}
