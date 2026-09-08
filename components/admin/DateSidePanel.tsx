@@ -20,12 +20,14 @@ export interface AdminDateRecord {
   closure_reason: string | null
   closure_type: string | null
   cal_availability_event_id: string | null
+  unavailable_product_ids: string[]
   delivery_slots: DateSlot[]
 }
 
 interface Props {
   date: string
   record: AdminDateRecord | null
+  products: { id: string; sku: string; name: string; weight_label: string }[]
   onClose: () => void
   onSaved: (updated: AdminDateRecord) => void
   isMobileOverlay?: boolean
@@ -40,6 +42,7 @@ interface FormState {
   pm_max: string
   closure_reason: string
   closure_type: 'operational' | 'holiday' | 'vacation'
+  excluded_product_ids: Set<string>
 }
 
 function defaultForm(record: AdminDateRecord | null): FormState {
@@ -53,6 +56,7 @@ function defaultForm(record: AdminDateRecord | null): FormState {
       pm_max: '5',
       closure_reason: '',
       closure_type: 'operational',
+      excluded_product_ids: new Set(),
     }
   }
 
@@ -69,6 +73,7 @@ function defaultForm(record: AdminDateRecord | null): FormState {
     pm_max: String(pm?.max_orders ?? 5),
     closure_reason: record.closure_reason ?? '',
     closure_type: (record.closure_type as FormState['closure_type']) ?? 'operational',
+    excluded_product_ids: new Set(record.unavailable_product_ids ?? []),
   }
 }
 
@@ -80,7 +85,7 @@ const DATE_LABEL_OPTIONS: Intl.DateTimeFormatOptions = {
   timeZone: 'UTC',
 }
 
-export function DateSidePanel({ date, record, onClose, onSaved, isMobileOverlay }: Props) {
+export function DateSidePanel({ date, record, products, onClose, onSaved, isMobileOverlay }: Props) {
   const [form, setForm] = useState<FormState>(() => defaultForm(record))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -118,6 +123,7 @@ export function DateSidePanel({ date, record, onClose, onSaved, isMobileOverlay 
             am_max: amMax,
             pm_enabled: form.pm_enabled,
             pm_max: pmMax,
+            ...(form.is_open ? { unavailable_product_ids: Array.from(form.excluded_product_ids) } : {}),
           }),
         })
       } else {
@@ -133,6 +139,7 @@ export function DateSidePanel({ date, record, onClose, onSaved, isMobileOverlay 
             pm_max: pmMax,
             closure_reason: form.closure_reason || null,
             closure_type: form.closure_type,
+            ...(form.is_open ? { unavailable_product_ids: Array.from(form.excluded_product_ids) } : {}),
           }),
         })
       }
@@ -335,6 +342,49 @@ export function DateSidePanel({ date, record, onClose, onSaved, isMobileOverlay 
               onToggle={(v) => set('pm_enabled', v)}
               onMaxChange={(v) => set('pm_max', v)}
             />
+
+            {/* Products available */}
+            <div>
+              <label style={labelStyle}>Products available</label>
+              {products.length === 0 ? (
+                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#8C7B6B', margin: 0 }}>
+                  No available products to list.
+                </p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {products.map((p) => {
+                    const checked = !form.excluded_product_ids.has(p.id)
+                    return (
+                      <label
+                        key={p.id}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          fontFamily: "'Inter', sans-serif",
+                          fontSize: 13,
+                          color: '#1C1917',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => {
+                            const next = new Set(form.excluded_product_ids)
+                            if (checked) next.add(p.id)
+                            else next.delete(p.id)
+                            set('excluded_product_ids', next)
+                          }}
+                          style={{ accentColor: '#A16207' }}
+                        />
+                        {p.name} — {p.weight_label}
+                      </label>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
           </>
         ) : (
           <>

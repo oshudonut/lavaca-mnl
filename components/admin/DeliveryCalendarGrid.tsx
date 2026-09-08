@@ -172,12 +172,26 @@ export function DeliveryCalendarGrid() {
   const [generating, setGenerating] = useState(false)
   const [genMsg, setGenMsg] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
+  const [products, setProducts] = useState<{ id: string; sku: string; name: string; weight_label: string }[]>([])
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/admin/products')
+      .then((res) => res.json())
+      .then((all: Array<{ id: string; sku: string; name: string; weight_label: string; is_available: boolean }>) => {
+        setProducts(
+          all
+            .filter((p) => p.is_available)
+            .map(({ id, sku, name, weight_label }) => ({ id, sku, name, weight_label }))
+        )
+      })
+      .catch((err) => console.error('[DeliveryCalendarGrid] products fetch error:', err))
   }, [])
 
   const fetchDates = useCallback(async (month: string) => {
@@ -411,6 +425,7 @@ export function DeliveryCalendarGrid() {
           <DateSidePanel
             date={selectedDate}
             record={selectedRecord}
+            products={products}
             onClose={() => setSelectedDate(null)}
             onSaved={handleSaved}
           />
@@ -422,6 +437,7 @@ export function DeliveryCalendarGrid() {
         <DateSidePanel
           date={selectedDate}
           record={selectedRecord}
+          products={products}
           onClose={() => setSelectedDate(null)}
           onSaved={handleSaved}
           isMobileOverlay
