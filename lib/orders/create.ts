@@ -119,6 +119,27 @@ export async function createOrder(
   }
 
   // -------------------------------------------------------------------------
+  // Reject cart items excluded for this specific delivery date
+  // -------------------------------------------------------------------------
+  const { data: exclusions } = await supabase
+    .from('date_product_exclusions')
+    .select('product_id')
+    .eq('delivery_date_id', delivery_date_id)
+
+  const excludedIds = new Set((exclusions ?? []).map((e) => e.product_id))
+  for (const item of cart) {
+    if (excludedIds.has(item.product_id)) {
+      const product = products.find((p) => p.id === item.product_id)
+      return {
+        error: {
+          code: 'VALIDATION',
+          message: `${product?.name ?? 'One of your items'} is not available for this delivery date.`,
+        },
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
   // Atomically increment booked_count (catches slot_full)
   // -------------------------------------------------------------------------
   const { error: rpcError } = await supabase.rpc('increment_slot_booking', {
