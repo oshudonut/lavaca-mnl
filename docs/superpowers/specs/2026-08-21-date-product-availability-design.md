@@ -1,6 +1,6 @@
 # Date-Based Product Availability — Design Spec
 
-**Status:** Approved for planning
+**Status:** Implemented (2026-09-08) — pending production deploy
 **Date:** 2026-08-21
 
 ## Problem
