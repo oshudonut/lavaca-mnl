@@ -22,6 +22,7 @@ export type AvailableDate = {
   closure_reason: string | null
   closure_type: string | null
   slots: SlotWindow[]
+  unavailable_product_ids: string[]
 }
 
 export type SlotsResponse = {
@@ -108,6 +109,9 @@ export async function getAvailableSlots(
         max_orders,
         booked_count,
         is_open
+      ),
+      date_product_exclusions (
+        product_id
       )
     `
     )
@@ -138,13 +142,22 @@ export async function getAvailableSlots(
       booked_count: number
       is_open: boolean
     }>
+    date_product_exclusions: Array<{ product_id: string }>
   }
 
   const dates: AvailableDate[] = []
 
   for (const rawRow of (rows ?? []) as RawDateRow[]) {
-    const { id, date, is_open, max_orders_total, closure_reason, closure_type, delivery_slots } =
-      rawRow
+    const {
+      id,
+      date,
+      is_open,
+      max_orders_total,
+      closure_reason,
+      closure_type,
+      delivery_slots,
+      date_product_exclusions,
+    } = rawRow
 
     // BR-ORD-04: Skip Mondays entirely (getDay() === 1)
     // Use +08:00 (PST) so day-of-week is correct regardless of server timezone
@@ -181,6 +194,7 @@ export async function getAvailableSlots(
       closure_reason,
       closure_type,
       slots,
+      unavailable_product_ids: (date_product_exclusions ?? []).map((e) => e.product_id),
     })
   }
 
