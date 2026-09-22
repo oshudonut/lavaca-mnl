@@ -1,5 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import { getOrderSummary } from '@/lib/orders/get'
+import { getPaymentSettings } from '@/lib/payment-settings/get'
 import { PaymentInstructions } from '@/components/order/PaymentInstructions'
 import { ScreenshotUpload } from '@/components/order/ScreenshotUpload'
 import { CountdownTimer } from '@/components/order/CountdownTimer'
@@ -27,6 +28,8 @@ export default async function PaymentPage({ searchParams }: Props) {
   if (order.status === 'PAYMENT_REVIEW') {
     redirect(`/order/confirmation?order_id=${orderId}`)
   }
+
+  const paymentSettings = await getPaymentSettings()
 
   const deliveryDateLabel = order.delivery_date
     ? new Date(`${order.delivery_date}T00:00:00+08:00`).toLocaleDateString('en-PH', {
@@ -168,12 +171,12 @@ export default async function PaymentPage({ searchParams }: Props) {
           </p>
           <PaymentInstructions
             defaultMethod={order.payment_method}
-            gcashNumber={process.env.GCASH_NUMBER ?? ''}
-            gcashAccountName={process.env.GCASH_ACCOUNT_NAME ?? ''}
-            bpiAccount={process.env.BANK_BPI_ACCOUNT ?? ''}
-            bpiName={process.env.BANK_BPI_NAME ?? ''}
-            bdoAccount={process.env.BANK_BDO_ACCOUNT ?? ''}
-            bdoName={process.env.BANK_BDO_NAME ?? ''}
+            gcashNumber={paymentSettings.gcashNumber}
+            gcashAccountName={paymentSettings.gcashAccountName}
+            bpiAccount={paymentSettings.bpiAccount}
+            bpiName={paymentSettings.bpiName}
+            bdoAccount={paymentSettings.bdoAccount}
+            bdoName={paymentSettings.bdoName}
           />
         </section>
 
