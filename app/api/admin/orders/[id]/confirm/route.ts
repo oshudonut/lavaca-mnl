@@ -16,10 +16,8 @@ export async function POST(
   const { data: { user } } = await authClient.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  // The reference number is optional; the owner accepts from the screenshot.
   const { payment_reference } = await request.json().catch(() => ({}))
-  if (!payment_reference?.trim()) {
-    return NextResponse.json({ error: 'Payment reference is required.' }, { status: 422 })
-  }
 
   const supabase = createServiceClient()
 
@@ -47,7 +45,7 @@ export async function POST(
     .from('orders')
     .update({
       status: 'CONFIRMED',
-      payment_reference: payment_reference.trim(),
+      payment_reference: payment_reference?.trim() || null,
       confirmed_at: new Date().toISOString(),
     })
     .eq('id', params.id)

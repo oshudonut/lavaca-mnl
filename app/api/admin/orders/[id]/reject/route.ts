@@ -14,10 +14,11 @@ export async function POST(
   const { data: { user } } = await authClient.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { reason } = await request.json().catch(() => ({}))
-  if (!reason?.trim()) {
-    return NextResponse.json({ error: 'Rejection reason is required.' }, { status: 422 })
-  }
+  // A reason is optional; customers get a clear default when none is given.
+  const body = await request.json().catch(() => ({}))
+  const reason: string =
+    body?.reason?.trim() ||
+    'We couldn’t verify your payment from the screenshot. Please upload a clear screenshot showing the exact amount paid.'
 
   const supabase = createServiceClient()
 
@@ -52,7 +53,7 @@ export async function POST(
     react: React.createElement(Cust03, {
       order_number: order.order_number,
       customer_name: customer?.name ?? '',
-      rejection_reason: reason.trim(),
+      rejection_reason: reason,
       payment_url: `${baseUrl}/order/payment?order_id=${params.id}`,
     }),
     orderId: params.id,

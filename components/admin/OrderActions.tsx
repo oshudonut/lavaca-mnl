@@ -24,27 +24,22 @@ async function postAction(orderId: string, action: 'confirm' | 'reject' | 'cance
 
 export function PaymentReview({ orderId }: { orderId: string }) {
   const router = useRouter()
-  const [reference, setReference] = useState('')
   const [rejecting, setRejecting] = useState(false)
   const [reason, setReason] = useState('')
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState<'accept' | 'reject' | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState<string | null>(null)
 
   async function run(action: 'confirm' | 'reject') {
-    setBusy(true)
+    setBusy(action === 'confirm' ? 'accept' : 'reject')
     setError(null)
-    const err = await postAction(
-      orderId,
-      action,
-      action === 'confirm' ? { payment_reference: reference.trim() } : { reason: reason.trim() }
-    )
-    setBusy(false)
+    const err = await postAction(orderId, action, action === 'reject' ? { reason: reason.trim() } : {})
+    setBusy(null)
     if (err) return setError(err)
     setDone(
       action === 'confirm'
-        ? 'Payment confirmed. The customer has been emailed.'
-        : 'Screenshot rejected. The customer has been asked to upload a new one.'
+        ? 'Payment accepted. The order is confirmed and the customer has been emailed.'
+        : 'Payment rejected. The customer has been asked to upload a new screenshot.'
     )
     router.refresh()
   }
@@ -54,55 +49,37 @@ export function PaymentReview({ orderId }: { orderId: string }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {!rejecting ? (
-        <>
-          <div className="adm-field">
-            <label htmlFor="pay-ref" className="adm-label">GCash / bank reference number</label>
-            <input
-              id="pay-ref"
-              className="adm-input"
-              placeholder="From the screenshot"
-              value={reference}
-              onChange={(e) => setReference(e.target.value)}
-              autoComplete="off"
-            />
-          </div>
-          <button
-            type="button"
-            className="adm-btn adm-btn-green"
-            style={{ padding: '15px 20px', fontSize: 17 }}
-            disabled={busy || !reference.trim()}
-            onClick={() => run('confirm')}
-          >
-            {busy ? 'Confirming…' : 'Confirm payment'}
+        <div className="adm-decision">
+          <button type="button" className="adm-btn adm-btn-green" disabled={busy !== null} onClick={() => run('confirm')}>
+            {busy === 'accept' ? 'Accepting…' : 'Accept payment'}
           </button>
-          {!reference.trim() && <p className="adm-hint">Type the reference number to confirm.</p>}
-          <button type="button" className="adm-btn adm-btn-danger" disabled={busy} onClick={() => setRejecting(true)}>
-            Reject screenshot
+          <button type="button" className="adm-btn adm-btn-danger" disabled={busy !== null} onClick={() => setRejecting(true)}>
+            Reject payment
           </button>
-        </>
+        </div>
       ) : (
         <>
+          <p style={{ margin: 0, fontSize: 17, fontWeight: 500 }}>
+            Reject this payment? The customer will be emailed to upload a new screenshot.
+          </p>
           <div className="adm-field">
-            <label htmlFor="reject-reason" className="adm-label">Why are you rejecting it? The customer will see this.</label>
+            <label htmlFor="reject-reason" className="adm-label">Reason for the customer (optional)</label>
             <textarea
               id="reject-reason"
               className="adm-textarea"
-              placeholder="e.g. The amount doesn't match, or the screenshot is blurry"
+              placeholder="e.g. The amount doesn't match"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
             />
           </div>
-          <button
-            type="button"
-            className="adm-btn adm-btn-danger"
-            disabled={busy || !reason.trim()}
-            onClick={() => run('reject')}
-          >
-            {busy ? 'Rejecting…' : 'Reject and ask for a new screenshot'}
-          </button>
-          <button type="button" className="adm-btn adm-btn-outline" disabled={busy} onClick={() => { setRejecting(false); setError(null) }}>
-            Go back
-          </button>
+          <div className="adm-decision">
+            <button type="button" className="adm-btn adm-btn-danger" disabled={busy !== null} onClick={() => run('reject')}>
+              {busy === 'reject' ? 'Rejecting…' : 'Yes, reject payment'}
+            </button>
+            <button type="button" className="adm-btn adm-btn-outline" disabled={busy !== null} onClick={() => { setRejecting(false); setError(null) }}>
+              Go back
+            </button>
+          </div>
         </>
       )}
       {error && <p className="adm-error" role="alert">{error}</p>}
