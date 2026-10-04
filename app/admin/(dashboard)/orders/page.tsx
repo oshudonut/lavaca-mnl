@@ -3,9 +3,26 @@ import { expireStaleOrders } from '@/lib/orders/expire'
 import { OrdersTable } from '@/components/admin/OrdersTable'
 import type { OrderTableRow } from '@/components/admin/OrdersTable'
 import { orderTimeLabel } from '@/lib/delivery/pickup'
-import { servingStyleLabel } from '@/lib/orders/validation'
+import { PageHeader } from '@/components/admin/ui'
 
 export const dynamic = 'force-dynamic'
+
+function manilaDate(offsetDays = 0): string {
+  const d = new Date(Date.now() + offsetDays * 86400000)
+  return d.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' })
+}
+
+function pickupDayLabel(date: string | undefined, today: string, tomorrow: string): string {
+  if (!date) return '—'
+  if (date === today) return 'Today'
+  if (date === tomorrow) return 'Tomorrow'
+  return new Date(`${date}T00:00:00+08:00`).toLocaleDateString('en-PH', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'Asia/Manila',
+  })
+}
 
 export default async function AdminOrdersPage({
   searchParams,
@@ -31,17 +48,13 @@ export default async function AdminOrdersPage({
     `)
     .order('created_at', { ascending: false })
 
+  const today = manilaDate()
+  const tomorrow = manilaDate(1)
+
   const orders: OrderTableRow[] = (rows ?? []).map((row: any) => {
     const customer = Array.isArray(row.customers) ? row.customers[0] : row.customers
     const slot = Array.isArray(row.delivery_slots) ? row.delivery_slots[0] : row.delivery_slots
     const dateRow = Array.isArray(row.delivery_dates) ? row.delivery_dates[0] : row.delivery_dates
-
-    const itemsSummary = (row.order_items ?? [])
-      .map((item: any) => {
-        const serving = servingStyleLabel(item.serving_style)
-        return `${item.products?.name ?? ''} ×${item.quantity}${serving ? ` (${serving})` : ''}`
-      })
-      .join(', ')
 
     return {
       id: row.id,
@@ -50,38 +63,19 @@ export default async function AdminOrdersPage({
       status: row.status,
       total_amount: row.total_amount,
       customer_name: customer?.name ?? '—',
-      pickup_date: dateRow?.date ?? '—',
+      pickup_day: pickupDayLabel(dateRow?.date, today, tomorrow),
       time_label: orderTimeLabel({ pickup_time: row.pickup_time, slot_window: slot?.slot_window }),
-      items_summary: itemsSummary || '—',
+      items: (row.order_items ?? []).map((item: any) => ({
+        label: `${/slab/i.test(item.products?.name ?? '') ? 'Whole Slab' : item.products?.weight_label ?? 'Item'} × ${item.quantity}`,
+        serving_style: item.serving_style ?? null,
+      })),
     }
   })
 
   return (
-    <div>
-      <div style={{ marginBottom: 32 }}>
-        <p style={{
-          fontFamily: "'Jost', sans-serif",
-          fontSize: 9,
-          fontWeight: 400,
-          letterSpacing: '0.28em',
-          textTransform: 'uppercase',
-          color: '#A16207',
-          margin: '0 0 10px',
-        }}>
-          Operations
-        </p>
-        <h1 style={{
-          fontFamily: "'Playfair Display SC', serif",
-          fontSize: 28,
-          fontWeight: 400,
-          color: '#1C1917',
-          margin: 0,
-          letterSpacing: '0.01em',
-        }}>
-          Orders
-        </h1>
-      </div>
+    <>
+      <PageHeader title="Orders" />
       <OrdersTable orders={orders} initialStatus={searchParams.status} />
-    </div>
+    </>
   )
 }
