@@ -3,6 +3,7 @@ import * as React from 'react'
 import { createServiceClient } from '@/lib/supabase/service'
 import { sendEmail } from '@/lib/resend/send'
 import Admin02 from '@/lib/resend/templates/admin-02'
+import { siteUrl } from '@/lib/site'
 
 // ---------------------------------------------------------------------------
 // MIME detection via magic bytes
@@ -119,7 +120,7 @@ export async function POST(
   }
 
   const customer = Array.isArray(order.customers) ? order.customers[0] : order.customers
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const baseUrl = siteUrl()
 
   await sendEmail({
     to: process.env.OWNER_EMAIL ?? '',

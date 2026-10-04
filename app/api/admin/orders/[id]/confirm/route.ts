@@ -59,7 +59,7 @@ export async function POST(
     console.error('[confirm] EVT-004 calendar sync error:', err)
   )
 
-  // Send CUST-04 non-blocking
+  // Send CUST-04 — awaited so the serverless function doesn't exit first
   const customer = Array.isArray(order.customers) ? order.customers[0] : order.customers
   const slot = Array.isArray(order.delivery_slots) ? order.delivery_slots[0] : order.delivery_slots
   const dateRow = Array.isArray(order.delivery_dates) ? order.delivery_dates[0] : order.delivery_dates
@@ -69,7 +69,7 @@ export async function POST(
       })
     : ''
 
-  sendEmail({
+  await sendEmail({
     to: customer?.email ?? '',
     subject: `✅ Order Confirmed! Lavaca MNL ${order.order_number}`,
     react: React.createElement(Cust04, {
@@ -88,7 +88,7 @@ export async function POST(
     }),
     orderId: params.id,
     templateId: 'CUST-04',
-  }).catch((err) => console.error('[confirm] CUST-04 send error:', err))
+  })
 
   return NextResponse.json({ success: true })
 }

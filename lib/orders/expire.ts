@@ -43,7 +43,7 @@ export async function expireStaleOrders(): Promise<{ expired: number }> {
 
     const customer = Array.isArray(order.customers) ? order.customers[0] : order.customers
 
-    sendEmail({
+    await sendEmail({
       to: customer?.email ?? '',
       subject: `Your order has expired — please reorder`,
       react: React.createElement(Cust06, {
@@ -52,7 +52,7 @@ export async function expireStaleOrders(): Promise<{ expired: number }> {
       }),
       orderId: order.id,
       templateId: 'CUST-06',
-    }).catch(err => console.error('[expire] CUST-06 send error:', order.id, err))
+    })
   }
 
   return { expired }

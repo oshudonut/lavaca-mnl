@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { sendEmail } from '@/lib/resend/send'
 import Cust03 from '@/lib/resend/templates/cust-03'
+import { siteUrl } from '@/lib/site'
 
 export async function POST(
   request: NextRequest,
@@ -43,7 +44,7 @@ export async function POST(
   if (updateError) return NextResponse.json({ error: 'Failed to reject payment.' }, { status: 500 })
 
   const customer = Array.isArray(order.customers) ? order.customers[0] : order.customers
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const baseUrl = siteUrl()
 
   await sendEmail({
     to: customer?.email ?? '',

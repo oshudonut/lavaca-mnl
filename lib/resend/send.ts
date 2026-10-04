@@ -16,13 +16,16 @@ export async function sendEmail({
   react,
   orderId,
   templateId,
-}: SendEmailOptions): Promise<{ success: boolean; error?: string }> {
+}: SendEmailOptions): Promise<{ success: boolean; error?: string; id?: string }> {
   const from = process.env.RESEND_FROM_EMAIL ?? 'onboarding@resend.dev'
 
-  async function attempt(): Promise<{ success: boolean; error?: string }> {
+  async function attempt(): Promise<{ success: boolean; error?: string; id?: string }> {
     try {
-      await resend.emails.send({ from, to, subject, react })
-      return { success: true }
+      // Resend reports most failures (bad key, unverified sender, invalid
+      // recipient) in the returned `error`, not by throwing.
+      const { data, error } = await resend.emails.send({ from, to, subject, react })
+      if (error) return { success: false, error: `${error.name}: ${error.message}` }
+      return { success: true, id: data?.id }
     } catch (err) {
       return { success: false, error: String(err) }
     }
@@ -34,18 +37,24 @@ export async function sendEmail({
   }
 
   if (!result.success) {
+    console.error('[sendEmail] failed', templateId, to, result.error)
+  }
+
+  // Record every send so failures are visible (Supabase → notifications).
+  if (orderId) {
     try {
       const supabase = createServiceClient()
       await supabase.from('notifications').insert({
-        order_id: orderId ?? null,
-        template_id: templateId ?? null,
+        order_id: orderId,
+        template_id: templateId ?? 'UNKNOWN',
         recipient: to,
         channel: 'email',
-        status: 'failed',
-        error_message: result.error ?? 'Unknown error',
+        status: result.success ? 'sent' : 'failed',
+        sent_at: result.success ? new Date().toISOString() : null,
+        error_message: result.success ? null : (result.error ?? 'Unknown error'),
       })
     } catch {
-      console.error('[sendEmail] Failed to log notification failure for', templateId, result.error)
+      console.error('[sendEmail] Failed to log notification for', templateId)
     }
   }
 

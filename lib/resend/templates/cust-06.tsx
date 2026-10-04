@@ -1,5 +1,6 @@
 import { Body, Container, Head, Heading, Hr, Html, Link, Text } from '@react-email/components'
 import * as React from 'react'
+import { siteUrl } from '@/lib/site'
 
 export interface Cust06Props {
   order_number: string
@@ -20,7 +21,7 @@ export default function Cust06({ order_number, customer_name }: Cust06Props) {
             Your pickup time has been released. If you would still like to order, you are welcome to place a new order at any time.
           </Text>
           <Text style={{ fontSize: '14px' }}>
-            <Link href={`${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/order`} style={{ color: '#16a34a' }}>
+            <Link href={`${siteUrl()}/order`} style={{ color: '#16a34a' }}>
               Place a new order
             </Link>
           </Text>

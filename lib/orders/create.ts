@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { siteUrl } from '@/lib/site'
 import { createServiceClient } from '@/lib/supabase/service'
 import { sendEmail } from '@/lib/resend/send'
 import Cust01 from '@/lib/resend/templates/cust-01'
@@ -294,7 +295,7 @@ export async function createOrder(
     }
   })
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const baseUrl = siteUrl()
   const payment_url = `${baseUrl}/order/payment?order_id=${order_id}`
   const admin_url = `${baseUrl}/admin/orders/${order_id}`
 
