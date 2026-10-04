@@ -220,22 +220,6 @@
 }
 .lv-btn-primary:hover { background: #B8730A; }
 
-.lv-btn-ghost {
-  background: none;
-  font-family: 'Inter', sans-serif;
-  font-size: 11px;
-  font-weight: 400;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(250,250,249,0.5);
-  cursor: pointer;
-  border: none;
-  border-bottom: 1px solid rgba(161,98,7,0.35);
-  padding: 0 0 3px;
-  transition: color 0.3s ease, border-color 0.3s ease;
-}
-.lv-btn-ghost:hover { color: rgba(250,250,249,0.85); border-bottom-color: rgba(161,98,7,0.75); }
-
 .lv-btn-outline {
   font-family: 'Inter', sans-serif;
   font-size: 11px;
@@ -340,114 +324,6 @@
   color: rgba(250,250,249,0.45);
   line-height: 1.9;
 }
-
-/* ── Products ── */
-
-.lv-products {
-  background: #FAFAF9;
-  padding: 120px 80px;
-}
-
-.lv-products-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
-  max-width: 1240px;
-  margin: 0 auto;
-}
-
-.lv-product-card {
-  background: #FFFFFF;
-  border: 1px solid transparent;
-  overflow: hidden;
-  cursor: pointer;
-  transition: border-color 0.3s ease;
-}
-.lv-product-card:hover { border-color: #A16207; }
-
-.lv-product-photo {
-  position: relative;
-  height: 360px;
-  overflow: hidden;
-}
-.lv-product-photo img { transition: transform 0.55s ease; }
-.lv-product-card:hover .lv-product-photo img { transform: scale(1.04); }
-
-.lv-product-photo-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(12,10,9,0.62) 0%, transparent 55%);
-  pointer-events: none;
-}
-
-.lv-product-body {
-  padding: 36px 36px 40px;
-}
-
-.lv-product-sku {
-  font-family: 'Jost', sans-serif;
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: #A8A29E;
-  margin-bottom: 10px;
-}
-
-.lv-product-name {
-  font-family: 'Playfair Display', serif;
-  font-size: 32px;
-  font-weight: 500;
-  color: #1C1917;
-  line-height: 1.1;
-  margin-bottom: 6px;
-}
-
-.lv-product-weight {
-  font-family: 'Inter', sans-serif;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #78716C;
-  margin-bottom: 24px;
-}
-
-.lv-product-price {
-  font-family: 'Playfair Display SC', serif;
-  font-size: 42px;
-  font-weight: 400;
-  color: #A16207;
-  line-height: 1;
-  margin-bottom: 16px;
-}
-
-.lv-product-occasion {
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  font-weight: 300;
-  letter-spacing: 0.01em;
-  line-height: 1.9;
-  color: #57534E;
-  margin-bottom: 28px;
-}
-
-.lv-product-link {
-  display: inline-block;
-  font-family: 'Inter', sans-serif;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: #1C1917;
-  text-decoration: none;
-  border-bottom: 1px solid rgba(161,98,7,0.4);
-  padding-bottom: 3px;
-  transition: color 0.3s ease, border-color 0.3s ease;
-}
-.lv-product-link:hover { color: #A16207; border-bottom-color: #A16207; }
-
-/* ── Craft ── */
 
 .lv-craft {
   display: grid;
@@ -710,7 +586,6 @@
 
 @media (max-width: 1024px) {
   .lv-hero-content { padding: 0 56px 80px; }
-  .lv-products,
   .lv-process { padding: 96px 48px; }
   .lv-trust { padding: 48px 40px; }
   .lv-craft-panel { padding: 80px 56px; }
@@ -743,8 +618,6 @@
   .lv-trust-item:nth-child(odd) { border-right: 1px solid rgba(161,98,7,0.12); }
   .lv-trust-num { font-size: 38px; }
 
-  .lv-products { padding: 80px 24px; }
-  .lv-products-grid { grid-template-columns: 1fr; gap: 28px; max-width: 480px; }
   .lv-section-title { font-size: 42px; }
 
   .lv-craft-panel { padding: 64px 28px; }
@@ -785,11 +658,6 @@
   .lv-trust-item:nth-child(odd) { border-right: none; }
   .lv-trust-num { font-size: 36px; }
 
-  .lv-products { padding: 60px 16px; }
-  .lv-product-photo { height: 260px; }
-  .lv-product-body { padding: 22px 18px 26px; }
-  .lv-product-name { font-size: 28px; }
-  .lv-product-price { font-size: 36px; }
   .lv-section-title { font-size: 34px; }
 
   .lv-craft-panel { padding: 56px 20px; }

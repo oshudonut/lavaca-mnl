@@ -4,38 +4,28 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { LogoIntro } from '@/components/LogoIntro'
 
-export type DisplayProduct = {
-  sku: string
-  name: string
-  weight: string
-  price: string
-  occasion: string
-  photo: string
-  photoPos: string
-}
-
 const TRUST = [
   { num: '25',   l1: 'Hours',           l2: 'Slow-Cooked'  },
   { num: '100%', l1: 'Premium',         l2: 'Angus Beef'   },
   { num: '3',    l1: 'Sizes for Every', l2: 'Occasion'     },
-  { num: '48h',  l1: 'Advance Order',   l2: 'Metro Manila' },
+  { num: '48h',  l1: 'Advance',         l2: 'Order'        },
 ]
 
 const STEPS = [
   {
     num: '1',
     title: 'Choose Your Cut',
-    desc: 'Browse the menu and select the size that fits your occasion — a solo treat, a family dinner, or a celebration feast.',
+    desc: 'Tap Order Now and select the size that fits your occasion — a solo treat, a family dinner, or a celebration feast.',
   },
   {
     num: '2',
-    title: 'Pick Your Delivery Slot',
-    desc: 'Select a delivery date and time window that works for you. Available Tuesday through Sunday across Metro Manila.',
+    title: 'Pick Your Pickup Time',
+    desc: 'Choose a pickup date and any hour from 9AM to 6PM that works for you. Available Tuesday through Sunday.',
   },
   {
     num: '3',
     title: 'Pay & Confirm',
-    desc: 'Pay via GCash or bank transfer. We confirm your order within hours and handle everything from there.',
+    desc: 'Pay via GCash or bank transfer. We confirm your order within hours and have it ready when you arrive.',
   },
 ]
 
@@ -46,14 +36,14 @@ const GALLERY = [
   { src: '/photo-topdown.png', caption: 'The Product' },
 ]
 
-const DELIVERY = [
-  { icon: 'pin',      strong: 'Alabang & South Metro Manila', sub: 'Muntinlupa · Las Piñas · Parañaque'     },
-  { icon: 'calendar', strong: 'Tuesday – Sunday',             sub: 'AM 9AM–12PM · PM 1PM–5PM'               },
-  { icon: 'clock',    strong: '48 Hours Advance',             sub: 'Order at least 2 days before delivery'  },
-  { icon: 'card',     strong: 'GCash & Bank Transfer',        sub: 'BPI · BDO'                              },
+const PICKUP_INFO = [
+  { icon: 'pin',      strong: 'Pickup Only',           sub: 'Collect your order at your chosen time' },
+  { icon: 'calendar', strong: 'Tuesday – Sunday',      sub: 'Pickup 9AM – 6PM'                       },
+  { icon: 'clock',    strong: '48 Hours Advance',      sub: 'Order at least 2 days before pickup'    },
+  { icon: 'card',     strong: 'GCash & Bank Transfer', sub: 'BPI · BDO'                              },
 ]
 
-function DeliveryIcon({ name }: { name: string }) {
+function InfoIcon({ name }: { name: string }) {
   const common = {
     width: 22,
     height: 22,
@@ -99,11 +89,7 @@ function DeliveryIcon({ name }: { name: string }) {
   }
 }
 
-interface Props {
-  products: DisplayProduct[]
-}
-
-export function HomeContent({ products }: Props) {
+export function HomeContent() {
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
   }
@@ -117,10 +103,9 @@ export function HomeContent({ products }: Props) {
         <div className="lv-nav-inner">
           <Image src="/lavaca-logo.png" alt="Lavaca MNL" width={120} height={34} style={{ height: 34, width: 'auto' }} priority />
           <div className="lv-nav-links">
-            <button onClick={() => scrollTo('products-section')} className="lv-nav-link">The Menu</button>
             <button onClick={() => scrollTo('craft-section')} className="lv-nav-link">Our Story</button>
             <button onClick={() => scrollTo('process-section')} className="lv-nav-link">How It Works</button>
-            <button onClick={() => scrollTo('delivery-section')} className="lv-nav-link">Delivery</button>
+            <button onClick={() => scrollTo('pickup-section')} className="lv-nav-link">Pickup</button>
           </div>
           <Link href="/order" className="lv-nav-cta">Order Now</Link>
         </div>
@@ -145,12 +130,9 @@ export function HomeContent({ products }: Props) {
           <p className="lv-hero-body">
             Slow-Cooked for 25 Hours.<br />
             Crafted for Gatherings.<br />
-            Delivered Across Metro Manila.
+            Ready for Pickup.
           </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 32, flexWrap: 'wrap' }}>
-            <Link href="/order" className="lv-btn-primary">Order Now</Link>
-            <button onClick={() => scrollTo('products-section')} className="lv-btn-ghost">View Products</button>
-          </div>
+          <Link href="/order" className="lv-btn-primary">Order Now</Link>
         </div>
       </section>
 
@@ -163,40 +145,6 @@ export function HomeContent({ products }: Props) {
           </div>
         ))}
       </div>
-
-      {/* ── PRODUCTS ── */}
-      <section id="products-section" className="lv-products">
-        <div style={{ textAlign: 'center', marginBottom: 80 }}>
-          <p className="lv-section-label centered">The Menu</p>
-          <h2 className="lv-section-title">Choose Your Cut</h2>
-          <p className="lv-section-sub">
-            Premium Angus, slow-cooked to order. Select the size that fits your gathering.
-          </p>
-        </div>
-        <div className="lv-products-grid">
-          {products.map((p) => (
-            <div key={p.sku} className="lv-product-card">
-              <div className="lv-product-photo">
-                <Image
-                  src={p.photo}
-                  alt={p.name}
-                  fill
-                  style={{ objectFit: 'cover', objectPosition: p.photoPos }}
-                />
-                <div className="lv-product-photo-overlay" />
-              </div>
-              <div className="lv-product-body">
-                <p className="lv-product-sku">{p.sku}</p>
-                <h3 className="lv-product-name">{p.name}</h3>
-                <p className="lv-product-weight">{p.weight}</p>
-                <p className="lv-product-price">{p.price}</p>
-                <p className="lv-product-occasion">{p.occasion}</p>
-                <Link href="/order" className="lv-product-link">Order This Cut</Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* ── CRAFT ── */}
       <section id="craft-section" className="lv-craft">
@@ -217,7 +165,7 @@ export function HomeContent({ products }: Props) {
             &ldquo;Every cut of premium Angus is prepared with obsessive patience — sealed with a spice crust, slow-cooked until the connective tissue surrenders and the flavour deepens into something the family will talk about long after dinner.&rdquo;
           </p>
           <p className="lv-craft-body">
-            We believe the best food is never rushed. Lavaca MNL exists to bring that patience to your table — thoughtfully prepared, carefully packaged, and delivered exactly when you need it.
+            We believe the best food is never rushed. Lavaca MNL exists to bring that patience to your table — thoughtfully prepared, carefully packaged, and ready exactly when you need it.
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 18, width: 200 }}>
             <div style={{ flex: 1, height: 1, background: 'rgba(161,98,7,0.3)' }} />
@@ -259,11 +207,11 @@ export function HomeContent({ products }: Props) {
         ))}
       </section>
 
-      {/* ── DELIVERY BAR ── */}
-      <div id="delivery-section" className="lv-delivery">
-        {DELIVERY.map(({ icon, strong, sub }, i) => (
+      {/* ── PICKUP INFO BAR ── */}
+      <div id="pickup-section" className="lv-delivery">
+        {PICKUP_INFO.map(({ icon, strong, sub }, i) => (
           <div key={i} className="lv-delivery-item">
-            <span className="lv-delivery-icon"><DeliveryIcon name={icon} /></span>
+            <span className="lv-delivery-icon"><InfoIcon name={icon} /></span>
             <div className="lv-delivery-text">
               <span className="lv-delivery-strong">{strong}</span>
               <br />{sub}
@@ -284,9 +232,9 @@ export function HomeContent({ products }: Props) {
         <div className="lv-order-cta-overlay" />
         <div className="lv-order-cta-content">
           <p className="lv-section-label centered" style={{ color: 'rgba(161,98,7,0.75)' }}>Ready to Order</p>
-          <h2 className="lv-order-cta-headline">Reserve Your<br />Delivery.</h2>
+          <h2 className="lv-order-cta-headline">Reserve Your<br />Pickup.</h2>
           <p className="lv-order-cta-sub">
-            Choose your cut, pick your slot, and let us handle the rest.<br />Your table deserves this.
+            Choose your cut, pick your time, and we&apos;ll have it ready.<br />Your table deserves this.
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
             <Link href="/order" className="lv-btn-primary">Order Now</Link>
