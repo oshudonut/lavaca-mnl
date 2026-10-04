@@ -80,78 +80,88 @@ export default async function AdminOrderDetailPage({ params }: Props) {
   )
 
   return (
-    <div style={{ maxWidth: 760, display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <Link href="/admin/orders" style={{ fontSize: 16, textDecoration: 'none', alignSelf: 'flex-start' }}>
         ‹ All orders
       </Link>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <span style={{ alignSelf: 'flex-start' }}><StatusBadge status={order.status} /></span>
-        <h1 className="adm-h1">{order.customer.name}</h1>
-        <span className="adm-hint" style={{ fontSize: 15 }}>{order.order_number} · placed {placedLabel}</span>
+      <div className="adm-detail-head">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <span style={{ alignSelf: 'flex-start' }}><StatusBadge status={order.status} /></span>
+          <h1 className="adm-h1">{order.customer.name}</h1>
+          <span className="adm-hint" style={{ fontSize: 15 }}>{order.order_number} · placed {placedLabel}</span>
+        </div>
+        {/* Wide screens: cancel/delete up top so they're reachable without scrolling */}
+        <div className="adm-wide-only" style={{ maxWidth: 460 }}>
+          <OrderManage orderId={params.id} status={order.status} />
+        </div>
       </div>
 
-      {/* The payment check is the main job, so it leads while a review is pending */}
-      {needsReview && paymentCheck}
+      {/* Wide screens: payment on the left (stays in view), details on the right.
+          Phones: one column with the payment check first. */}
+      <div className="adm-detail">
+        <div className="adm-detail-main">{paymentCheck}</div>
 
-      <Card title="Pickup">
-        <span style={{ fontSize: 18, fontWeight: 500 }}>
-          {pickupDateLabel} · {order.time_label}
-        </span>
-        <span className="adm-hint" style={{ fontSize: 15 }}>{PICKUP_LOCATION}</span>
-      </Card>
+        <div className="adm-detail-side">
+          <Card title="Pickup">
+            <span style={{ fontSize: 18, fontWeight: 500 }}>
+              {pickupDateLabel} · {order.time_label}
+            </span>
+            <span className="adm-hint" style={{ fontSize: 15 }}>{PICKUP_LOCATION}</span>
+          </Card>
 
-      <Card title="Items">
-        <div>
-          {order.items.map((item, i) => (
-            <div key={i} className="adm-row" style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
-              <span style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <span style={{ fontSize: 17 }}>{item.product_name} · {item.weight_label}</span>
-                <span className="adm-chips" style={{ marginTop: 0 }}>
-                  <ItemChip label={`× ${item.quantity}`} style={item.serving_style} />
-                </span>
-              </span>
-              <span style={{ fontSize: 17, fontWeight: 500, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
-                {peso(item.subtotal)}
-              </span>
+          <Card title="Items">
+            <div>
+              {order.items.map((item, i) => (
+                <div key={i} className="adm-row" style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
+                  <span style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <span style={{ fontSize: 17 }}>{item.product_name} · {item.weight_label}</span>
+                    <span className="adm-chips" style={{ marginTop: 0 }}>
+                      <ItemChip label={`× ${item.quantity}`} style={item.serving_style} />
+                    </span>
+                  </span>
+                  <span style={{ fontSize: 17, fontWeight: 500, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                    {peso(item.subtotal)}
+                  </span>
+                </div>
+              ))}
+              <div className="adm-row" style={{ display: 'flex', justifyContent: 'space-between', fontSize: 18, fontWeight: 600 }}>
+                <span>Total</span>
+                <span style={{ fontVariantNumeric: 'tabular-nums' }}>{peso(order.total_amount)}</span>
+              </div>
             </div>
-          ))}
-          <div className="adm-row" style={{ display: 'flex', justifyContent: 'space-between', fontSize: 18, fontWeight: 600 }}>
-            <span>Total</span>
-            <span style={{ fontVariantNumeric: 'tabular-nums' }}>{peso(order.total_amount)}</span>
-          </div>
+            {order.special_request && (
+              <div style={{ background: '#FFF8EC', border: '1px solid #F2DDB0', borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: '#7A4A00' }}>Special request</span>
+                <span style={{ fontSize: 17, whiteSpace: 'pre-line' }}>{order.special_request}</span>
+              </div>
+            )}
+          </Card>
+
+          <Card title="Customer">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 14 }}>
+              <Field label="Phone">
+                <a href={`tel:${order.customer.phone.replace(/\s/g, '')}`}>{formatPhone(order.customer.phone)}</a>
+              </Field>
+              <Field label="Email">{order.customer.email}</Field>
+              {order.address && <Field label="Address">{order.address}</Field>}
+              {order.instagram_handle && (
+                <Field label="Instagram">
+                  <a href={`https://www.instagram.com/${order.instagram_handle}/`} target="_blank" rel="noopener noreferrer">
+                    @{order.instagram_handle}
+                  </a>
+                </Field>
+              )}
+              <Field label="Paying by">{paymentLabel}</Field>
+            </div>
+          </Card>
+
+          {/* Phones: cancel/delete stay at the end, away from accidental taps */}
+          <Card title="Other actions" className="adm-narrow-only">
+            <OrderManage orderId={params.id} status={order.status} />
+          </Card>
         </div>
-        {order.special_request && (
-          <div style={{ background: '#FFF8EC', border: '1px solid #F2DDB0', borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <span style={{ fontSize: 14, fontWeight: 600, color: '#7A4A00' }}>Special request</span>
-            <span style={{ fontSize: 17, whiteSpace: 'pre-line' }}>{order.special_request}</span>
-          </div>
-        )}
-      </Card>
-
-      <Card title="Customer">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
-          <Field label="Phone">
-            <a href={`tel:${order.customer.phone.replace(/\s/g, '')}`}>{formatPhone(order.customer.phone)}</a>
-          </Field>
-          <Field label="Email">{order.customer.email}</Field>
-          {order.address && <Field label="Address">{order.address}</Field>}
-          {order.instagram_handle && (
-            <Field label="Instagram">
-              <a href={`https://www.instagram.com/${order.instagram_handle}/`} target="_blank" rel="noopener noreferrer">
-                @{order.instagram_handle}
-              </a>
-            </Field>
-          )}
-          <Field label="Paying by">{paymentLabel}</Field>
-        </div>
-      </Card>
-
-      {!needsReview && paymentCheck}
-
-      <Card title="Other actions">
-        <OrderManage orderId={params.id} status={order.status} />
-      </Card>
+      </div>
     </div>
   )
 }

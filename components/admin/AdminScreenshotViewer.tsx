@@ -46,9 +46,9 @@ export function AdminScreenshotViewer({ orderId }: Props) {
           <img
             src={signedUrl}
             alt="Customer's payment screenshot"
+            className="adm-shot"
             style={{
               width: '100%',
-              maxHeight: 560,
               objectFit: 'contain',
               background: '#FBF9F6',
               border: '1px solid #E5DDD5',
