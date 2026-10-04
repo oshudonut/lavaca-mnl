@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { AvailabilityCalendar } from '@/components/calendar/AvailabilityCalendar'
 import { PickupTimePicker } from '@/components/calendar/PickupTimePicker'
@@ -16,6 +16,7 @@ import { formatPickupTime } from '@/lib/delivery/pickup'
 
 interface Props {
   products: Product[]
+  initialSlots: SlotsResponse
 }
 
 const EMPTY_CUSTOMER: CustomerDetails = {
@@ -85,11 +86,12 @@ const summaryTextStyle: React.CSSProperties = {
   lineHeight: 1.6,
 }
 
-export function OrderPage({ products }: Props) {
+export function OrderPage({ products, initialSlots }: Props) {
   const router = useRouter()
 
-  const [slotsData, setSlotsData] = useState<SlotsResponse | null>(null)
-  const [loadingSlots, setLoadingSlots] = useState(true)
+  // Dates arrive with the (cached) page. Pickup times that have passed since
+  // the page was built are filtered out in the browser once it has mounted.
+  const [now, setNow] = useState<number | null>(null)
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
@@ -109,19 +111,28 @@ export function OrderPage({ products }: Props) {
   const stepsTopRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    fetch('/api/delivery-slots')
-      .then((res) => res.json())
-      .then(setSlotsData)
-      .catch(() => setSlotsData(null))
-      .finally(() => setLoadingSlots(false))
+    setNow(Date.now())
+    const id = window.setInterval(() => setNow(Date.now()), 60_000)
+    return () => window.clearInterval(id)
   }, [])
+
+  const slotsData: SlotsResponse = useMemo(() => {
+    if (now === null) return initialSlots
+    return {
+      ...initialSlots,
+      dates: initialSlots.dates.map((d) => ({
+        ...d,
+        pickup_times: d.pickup_times.filter((t) => new Date(`${d.date}T${t}:00+08:00`).getTime() > now),
+      })),
+    }
+  }, [initialSlots, now])
 
   const handleSelectDate = (date: string) => {
     setSelectedDate(date)
     setSelectedTime(null)
   }
 
-  const selectedDateData = slotsData?.dates.find((d) => d.date === selectedDate) ?? null
+  const selectedDateData = slotsData.dates.find((d) => d.date === selectedDate) ?? null
 
   const excludedCartProducts = selectedDateData
     ? cart
@@ -242,7 +253,7 @@ export function OrderPage({ products }: Props) {
 
   // When a sitewide closure/maintenance announcement is active, the whole
   // ordering flow is unavailable — show only the maintenance notice.
-  if (!loadingSlots && slotsData?.closure_active) {
+  if (slotsData.closure_active) {
     return (
       <main
         style={{
@@ -406,28 +417,20 @@ export function OrderPage({ products }: Props) {
             {step === 1 && (
                 <section style={cardStyle}>
                   <h2 style={sectionHeadingStyle}>Select pickup date</h2>
-                  {loadingSlots ? (
-                    <div style={{ background: '#F5F4F2', height: 200, width: '100%' }} />
-                  ) : (
-                    <>
-                      {slotsData && (
-                        <AvailabilityCalendar
-                          slotsData={slotsData}
-                          selectedDate={selectedDate}
-                          onSelectDate={handleSelectDate}
-                        />
-                      )}
-                      {excludedCartProducts.length > 0 && (
-                        <p style={fieldErrorStyle}>
-                          {excludedCartProducts.map((p) => `${p.name} (${p.weight_label})`).join(', ')}{' '}
-                          {excludedCartProducts.length > 1 ? 'are' : 'is'} not available on this date. Remove{' '}
-                          {excludedCartProducts.length > 1 ? 'them' : 'it'} or choose a different date.
-                        </p>
-                      )}
-                      {formErrors.date && excludedCartProducts.length === 0 && (
-                        <p style={fieldErrorStyle}>{formErrors.date}</p>
-                      )}
-                    </>
+                  <AvailabilityCalendar
+                    slotsData={slotsData}
+                    selectedDate={selectedDate}
+                    onSelectDate={handleSelectDate}
+                  />
+                  {excludedCartProducts.length > 0 && (
+                    <p style={fieldErrorStyle}>
+                      {excludedCartProducts.map((p) => `${p.name} (${p.weight_label})`).join(', ')}{' '}
+                      {excludedCartProducts.length > 1 ? 'are' : 'is'} not available on this date. Remove{' '}
+                      {excludedCartProducts.length > 1 ? 'them' : 'it'} or choose a different date.
+                    </p>
+                  )}
+                  {formErrors.date && excludedCartProducts.length === 0 && (
+                    <p style={fieldErrorStyle}>{formErrors.date}</p>
                   )}
                 </section>
             )}
@@ -564,7 +567,7 @@ export function OrderPage({ products }: Props) {
                 <button
                   type="button"
                   onClick={handleNext}
-                  disabled={leaving || (step === 1 && loadingSlots)}
+                  disabled={leaving}
                   className="lv-step-btn lv-step-btn-next"
                 >
                   Next

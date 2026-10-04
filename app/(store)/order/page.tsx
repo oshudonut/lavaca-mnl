@@ -1,11 +1,15 @@
-import { createClient } from '@/lib/supabase/server'
+import { createStorefrontClient } from '@/lib/supabase/storefront'
 import { getAvailableSlots } from '@/lib/delivery/slots'
 import { OrderPage } from '@/components/order/OrderPage'
 import { ClosureBanner } from '@/components/calendar/ClosureBanner'
 import type { Product } from '@/components/order/ProductSelector'
 
+// Served from the CDN and rebuilt at most every 60s; admin edits to products,
+// dates or the closure banner invalidate it immediately (STOREFRONT_TAG).
+export const revalidate = 60
+
 export default async function Page() {
-  const supabase = createClient()
+  const supabase = createStorefrontClient()
 
   const { data: products } = await supabase
     .from('products')
@@ -18,7 +22,7 @@ export default async function Page() {
   // the product picker or customer form.
   const today = new Date().toISOString().split('T')[0]
   const plus60 = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-  const slots = await getAvailableSlots(today, plus60, true)
+  const slots = await getAvailableSlots(today, plus60, supabase)
 
   if (slots.closure_active) {
     return (
@@ -41,5 +45,5 @@ export default async function Page() {
     )
   }
 
-  return <OrderPage products={(products ?? []) as Product[]} />
+  return <OrderPage products={(products ?? []) as Product[]} initialSlots={slots} />
 }

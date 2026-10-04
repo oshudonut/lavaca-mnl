@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
+import { STOREFRONT_TAG } from '@/lib/supabase/storefront'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 
@@ -83,5 +85,6 @@ export async function PUT(request: NextRequest) {
 
   if (!result) return NextResponse.json({ error: 'Failed to save announcement' }, { status: 500 })
 
+  revalidateTag(STOREFRONT_TAG)
   return NextResponse.json(result)
 }

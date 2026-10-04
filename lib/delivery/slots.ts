@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { PICKUP_TIMES } from '@/lib/delivery/pickup'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -52,9 +53,10 @@ type AnnouncementRow = {
 export async function getAvailableSlots(
   fromDate: string,   // "YYYY-MM-DD"
   toDate: string,     // "YYYY-MM-DD"
-  useServiceClient = false
+  client: boolean | SupabaseClient = false   // true = service client; or pass one
 ): Promise<SlotsResponse> {
-  const supabase = useServiceClient ? createServiceClient() : createClient()
+  const supabase =
+    typeof client === 'object' ? client : client ? createServiceClient() : createClient()
 
   // -------------------------------------------------------------------------
   // Step 1: Check for active sitewide closure announcement

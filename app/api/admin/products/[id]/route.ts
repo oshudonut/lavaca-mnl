@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
+import { STOREFRONT_TAG } from '@/lib/supabase/storefront'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 
@@ -46,6 +48,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Failed to update product' }, { status: 500 })
   }
 
+  revalidateTag(STOREFRONT_TAG)
   return NextResponse.json(updated)
 }
 
@@ -71,5 +74,6 @@ export async function DELETE(
     return NextResponse.json({ error: 'Failed to delete product' }, { status: 500 })
   }
 
+  revalidateTag(STOREFRONT_TAG)
   return NextResponse.json({ success: true })
 }

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
+import { STOREFRONT_TAG } from '@/lib/supabase/storefront'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
 import { createAvailabilityBlock, patchAvailabilityBlock } from '@/lib/calendar/service'
@@ -181,5 +183,6 @@ export async function POST(request: NextRequest) {
       }
     : updated
 
+  revalidateTag(STOREFRONT_TAG)
   return NextResponse.json(responseBody, { status: isNew ? 201 : 200 })
 }
