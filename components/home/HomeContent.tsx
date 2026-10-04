@@ -129,11 +129,9 @@ export function HomeContent() {
             Premium Angus<br />Roast Beef,<br />
             <span className="lv-craft-title-sub">Slow-Cooked for 25 Hours.</span>
           </h1>
-          <p className="lv-craft-quote">
-            &ldquo;Every cut of premium Angus is prepared with obsessive patience — sealed with a spice crust, slow-cooked until the connective tissue surrenders and the flavour deepens into something the family will talk about long after dinner.&rdquo;
-          </p>
-          <p className="lv-craft-body">
-            We believe the best food is never rushed. Lavaca MNL exists to bring that patience to your table — thoughtfully prepared, carefully packaged, and ready exactly when you need it.
+          <p className="lv-craft-quote" style={{ marginBottom: 44 }}>
+            &ldquo;Every cut of our Angus Roast Beef is prepared with passion and patience — sealed with a spice crust and cooked to perfection. This allows us to perfect the cooking making it super flavorful and fork-tender! Truly{' '}
+            <span className="lv-hashtag">#notyourordinaryroastbeef</span>&rdquo;
           </p>
           <Link href="/order" className="lv-btn-primary" style={{ alignSelf: 'flex-start' }}>Order Now</Link>
         </div>

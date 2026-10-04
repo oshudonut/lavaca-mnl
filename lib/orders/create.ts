@@ -100,7 +100,7 @@ export async function createOrder(
       return { error: { code: 'VALIDATION', message: 'Invalid item quantity.' } }
     }
     if (!(SERVING_STYLES as readonly string[]).includes(item.serving_style)) {
-      return { error: { code: 'VALIDATION', message: 'Choose warm or frozen for each item.' } }
+      return { error: { code: 'VALIDATION', message: 'Choose Ready to Serve or Frozen for Later for each item.' } }
     }
   }
   if (!customer.special_request?.trim()) {

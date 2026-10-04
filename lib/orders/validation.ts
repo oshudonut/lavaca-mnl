@@ -35,6 +35,11 @@ export function normalizeInstagram(handle: string): string {
 export const SERVING_STYLES = ['warm', 'frozen'] as const
 export type ServingStyle = (typeof SERVING_STYLES)[number]
 
+export const SERVING_STYLE_OPTIONS: { value: ServingStyle; label: string; description: string }[] = [
+  { value: 'warm', label: 'Ready to Serve', description: 'Heated and ready to serve upon pickup' },
+  { value: 'frozen', label: 'Frozen for Later', description: 'Vacuum-packed and frozen, with reheating instructions' },
+]
+
 export function servingStyleLabel(style: string | null | undefined): string {
-  return style === 'frozen' ? 'Frozen' : style === 'warm' ? 'Warm' : ''
+  return SERVING_STYLE_OPTIONS.find((o) => o.value === style)?.label ?? ''
 }

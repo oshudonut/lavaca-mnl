@@ -10,7 +10,7 @@ import { CustomerForm } from '@/components/order/CustomerForm'
 import type { SlotsResponse } from '@/lib/delivery/slots'
 import type { Product, CartItem } from '@/components/order/ProductSelector'
 import type { CustomerDetails } from '@/components/order/CustomerForm'
-import { isValidEmail, isValidZip, normalizePhone } from '@/lib/orders/validation'
+import { isValidEmail, isValidZip, normalizePhone, servingStyleLabel } from '@/lib/orders/validation'
 import { PICKUP_LOCATION } from '@/lib/site'
 import { formatPickupTime } from '@/lib/delivery/pickup'
 
@@ -62,7 +62,7 @@ const fieldErrorStyle: React.CSSProperties = {
   marginTop: 10,
 }
 
-const STEPS = ['Items', 'Pickup date', 'Pickup time', 'Your details', 'Confirm'] as const
+const STEPS = ['Items', 'Pickup', 'Your details', 'Confirm'] as const
 const CONFIRM_STEP = STEPS.length - 1
 const STEP_EXIT_MS = 220
 
@@ -127,6 +127,26 @@ export function OrderPage({ products, initialSlots }: Props) {
     }
   }, [initialSlots, now])
 
+  // Clear an error as soon as the customer changes the field it's about.
+  const clearErrors = (...keys: string[]) =>
+    setFormErrors((prev) => {
+      if (!keys.some((k) => prev[k])) return prev
+      const next = { ...prev }
+      for (const k of keys) delete next[k]
+      return next
+    })
+  useEffect(() => clearErrors('cart'), [cart])
+  useEffect(() => clearErrors('special_request'), [specialRequest])
+  useEffect(() => clearErrors('date'), [selectedDate])
+  useEffect(() => clearErrors('time'), [selectedTime])
+  const prevCustomer = useRef(customer)
+  useEffect(() => {
+    const prev = prevCustomer.current
+    prevCustomer.current = customer
+    const changed = (Object.keys(customer) as (keyof CustomerDetails)[]).filter((k) => customer[k] !== prev[k])
+    if (changed.length) clearErrors(...changed)
+  }, [customer])
+
   const handleSelectDate = (date: string) => {
     setSelectedDate(date)
     setSelectedTime(null)
@@ -146,7 +166,7 @@ export function OrderPage({ products, initialSlots }: Props) {
     const errors: Record<string, string> = {}
     if (index === 0) {
       if (!cart.length) errors.cart = 'Please add at least one item.'
-      else if (cart.some((item) => !item.serving_style)) errors.cart = 'Choose warm or frozen for each item.'
+      else if (cart.some((item) => !item.serving_style)) errors.cart = 'Choose Ready to Serve or Frozen for Later for each item.'
       if (!specialRequest.trim()) errors.special_request = 'Special request is required.'
     }
     if (index === 1) {
@@ -154,11 +174,9 @@ export function OrderPage({ products, initialSlots }: Props) {
       else if (excludedCartProducts.length > 0) {
         errors.date = `${excludedCartProducts.map((p) => `${p.name} (${p.weight_label})`).join(', ')} ${excludedCartProducts.length > 1 ? 'are' : 'is'} not available on the selected date.`
       }
+      if (selectedDate && !selectedTime) errors.time = 'Please select a pickup time.'
     }
     if (index === 2) {
-      if (!selectedTime) errors.time = 'Please select a pickup time.'
-    }
-    if (index === 3) {
       if (!customer.name.trim()) errors.name = 'Full name is required.'
       if (!customer.phone.trim()) errors.phone = 'Phone number is required.'
       else if (!normalizePhone(customer.phone)) errors.phone = 'Enter a valid mobile number, e.g. 0917 123 4567.'
@@ -416,7 +434,17 @@ export function OrderPage({ products, initialSlots }: Props) {
             )}
             {step === 1 && (
                 <section style={cardStyle}>
-                  <h2 style={sectionHeadingStyle}>Select pickup date</h2>
+                  <h2 style={{ ...sectionHeadingStyle, marginBottom: 6 }}>Choose your pickup</h2>
+                  <p
+                    style={{
+                      fontFamily: "'Inter', sans-serif",
+                      fontSize: 12,
+                      color: '#57534E',
+                      margin: '0 0 18px',
+                    }}
+                  >
+                    Pickup location: <strong style={{ color: '#1C1917', fontWeight: 600 }}>{PICKUP_LOCATION}</strong>
+                  </p>
                   <AvailabilityCalendar
                     slotsData={slotsData}
                     selectedDate={selectedDate}
@@ -432,31 +460,42 @@ export function OrderPage({ products, initialSlots }: Props) {
                   {formErrors.date && excludedCartProducts.length === 0 && (
                     <p style={fieldErrorStyle}>{formErrors.date}</p>
                   )}
+
+                  {/* Time appears once a date is picked */}
+                  {selectedDateData && (
+                    <div
+                      key={selectedDateData.date}
+                      className="lv-reveal"
+                      style={{
+                        marginTop: 22,
+                        paddingTop: 20,
+                        borderTop: '1px solid #E7E5E4',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 8,
+                      }}
+                    >
+                      <span style={fieldLabelStyle}>
+                        Pickup time ·{' '}
+                        {new Date(`${selectedDateData.date}T00:00:00+08:00`).toLocaleDateString('en-PH', {
+                          weekday: 'short',
+                          month: 'short',
+                          day: 'numeric',
+                          timeZone: 'Asia/Manila',
+                        })}
+                      </span>
+                      <PickupTimePicker
+                        availableTimes={selectedDateData.pickup_times}
+                        selectedTime={selectedTime}
+                        onSelectTime={setSelectedTime}
+                        hasError={!!formErrors.time}
+                      />
+                      {formErrors.time && <p style={{ ...fieldErrorStyle, marginTop: 0 }}>{formErrors.time}</p>}
+                    </div>
+                  )}
                 </section>
             )}
             {step === 2 && (
-                <section style={cardStyle}>
-                  <h2 style={{ ...sectionHeadingStyle, marginBottom: 6 }}>Select pickup time</h2>
-                  <p
-                    style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: 12,
-                      color: '#57534E',
-                      margin: '0 0 16px',
-                    }}
-                  >
-                    Pickup location: <strong style={{ color: '#1C1917', fontWeight: 600 }}>{PICKUP_LOCATION}</strong>
-                  </p>
-                  <PickupTimePicker
-                    availableTimes={selectedDateData?.pickup_times ?? []}
-                    selectedTime={selectedTime}
-                    onSelectTime={setSelectedTime}
-                    hasError={!!formErrors.time}
-                  />
-                  {formErrors.time && <p style={fieldErrorStyle}>{formErrors.time}</p>}
-                </section>
-            )}
-            {step === 3 && (
                 <section style={cardStyle}>
                   <h2 style={sectionHeadingStyle}>Your details</h2>
                   <CustomerForm
@@ -486,7 +525,7 @@ export function OrderPage({ products, initialSlots }: Props) {
                         <div key={item.product_id} style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
                           <span style={summaryTextStyle}>
                             {product.name} · {product.weight_label}
-                            {item.serving_style ? ` · ${item.serving_style === 'warm' ? 'Warm' : 'Frozen'}` : ''} × {item.quantity}
+                            {item.serving_style ? ` · ${servingStyleLabel(item.serving_style)}` : ''} × {item.quantity}
                           </span>
                           <span style={{ ...summaryTextStyle, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
                             {fmtPeso(item.unit_price * item.quantity)}
@@ -519,7 +558,7 @@ export function OrderPage({ products, initialSlots }: Props) {
                     </p>
                     <p style={{ ...summaryTextStyle, color: '#57534E' }}>{PICKUP_LOCATION}</p>
                   </SummaryBlock>
-                  <SummaryBlock label="Your details" onEdit={() => goTo(3)} last>
+                  <SummaryBlock label="Your details" onEdit={() => goTo(2)} last>
                     <p style={summaryTextStyle}>{customer.name.trim()}</p>
                     <p style={summaryTextStyle}>{customer.phone.trim()} · {customer.email.trim()}</p>
                     <p style={summaryTextStyle}>

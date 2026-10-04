@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { ServingStyle } from '@/lib/orders/validation'
+import { SERVING_STYLE_OPTIONS, type ServingStyle } from '@/lib/orders/validation'
 
 export type Product = {
   id: string
@@ -90,12 +90,11 @@ export function ProductSelector({ products, cart, onChange, showStyleErrors }: P
               border: `1px solid ${isHovered ? '#A16207' : '#D6D3D1'}`,
               padding: '18px 20px',
               display: 'flex',
-              alignItems: 'flex-start',
-              justifyContent: 'space-between',
-              gap: 16,
+              flexDirection: 'column',
               transition: 'border-color 0.2s',
             }}
           >
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p
                 style={{
@@ -139,46 +138,6 @@ export function ProductSelector({ products, cart, onChange, showStyleErrors }: P
                 >
                   {product.description}
                 </p>
-              )}
-              {qty > 0 && (
-                <div style={{ marginTop: 12 }}>
-                  <div
-                    role="radiogroup"
-                    aria-label={`Warm or frozen for ${product.name}`}
-                    style={{ display: 'flex', gap: 8 }}
-                  >
-                    {(['warm', 'frozen'] as const).map((opt) => {
-                      const selected = style === opt
-                      return (
-                        <button
-                          key={opt}
-                          type="button"
-                          role="radio"
-                          aria-checked={selected}
-                          onClick={() => handleStyle(product.id, opt)}
-                          style={{
-                            fontFamily: "'Inter', sans-serif",
-                            fontSize: 12,
-                            fontWeight: 500,
-                            padding: '6px 16px',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
-                            background: selected ? '#A16207' : 'transparent',
-                            color: selected ? '#FFFFFF' : '#57534E',
-                            border: `1px solid ${selected ? '#A16207' : styleMissing ? '#DC2626' : '#D6D3D1'}`,
-                          }}
-                        >
-                          {opt === 'warm' ? 'Warm' : 'Frozen'}
-                        </button>
-                      )
-                    })}
-                  </div>
-                  {styleMissing && (
-                    <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: '#DC2626', margin: '6px 0 0' }}>
-                      Choose warm or frozen.
-                    </p>
-                  )}
-                </div>
               )}
             </div>
 
@@ -224,6 +183,78 @@ export function ProductSelector({ products, cart, onChange, showStyleErrors }: P
                 </button>
               </div>
             </div>
+            </div>
+              {qty > 0 && (
+                <fieldset
+                  style={{
+                    margin: '14px 0 0',
+                    padding: 0,
+                    border: 'none',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 8,
+                  }}
+                  aria-invalid={styleMissing || undefined}
+                >
+                  <legend
+                    style={{
+                      padding: 0,
+                      marginBottom: 8,
+                      fontFamily: "'Inter', sans-serif",
+                      fontSize: 11,
+                      fontWeight: 600,
+                      letterSpacing: '0.12em',
+                      textTransform: 'uppercase',
+                      color: '#1C1917',
+                    }}
+                  >
+                    How would you like it?
+                  </legend>
+                  {SERVING_STYLE_OPTIONS.map((opt) => {
+                    const selected = style === opt.value
+                    const id = `serving-${product.id}-${opt.value}`
+                    return (
+                      <label
+                        key={opt.value}
+                        htmlFor={id}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: 10,
+                          padding: '10px 12px',
+                          cursor: 'pointer',
+                          background: selected ? 'rgba(161,98,7,0.06)' : '#FFFFFF',
+                          border: `1px solid ${selected ? '#A16207' : styleMissing ? '#DC2626' : '#D6D3D1'}`,
+                          transition: 'border-color 0.2s, background 0.2s',
+                        }}
+                      >
+                        <input
+                          id={id}
+                          type="radio"
+                          name={`serving-${product.id}`}
+                          value={opt.value}
+                          checked={selected}
+                          onChange={() => handleStyle(product.id, opt.value)}
+                          style={{ accentColor: '#A16207', width: 18, height: 18, margin: '2px 0 0', flexShrink: 0 }}
+                        />
+                        <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 600, color: '#1C1917' }}>
+                            {opt.label}
+                          </span>
+                          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#57534E', lineHeight: 1.45 }}>
+                            {opt.description}
+                          </span>
+                        </span>
+                      </label>
+                    )
+                  })}
+                  {styleMissing && (
+                    <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: '#DC2626', margin: '2px 0 0' }}>
+                      Choose Ready to Serve or Frozen for Later.
+                    </p>
+                  )}
+                </fieldset>
+              )}
           </div>
         )
       })}
