@@ -1,18 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { PICKUP_TIMES } from '@/lib/delivery/pickup'
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-
-export type SlotWindow = {
-  window: 'AM' | 'PM'
-  window_start: string   // "09:00"
-  window_end: string     // "12:00"
-  max_orders: number
-  remaining: number
-  is_open: boolean
-}
 
 export type AvailableDate = {
   id: string
@@ -21,7 +13,7 @@ export type AvailableDate = {
   max_orders_total: number
   closure_reason: string | null
   closure_type: string | null
-  slots: SlotWindow[]
+  pickup_times: string[]   // "HH:MM" times still bookable (past the 48hr cutoff)
   unavailable_product_ids: string[]
 }
 
@@ -49,7 +41,7 @@ type AnnouncementRow = {
 // ---------------------------------------------------------------------------
 
 /**
- * Returns available delivery slots between fromDate and toDate (inclusive).
+ * Returns pickup dates and bookable pickup times between fromDate and toDate (inclusive).
  *
  * Business rules enforced:
  *   BR-ORD-01 — 48hr advance booking cutoff applied server-side
@@ -89,7 +81,7 @@ export async function getAvailableSlots(
   }
 
   // -------------------------------------------------------------------------
-  // Step 2: Query delivery dates joined with their slots
+  // Step 2: Query delivery dates with their per-date product exclusions
   // -------------------------------------------------------------------------
   const { data: rows, error: datesError } = await supabase
     .from('delivery_dates')
@@ -101,15 +93,6 @@ export async function getAvailableSlots(
       max_orders_total,
       closure_reason,
       closure_type,
-      delivery_slots (
-        id,
-        slot_window,
-        window_start,
-        window_end,
-        max_orders,
-        booked_count,
-        is_open
-      ),
       date_product_exclusions (
         product_id
       )
@@ -133,15 +116,6 @@ export async function getAvailableSlots(
     max_orders_total: number
     closure_reason: string | null
     closure_type: string | null
-    delivery_slots: Array<{
-      id: string
-      slot_window: 'AM' | 'PM'
-      window_start: string
-      window_end: string
-      max_orders: number
-      booked_count: number
-      is_open: boolean
-    }>
     date_product_exclusions: Array<{ product_id: string }>
   }
 
@@ -155,7 +129,6 @@ export async function getAvailableSlots(
       max_orders_total,
       closure_reason,
       closure_type,
-      delivery_slots,
       date_product_exclusions,
     } = rawRow
 
@@ -164,27 +137,11 @@ export async function getAvailableSlots(
     const dayOfWeek = new Date(`${date}T00:00:00+08:00`).getDay()
     if (dayOfWeek === 1) continue
 
-    // Build slot list
-    const slots: SlotWindow[] = (delivery_slots ?? [])
-      .sort((a, b) => (a.slot_window < b.slot_window ? -1 : 1))
-      .map((s) => {
-        // BR-ORD-01: 48hr advance booking rule
-        // Explicit +08:00 offset (PST) so cutoff is correct on UTC servers
-        const slotStart = new Date(`${date}T${s.window_start}+08:00`)
-        const withinCutoff = slotStart < cutoff
-
-        const remaining = Math.max(0, s.max_orders - s.booked_count)
-
-        return {
-          window: s.slot_window,
-          window_start: s.window_start,
-          window_end: s.window_end,
-          max_orders: s.max_orders,
-          remaining,
-          // Mark closed if within 48hr cutoff; preserve DB open/closed otherwise
-          is_open: withinCutoff ? false : s.is_open,
-        }
-      })
+    // BR-ORD-01: 48hr advance booking rule, applied per pickup time.
+    // Explicit +08:00 offset (PST) so cutoff is correct on UTC servers
+    const pickup_times = PICKUP_TIMES.filter(
+      (t) => new Date(`${date}T${t}:00+08:00`) >= cutoff
+    )
 
     dates.push({
       id,
@@ -193,7 +150,7 @@ export async function getAvailableSlots(
       max_orders_total,
       closure_reason,
       closure_type,
-      slots,
+      pickup_times,
       unavailable_product_ids: (date_product_exclusions ?? []).map((e) => e.product_id),
     })
   }

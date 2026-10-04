@@ -40,22 +40,8 @@ function getDateState(
 
   if (!availableDate.is_open) return { state: 'closed', label: 'Closed' }
 
-  const openSlots = availableDate.slots.filter((s) => s.is_open)
-  if (openSlots.length === 0) {
-    // All slots closed (48hr or DB closed) or fully booked
-    const allFull = availableDate.slots.every((s) => s.remaining === 0)
-    if (allFull) return { state: 'fully-booked', label: 'Full' }
-    return { state: 'disabled' }
-  }
-
-  const allFull = openSlots.every((s) => s.remaining === 0)
-  if (allFull) return { state: 'fully-booked', label: 'Full' }
-
-  const hasLimited = openSlots.some((s) => s.remaining <= 2 && s.remaining > 0)
-  if (hasLimited) {
-    const minRemaining = Math.min(...openSlots.map((s) => s.remaining))
-    return { state: 'limited', label: `${minRemaining} left` }
-  }
+  // No pickup times left once the 48hr cutoff is applied
+  if (availableDate.pickup_times.length === 0) return { state: 'disabled' }
 
   return { state: 'available' }
 }

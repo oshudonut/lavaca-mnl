@@ -1,4 +1,5 @@
 import { createServiceClient } from '@/lib/supabase/service'
+import { orderTimeLabel } from '@/lib/delivery/pickup'
 
 export type OrderSummary = {
   id: string
@@ -7,17 +8,15 @@ export type OrderSummary = {
   created_at: string
   subtotal: number
   total_amount: number
-  delivery_address: string
+  special_request: string | null
   payment_method: 'gcash' | 'bank_transfer'
   customer: {
     name: string
     email: string
     phone: string
   }
-  delivery_date: string        // "YYYY-MM-DD"
-  slot_window: 'AM' | 'PM'
-  window_start: string
-  window_end: string
+  pickup_date: string          // "YYYY-MM-DD"
+  time_label: string           // "1:00 PM", or the legacy delivery window
   items: {
     product_name: string
     weight_label: string
@@ -34,12 +33,10 @@ export async function getOrderSummary(orderId: string): Promise<OrderSummary | n
     .from('orders')
     .select(`
       id, order_number, status, created_at, subtotal, total_amount,
-      delivery_address, payment_method,
+      special_request, payment_method, pickup_time,
       customers ( name, email, phone ),
-      delivery_slots (
-        slot_window, window_start, window_end,
-        delivery_dates ( date )
-      ),
+      delivery_dates ( date ),
+      delivery_slots ( slot_window ),
       order_items (
         quantity, unit_price, subtotal,
         products ( name, weight_label )
@@ -52,9 +49,7 @@ export async function getOrderSummary(orderId: string): Promise<OrderSummary | n
 
   const slot = Array.isArray(data.delivery_slots) ? data.delivery_slots[0] : data.delivery_slots
   const customer = Array.isArray(data.customers) ? data.customers[0] : data.customers
-  const deliveryDate = Array.isArray(slot?.delivery_dates)
-    ? slot.delivery_dates[0]
-    : slot?.delivery_dates
+  const dateRow = Array.isArray(data.delivery_dates) ? data.delivery_dates[0] : data.delivery_dates
 
   return {
     id: data.id,
@@ -63,17 +58,15 @@ export async function getOrderSummary(orderId: string): Promise<OrderSummary | n
     created_at: data.created_at,
     subtotal: data.subtotal,
     total_amount: data.total_amount,
-    delivery_address: data.delivery_address,
+    special_request: data.special_request,
     payment_method: data.payment_method,
     customer: {
       name: customer?.name ?? '',
       email: customer?.email ?? '',
       phone: customer?.phone ?? '',
     },
-    delivery_date: deliveryDate?.date ?? '',
-    slot_window: slot?.slot_window ?? 'AM',
-    window_start: slot?.window_start ?? '',
-    window_end: slot?.window_end ?? '',
+    pickup_date: dateRow?.date ?? '',
+    time_label: orderTimeLabel({ pickup_time: data.pickup_time, slot_window: slot?.slot_window }),
     items: (data.order_items ?? []).map((item: any) => ({
       product_name: item.products?.name ?? '',
       weight_label: item.products?.weight_label ?? '',

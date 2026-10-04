@@ -35,7 +35,6 @@ export default async function Page() {
         <div style={{ width: '100%', maxWidth: 540 }}>
           <ClosureBanner
             message={slots.closure_message ?? null}
-            closed_until={slots.closed_until ?? null}
           />
         </div>
       </main>

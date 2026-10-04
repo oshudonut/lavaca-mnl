@@ -1,11 +1,6 @@
 import { notFound } from 'next/navigation'
 import { getOrderSummary } from '@/lib/orders/get'
 
-const WINDOW_LABELS: Record<'AM' | 'PM', string> = {
-  AM: '9:00 AM – 12:00 PM',
-  PM: '1:00 PM – 5:00 PM',
-}
-
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(n)
 
@@ -20,8 +15,8 @@ export default async function ConfirmationPage({ searchParams }: Props) {
   const order = await getOrderSummary(orderId)
   if (!order) notFound()
 
-  const deliveryDateLabel = order.delivery_date
-    ? new Date(`${order.delivery_date}T00:00:00+08:00`).toLocaleDateString('en-PH', {
+  const pickupDateLabel = order.pickup_date
+    ? new Date(`${order.pickup_date}T00:00:00+08:00`).toLocaleDateString('en-PH', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
@@ -203,7 +198,7 @@ export default async function ConfirmationPage({ searchParams }: Props) {
           </div>
         </section>
 
-        {/* Delivery details card */}
+        {/* Pickup details card */}
         <section
           style={{
             background: '#FFFFFF',
@@ -221,7 +216,7 @@ export default async function ConfirmationPage({ searchParams }: Props) {
               margin: '0 0 20px',
             }}
           >
-            Delivery Details
+            Pickup Details
           </h2>
           <div style={{ paddingBottom: 14, borderBottom: '1px solid rgba(161,98,7,0.08)' }}>
             <p
@@ -244,15 +239,10 @@ export default async function ConfirmationPage({ searchParams }: Props) {
                 margin: 0,
               }}
             >
-              {deliveryDateLabel}
+              {pickupDateLabel}
             </p>
           </div>
-          <div
-            style={{
-              padding: '14px 0',
-              borderBottom: '1px solid rgba(161,98,7,0.08)',
-            }}
-          >
+          <div style={{ paddingTop: 14 }}>
             <p
               style={{
                 fontFamily: "'Jost', sans-serif",
@@ -273,33 +263,36 @@ export default async function ConfirmationPage({ searchParams }: Props) {
                 margin: 0,
               }}
             >
-              {WINDOW_LABELS[order.slot_window]}
+              {order.time_label}
             </p>
           </div>
-          <div style={{ paddingTop: 14 }}>
-            <p
-              style={{
-                fontFamily: "'Jost', sans-serif",
-                fontSize: 9,
-                letterSpacing: '0.28em',
-                textTransform: 'uppercase',
-                color: '#A16207',
-                margin: '0 0 6px',
-              }}
-            >
-              Address
-            </p>
-            <p
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 13,
-                color: '#1C1917',
-                margin: 0,
-              }}
-            >
-              {order.delivery_address}
-            </p>
-          </div>
+          {order.special_request && (
+            <div style={{ paddingTop: 14, marginTop: 14, borderTop: '1px solid rgba(161,98,7,0.08)' }}>
+              <p
+                style={{
+                  fontFamily: "'Jost', sans-serif",
+                  fontSize: 9,
+                  letterSpacing: '0.28em',
+                  textTransform: 'uppercase',
+                  color: '#A16207',
+                  margin: '0 0 6px',
+                }}
+              >
+                Special Request
+              </p>
+              <p
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 13,
+                  color: '#1C1917',
+                  margin: 0,
+                  whiteSpace: 'pre-line',
+                }}
+              >
+                {order.special_request}
+              </p>
+            </div>
+          )}
         </section>
 
         {/* Status note */}

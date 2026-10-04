@@ -17,7 +17,7 @@ export default function Cust06({ order_number, customer_name }: Cust06Props) {
           </Text>
           <Hr />
           <Text style={{ fontSize: '14px', color: '#333' }}>
-            Your delivery slot has been released. If you would still like to order, you are welcome to place a new order at any time.
+            Your pickup time has been released. If you would still like to order, you are welcome to place a new order at any time.
           </Text>
           <Text style={{ fontSize: '14px' }}>
             <Link href={`${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/order`} style={{ color: '#16a34a' }}>

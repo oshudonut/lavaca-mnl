@@ -29,8 +29,8 @@ export type OrderTableRow = {
   status: string
   total_amount: number
   customer_name: string
-  delivery_date: string
-  slot_window: string
+  pickup_date: string
+  time_label: string
   items_summary: string
 }
 
@@ -269,7 +269,7 @@ export function OrdersTable({ orders }: Props) {
                       style={{ cursor: 'pointer', accentColor: '#A16207' }}
                     />
                   </th>
-                  {['Order #', 'Customer', 'Items', 'Delivery', 'Status', 'Total', 'Placed'].map((col, i) => (
+                  {['Order #', 'Customer', 'Items', 'Pickup', 'Status', 'Total', 'Placed'].map((col, i) => (
                     <th
                       key={col}
                       style={{
@@ -338,7 +338,7 @@ export function OrdersTable({ orders }: Props) {
                         {order.items_summary}
                       </td>
                       <td style={{ padding: '14px 16px', fontFamily: "'Inter', sans-serif", color: '#57534E', whiteSpace: 'nowrap' }}>
-                        {order.delivery_date} · {order.slot_window}
+                        {order.pickup_date} · {order.time_label}
                       </td>
                       <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
                         <span style={{

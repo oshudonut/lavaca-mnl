@@ -48,9 +48,13 @@ export function AnnouncementEditor() {
   }
 
   async function handleSave() {
-    setSaving(true)
     setError(null)
     setSuccess(false)
+    if (form.is_active && !form.message.trim()) {
+      setError('Please type a banner message before turning the banner on.')
+      return
+    }
+    setSaving(true)
 
     try {
       const res = await fetch('/api/admin/announcements', {
@@ -182,11 +186,11 @@ export function AnnouncementEditor() {
           onChange={e => set('message', e.target.value)}
           onFocus={() => setFocusedField('message')}
           onBlur={() => setFocusedField(null)}
-          placeholder="e.g. We are currently taking a short break from deliveries."
+          placeholder="e.g. We are currently taking a short break from orders."
           style={{ ...inputStyle('message'), resize: 'none' }}
         />
         <p style={{ fontFamily: "'Jost', sans-serif", fontSize: 11, color: '#A8A29E', margin: '6px 0 0', lineHeight: 1.5 }}>
-          Shown at the top of the banner. Leave blank to show the resume/return message only.
+          This is the message customers will see on the order page.
         </p>
       </div>
 
@@ -241,18 +245,10 @@ export function AnnouncementEditor() {
             Banner preview
           </p>
           {form.message && (
-            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, color: '#78350F', margin: '0 0 4px' }}>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, color: '#78350F', margin: 0 }}>
               {form.message}
             </p>
           )}
-          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#92400E', margin: '0 0 4px' }}>
-            {form.closed_until
-              ? `Lavaca MNL will resume accepting deliveries on ${new Date(form.closed_until + 'T00:00:00').toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}.`
-              : 'We will announce our return on our Facebook page.'}
-          </p>
-          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: '#A16207', margin: 0 }}>
-            For inquiries, message us on Messenger.
-          </p>
         </div>
       )}
 

@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Lavaca MNL",
-  description: "Premium food delivery",
+  description: "Premium slow-cooked Angus roast beef, ready for pickup",
 };
 
 export default function RootLayout({

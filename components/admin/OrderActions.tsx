@@ -368,7 +368,7 @@ export function OrderActions({ orderId, status }: Props) {
               onChange={e => setReason(e.target.value)}
               onFocus={() => setFocusedField('cancelReason')}
               onBlur={() => setFocusedField(null)}
-              placeholder="e.g. Out of stock, unable to deliver to address…"
+              placeholder="e.g. Out of stock, unable to fulfill this order…"
               style={inputStyle('cancelReason')}
             />
           </div>

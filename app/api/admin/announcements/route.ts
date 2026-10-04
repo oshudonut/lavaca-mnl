@@ -33,6 +33,10 @@ export async function PUT(request: NextRequest) {
     closed_until = null,
   } = body
 
+  if (is_active && !message?.trim()) {
+    return NextResponse.json({ error: 'Please type a banner message before turning the banner on.' }, { status: 422 })
+  }
+
   const supabase = createServiceClient()
 
   // Deactivate all existing active announcements before activating a new one

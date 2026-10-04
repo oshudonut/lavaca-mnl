@@ -172,19 +172,6 @@ export function ProductSelector({ products, cart, onChange }: Props) {
                   +
                 </button>
               </div>
-              {qty > 0 && (
-                <p
-                  style={{
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: 11,
-                    color: '#8C7B6B',
-                    fontVariantNumeric: 'tabular-nums',
-                    margin: 0,
-                  }}
-                >
-                  {formatCurrency(product.price)} × {qty} = {formatCurrency(product.price * qty)}
-                </p>
-              )}
             </div>
           </div>
         )

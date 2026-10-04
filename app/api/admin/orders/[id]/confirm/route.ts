@@ -5,11 +5,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { sendEmail } from '@/lib/resend/send'
 import Cust04 from '@/lib/resend/templates/cust-04'
 import { syncOrderToCalendar } from '@/lib/orders/calendar-sync'
-
-const WINDOW_LABELS: Record<string, string> = {
-  AM: '9:00 AM – 12:00 PM',
-  PM: '1:00 PM – 5:00 PM',
-}
+import { orderTimeLabel } from '@/lib/delivery/pickup'
 
 export async function POST(
   request: NextRequest,
@@ -29,12 +25,10 @@ export async function POST(
   const { data: order } = await supabase
     .from('orders')
     .select(`
-      id, order_number, status, total_amount,
+      id, order_number, status, total_amount, pickup_time,
       customers ( name, email ),
-      delivery_slots (
-        slot_window,
-        delivery_dates ( date )
-      ),
+      delivery_dates ( date ),
+      delivery_slots ( slot_window ),
       order_items (
         quantity, subtotal,
         products ( name, weight_label )
@@ -67,8 +61,8 @@ export async function POST(
   // Send CUST-04 non-blocking
   const customer = Array.isArray(order.customers) ? order.customers[0] : order.customers
   const slot = Array.isArray(order.delivery_slots) ? order.delivery_slots[0] : order.delivery_slots
-  const dateRow = Array.isArray(slot?.delivery_dates) ? slot.delivery_dates[0] : slot?.delivery_dates
-  const deliveryDate = dateRow?.date
+  const dateRow = Array.isArray(order.delivery_dates) ? order.delivery_dates[0] : order.delivery_dates
+  const pickupDate = dateRow?.date
     ? new Date(`${dateRow.date}T00:00:00+08:00`).toLocaleDateString('en-PH', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Manila',
       })
@@ -80,8 +74,8 @@ export async function POST(
     react: React.createElement(Cust04, {
       order_number: order.order_number,
       customer_name: customer?.name ?? '',
-      delivery_date: deliveryDate,
-      delivery_window: WINDOW_LABELS[slot?.slot_window ?? 'AM'] ?? '',
+      pickup_date: pickupDate,
+      pickup_time: orderTimeLabel({ pickup_time: order.pickup_time, slot_window: slot?.slot_window }),
       items: (order.order_items ?? []).map((item: any) => ({
         name: item.products?.name ?? '',
         weight_label: item.products?.weight_label ?? '',

@@ -62,7 +62,7 @@ export interface OrderEventInput {
 }
 
 // ---------------------------------------------------------------------------
-// EVT-003: create delivery order event on Google Calendar
+// EVT-003: create pickup order event on Google Calendar
 // Returns the created event ID, or null on failure (never throws).
 // ---------------------------------------------------------------------------
 export async function createOrderEvent(input: OrderEventInput): Promise<string | null> {
@@ -71,7 +71,7 @@ export async function createOrderEvent(input: OrderEventInput): Promise<string |
     const { data } = await cal.events.insert({
       calendarId: calendarId(),
       requestBody: {
-        summary: `Lavaca MNL Delivery — ${input.order_number} — ${input.customer_name}`,
+        summary: `Lavaca MNL Pickup — ${input.order_number} — ${input.customer_name}`,
         colorId: COLOR_IDS.ORDER,
         start: {
           dateTime: `${input.delivery_date}T${input.window_start}:00+08:00`,
@@ -122,7 +122,7 @@ export async function createAvailabilityBlock(date: string): Promise<string | nu
     const { data } = await cal.events.insert({
       calendarId: calendarId(),
       requestBody: {
-        summary: 'Lavaca MNL — Deliveries Open',
+        summary: 'Lavaca MNL — Pickups Open',
         colorId: COLOR_IDS.AVAILABLE,
         start: { date },
         end: { date },
@@ -147,7 +147,7 @@ export async function patchAvailabilityBlock(eventId: string, date: string): Pro
       calendarId: calendarId(),
       eventId,
       requestBody: {
-        summary: 'Lavaca MNL — Deliveries Open',
+        summary: 'Lavaca MNL — Pickups Open',
         colorId: COLOR_IDS.AVAILABLE,
         start: { date },
         end: { date },

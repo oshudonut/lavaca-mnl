@@ -2,6 +2,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { expireStaleOrders } from '@/lib/orders/expire'
 import { OrdersTable } from '@/components/admin/OrdersTable'
 import type { OrderTableRow } from '@/components/admin/OrdersTable'
+import { orderTimeLabel } from '@/lib/delivery/pickup'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,12 +15,10 @@ export default async function AdminOrdersPage() {
   const { data: rows } = await supabase
     .from('orders')
     .select(`
-      id, order_number, created_at, status, total_amount,
+      id, order_number, created_at, status, total_amount, pickup_time,
       customers ( name ),
-      delivery_slots (
-        slot_window,
-        delivery_dates ( date )
-      ),
+      delivery_dates ( date ),
+      delivery_slots ( slot_window ),
       order_items (
         quantity,
         products ( name, weight_label )
@@ -30,7 +29,7 @@ export default async function AdminOrdersPage() {
   const orders: OrderTableRow[] = (rows ?? []).map((row: any) => {
     const customer = Array.isArray(row.customers) ? row.customers[0] : row.customers
     const slot = Array.isArray(row.delivery_slots) ? row.delivery_slots[0] : row.delivery_slots
-    const dateRow = Array.isArray(slot?.delivery_dates) ? slot.delivery_dates[0] : slot?.delivery_dates
+    const dateRow = Array.isArray(row.delivery_dates) ? row.delivery_dates[0] : row.delivery_dates
 
     const itemsSummary = (row.order_items ?? [])
       .map((item: any) => `${item.products?.name ?? ''} ×${item.quantity}`)
@@ -43,8 +42,8 @@ export default async function AdminOrdersPage() {
       status: row.status,
       total_amount: row.total_amount,
       customer_name: customer?.name ?? '—',
-      delivery_date: dateRow?.date ?? '—',
-      slot_window: slot?.slot_window ?? '—',
+      pickup_date: dateRow?.date ?? '—',
+      time_label: orderTimeLabel({ pickup_time: row.pickup_time, slot_window: slot?.slot_window }),
       items_summary: itemsSummary || '—',
     }
   })

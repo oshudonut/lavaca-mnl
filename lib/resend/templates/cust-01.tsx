@@ -18,8 +18,8 @@ const fmt = (n: number) =>
 export interface Cust01Props {
   order_number: string
   customer_name: string
-  delivery_date: string
-  delivery_window: string
+  pickup_date: string
+  pickup_time: string
   items: { name: string; weight_label: string; quantity: number; subtotal: number }[]
   total_amount: number
   payment_url: string
@@ -29,8 +29,8 @@ export interface Cust01Props {
 export default function Cust01({
   order_number,
   customer_name,
-  delivery_date,
-  delivery_window,
+  pickup_date,
+  pickup_time,
   items,
   total_amount,
   payment_url,
@@ -86,9 +86,9 @@ export default function Cust01({
           <Hr />
 
           <Text style={{ fontSize: '14px', color: '#333' }}>
-            <strong>Delivery date:</strong> {delivery_date}
+            <strong>Pickup date:</strong> {pickup_date}
             <br />
-            <strong>Time window:</strong> {delivery_window}
+            <strong>Pickup time:</strong> {pickup_time}
           </Text>
 
           <Hr />

@@ -21,9 +21,9 @@ export interface Admin01Props {
   customer_name: string
   customer_email: string
   customer_phone: string
-  delivery_address: string
-  delivery_date: string
-  delivery_window: string
+  special_request: string | null
+  pickup_date: string
+  pickup_time: string
   items: { name: string; weight_label: string; quantity: number; subtotal: number }[]
   total_amount: number
   payment_method: 'gcash' | 'bank_transfer'
@@ -35,9 +35,9 @@ export default function Admin01({
   customer_name,
   customer_email,
   customer_phone,
-  delivery_address,
-  delivery_date,
-  delivery_window,
+  special_request,
+  pickup_date,
+  pickup_time,
   items,
   total_amount,
   payment_method,
@@ -74,9 +74,11 @@ export default function Admin01({
           <Text style={{ fontSize: '14px', margin: '0 0 4px' }}>
             <strong>Phone:</strong> {customer_phone}
           </Text>
-          <Text style={{ fontSize: '14px', margin: '0 0 4px' }}>
-            <strong>Address:</strong> {delivery_address}
-          </Text>
+          {special_request && (
+            <Text style={{ fontSize: '14px', margin: '0 0 4px' }}>
+              <strong>Special request:</strong> {special_request}
+            </Text>
+          )}
           <Text style={{ fontSize: '14px', margin: '0 0 4px' }}>
             <strong>Payment:</strong>{' '}
             {payment_method === 'gcash' ? 'GCash' : 'Bank Transfer'}
@@ -85,13 +87,13 @@ export default function Admin01({
           <Hr />
 
           <Heading as="h2" style={{ fontSize: '16px', color: '#333' }}>
-            Delivery
+            Pickup
           </Heading>
           <Text style={{ fontSize: '14px', margin: '0 0 4px' }}>
-            <strong>Date:</strong> {delivery_date}
+            <strong>Date:</strong> {pickup_date}
           </Text>
           <Text style={{ fontSize: '14px', margin: '0' }}>
-            <strong>Window:</strong> {delivery_window}
+            <strong>Time:</strong> {pickup_time}
           </Text>
 
           <Hr />

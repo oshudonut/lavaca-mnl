@@ -11,12 +11,10 @@ export async function syncOrderToCalendar(orderId: string): Promise<void> {
     .from('orders')
     .select(`
       order_number,
+      pickup_time,
       customers ( name ),
-      delivery_slots (
-        window_start,
-        window_end,
-        delivery_dates ( date )
-      )
+      delivery_dates ( date ),
+      delivery_slots ( window_start, window_end )
     `)
     .eq('id', orderId)
     .single()
@@ -25,16 +23,32 @@ export async function syncOrderToCalendar(orderId: string): Promise<void> {
 
   const customer = Array.isArray(order.customers) ? order.customers[0] : order.customers
   const slot = Array.isArray(order.delivery_slots) ? order.delivery_slots[0] : order.delivery_slots
-  const dateRow = Array.isArray(slot?.delivery_dates) ? slot.delivery_dates[0] : slot?.delivery_dates
+  const dateRow = Array.isArray(order.delivery_dates) ? order.delivery_dates[0] : order.delivery_dates
 
-  if (!slot || !dateRow) return
+  if (!dateRow) return
+
+  // Pickup orders get a 30-minute event at the pickup time; legacy delivery
+  // orders keep their slot window.
+  let window_start: string
+  let window_end: string
+  if (order.pickup_time) {
+    const [h, m] = order.pickup_time.split(':').map(Number)
+    const endMinutes = h * 60 + m + 30
+    window_start = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+    window_end = `${String(Math.floor(endMinutes / 60)).padStart(2, '0')}:${String(endMinutes % 60).padStart(2, '0')}`
+  } else if (slot) {
+    window_start = slot.window_start
+    window_end = slot.window_end
+  } else {
+    return
+  }
 
   const input: OrderEventInput = {
     order_number: order.order_number,
     customer_name: customer?.name ?? 'Unknown',
     delivery_date: dateRow.date,
-    window_start: slot.window_start,
-    window_end: slot.window_end,
+    window_start,
+    window_end,
   }
 
   const eventId = await createOrderEvent(input)

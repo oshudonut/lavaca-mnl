@@ -6,7 +6,7 @@ export type CustomerDetails = {
   name: string
   phone: string
   email: string
-  delivery_address: string
+  special_request: string
   payment_method: 'gcash' | 'bank_transfer'
 }
 
@@ -44,13 +44,6 @@ const inputStyle = (focused: boolean, hasError: boolean): React.CSSProperties =>
   borderRadius: 0,
   transition: 'border-color 0.2s',
 })
-
-const helperTextStyle: React.CSSProperties = {
-  fontFamily: "'Inter', sans-serif",
-  fontSize: 11,
-  color: '#8C7B6B',
-  margin: 0,
-}
 
 const errorTextStyle: React.CSSProperties = {
   fontFamily: "'Inter', sans-serif",
@@ -140,36 +133,30 @@ export function CustomerForm({ value, onChange, errors }: Props) {
         )}
       </div>
 
-      {/* Delivery address */}
+      {/* Special request */}
       <div style={fieldWrapperStyle}>
-        <label htmlFor="cf-address" style={labelStyle}>
-          Delivery address
+        <label htmlFor="cf-special-request" style={labelStyle}>
+          Special Request
         </label>
         <textarea
-          id="cf-address"
+          id="cf-special-request"
           required
           rows={3}
-          value={value.delivery_address}
-          onChange={(e) => set('delivery_address', e.target.value)}
-          onFocus={() => setFocusedField('delivery_address')}
+          maxLength={500}
+          value={value.special_request}
+          onChange={(e) => set('special_request', e.target.value)}
+          onFocus={() => setFocusedField('special_request')}
           onBlur={() => setFocusedField(null)}
           style={{
-            ...inputStyle(focusedField === 'delivery_address', !!errors?.delivery_address),
+            ...inputStyle(focusedField === 'special_request', !!errors?.special_request),
             resize: 'vertical',
           }}
-          aria-describedby={
-            errors?.delivery_address ? 'cf-address-error' : 'cf-address-hint'
-          }
-          aria-invalid={!!errors?.delivery_address}
+          aria-describedby={errors?.special_request ? 'cf-special-request-error' : undefined}
+          aria-invalid={!!errors?.special_request}
         />
-        {!errors?.delivery_address && (
-          <p id="cf-address-hint" style={helperTextStyle}>
-            Metro Manila addresses only.
-          </p>
-        )}
-        {errors?.delivery_address && (
-          <p id="cf-address-error" style={errorTextStyle}>
-            {errors.delivery_address}
+        {errors?.special_request && (
+          <p id="cf-special-request-error" style={errorTextStyle}>
+            {errors.special_request}
           </p>
         )}
       </div>

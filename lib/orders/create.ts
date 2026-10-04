@@ -3,6 +3,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { sendEmail } from '@/lib/resend/send'
 import Cust01 from '@/lib/resend/templates/cust-01'
 import Admin01 from '@/lib/resend/templates/admin-01'
+import { formatPickupTime, isPickupTime } from '@/lib/delivery/pickup'
 
 export interface CartItem {
   product_id: string
@@ -11,13 +12,13 @@ export interface CartItem {
 
 export interface CreateOrderInput {
   delivery_date_id: string
-  slot_window: 'AM' | 'PM'
+  pickup_time: string     // "HH:MM", one of PICKUP_TIMES
   cart: CartItem[]
   customer: {
     name: string
     phone: string
     email: string
-    delivery_address: string
+    special_request: string
     payment_method: 'gcash' | 'bank_transfer'
   }
 }
@@ -29,7 +30,6 @@ export interface CreateOrderResult {
 
 export type CreateOrderError =
   | { code: 'VALIDATION'; message: string }
-  | { code: 'SLOT_FULL'; message: string }
   | { code: 'INTERNAL'; message: string }
 
 // ---------------------------------------------------------------------------
@@ -44,11 +44,6 @@ function padSeq(n: number): string {
   return String(n).padStart(3, '0')
 }
 
-const WINDOW_LABELS: Record<'AM' | 'PM', string> = {
-  AM: '9:00 AM – 12:00 PM',
-  PM: '1:00 PM – 5:00 PM',
-}
-
 // ---------------------------------------------------------------------------
 // Main export
 // ---------------------------------------------------------------------------
@@ -56,7 +51,7 @@ const WINDOW_LABELS: Record<'AM' | 'PM', string> = {
 export async function createOrder(
   input: CreateOrderInput
 ): Promise<{ data: CreateOrderResult } | { error: CreateOrderError }> {
-  const { delivery_date_id, slot_window, cart, customer } = input
+  const { delivery_date_id, pickup_time, cart, customer } = input
 
   // -------------------------------------------------------------------------
   // Validate inputs
@@ -73,24 +68,36 @@ export async function createOrder(
   if (!customer.email.trim()) {
     return { error: { code: 'VALIDATION', message: 'Email address is required.' } }
   }
-  if (!customer.delivery_address.trim()) {
-    return { error: { code: 'VALIDATION', message: 'Delivery address is required.' } }
+  if (!customer.special_request?.trim()) {
+    return { error: { code: 'VALIDATION', message: 'Special request is required.' } }
+  }
+  if (!isPickupTime(pickup_time)) {
+    return { error: { code: 'VALIDATION', message: 'Please choose a pickup time between 9:00 AM and 6:00 PM.' } }
   }
 
   const supabase = createServiceClient()
 
   // -------------------------------------------------------------------------
-  // Look up the slot record
+  // Look up the pickup date and enforce open / Monday / 48hr rules
   // -------------------------------------------------------------------------
-  const { data: slotRow, error: slotError } = await supabase
-    .from('delivery_slots')
-    .select('id, max_orders, booked_count, is_open, window_start, window_end')
-    .eq('delivery_date_id', delivery_date_id)
-    .eq('slot_window', slot_window)
+  const { data: dateRow, error: dateError } = await supabase
+    .from('delivery_dates')
+    .select('id, date, is_open')
+    .eq('id', delivery_date_id)
     .single()
 
-  if (slotError || !slotRow) {
-    return { error: { code: 'INTERNAL', message: 'Delivery slot not found.' } }
+  if (dateError || !dateRow) {
+    return { error: { code: 'VALIDATION', message: 'Pickup date not found.' } }
+  }
+
+  const pickupAt = new Date(`${dateRow.date}T${pickup_time}:00+08:00`)
+  const isMonday = new Date(`${dateRow.date}T00:00:00+08:00`).getDay() === 1
+  const withinCutoff = pickupAt < new Date(Date.now() + 48 * 60 * 60 * 1000)
+
+  if (!dateRow.is_open || isMonday || withinCutoff) {
+    return {
+      error: { code: 'VALIDATION', message: 'This pickup time is no longer available. Please choose another.' },
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -133,26 +140,10 @@ export async function createOrder(
       return {
         error: {
           code: 'VALIDATION',
-          message: `${product?.name ?? 'One of your items'} is not available for this delivery date.`,
+          message: `${product?.name ?? 'One of your items'} is not available for this pickup date.`,
         },
       }
     }
-  }
-
-  // -------------------------------------------------------------------------
-  // Atomically increment booked_count (catches slot_full)
-  // -------------------------------------------------------------------------
-  const { error: rpcError } = await supabase.rpc('increment_slot_booking', {
-    p_slot_id: slotRow.id,
-  })
-
-  if (rpcError) {
-    if (rpcError.message?.includes('slot_full')) {
-      return {
-        error: { code: 'SLOT_FULL', message: 'This slot is no longer available. Please choose another.' },
-      }
-    }
-    return { error: { code: 'INTERNAL', message: 'Failed to reserve delivery slot.' } }
   }
 
   // -------------------------------------------------------------------------
@@ -165,7 +156,6 @@ export async function createOrder(
         name: customer.name.trim(),
         phone: customer.phone.trim(),
         email: customer.email.trim().toLowerCase(),
-        default_address: customer.delivery_address.trim(),
       },
       { onConflict: 'email' }
     )
@@ -173,10 +163,6 @@ export async function createOrder(
     .single()
 
   if (customerError || !customerRow) {
-    await supabase
-      .from('delivery_slots')
-      .update({ booked_count: Math.max(0, slotRow.booked_count) })
-      .eq('id', slotRow.id)
     return { error: { code: 'INTERNAL', message: 'Failed to create customer record.' } }
   }
 
@@ -213,22 +199,18 @@ export async function createOrder(
     .insert({
       order_number,
       customer_id: customerRow.id,
-      delivery_slot_id: slotRow.id,
+      delivery_date_id,
+      pickup_time,
+      special_request: customer.special_request.trim().slice(0, 500),
       status: 'PENDING_PAYMENT',
       subtotal,
       total_amount,
-      delivery_address: customer.delivery_address,
       payment_method: customer.payment_method,
     })
     .select('id')
     .single()
 
   if (orderError || !orderRow) {
-    // Rollback slot increment since order failed
-    await supabase
-      .from('delivery_slots')
-      .update({ booked_count: Math.max(0, slotRow.booked_count) })
-      .eq('id', slotRow.id)
     return { error: { code: 'INTERNAL', message: 'Failed to create order.' } }
   }
 
@@ -254,16 +236,7 @@ export async function createOrder(
     console.error('[createOrder] Failed to insert order_items:', itemsError)
   }
 
-  // -------------------------------------------------------------------------
-  // Fetch delivery date for email context
-  // -------------------------------------------------------------------------
-  const { data: dateRow } = await supabase
-    .from('delivery_dates')
-    .select('date')
-    .eq('id', delivery_date_id)
-    .single()
-
-  const deliveryDate = dateRow?.date
+  const pickupDate = dateRow.date
     ? new Date(`${dateRow.date}T00:00:00+08:00`).toLocaleDateString('en-PH', {
         weekday: 'long',
         year: 'numeric',
@@ -297,8 +270,8 @@ export async function createOrder(
       react: React.createElement(Cust01, {
         order_number,
         customer_name: customer.name,
-        delivery_date: deliveryDate,
-        delivery_window: WINDOW_LABELS[slot_window],
+        pickup_date: pickupDate,
+        pickup_time: formatPickupTime(pickup_time),
         items: emailItems,
         total_amount,
         payment_url,
@@ -316,9 +289,9 @@ export async function createOrder(
         customer_name: customer.name,
         customer_email: customer.email,
         customer_phone: customer.phone,
-        delivery_address: customer.delivery_address,
-        delivery_date: deliveryDate,
-        delivery_window: WINDOW_LABELS[slot_window],
+        special_request: customer.special_request.trim(),
+        pickup_date: pickupDate,
+        pickup_time: formatPickupTime(pickup_time),
         items: emailItems,
         total_amount,
         payment_method: customer.payment_method,

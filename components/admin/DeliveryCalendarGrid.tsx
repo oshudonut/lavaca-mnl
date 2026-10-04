@@ -61,10 +61,6 @@ function DateCell({ date, record, isMonday, isPast, isSelected, onClick }: CellP
     )
   }
 
-  const slots = record?.delivery_slots ?? []
-  const totalBooked = slots.reduce((sum, s) => sum + (s.booked_count ?? 0), 0)
-  const totalMax = record?.max_orders_total ?? 0
-
   const borderColor = isSelected
     ? '#A16207'
     : record?.is_open
@@ -120,15 +116,6 @@ function DateCell({ date, record, isMonday, isPast, isSelected, onClick }: CellP
             color: '#15803D',
             display: 'inline-block',
           }}>Open</span>
-          {totalMax > 0 && (
-            <span style={{
-              marginTop: 'auto',
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 9,
-              color: '#57534E',
-              fontVariantNumeric: 'tabular-nums',
-            }}>{totalBooked}/{totalMax}</span>
-          )}
         </>
       ) : record ? (
         <>

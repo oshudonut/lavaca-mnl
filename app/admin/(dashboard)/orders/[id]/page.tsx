@@ -18,10 +18,6 @@ const STATUS_STYLES: Record<string, StatusStyle> = {
   EXPIRED:          { bg: '#F3F4F6', color: '#6B7280' },
 }
 
-const WINDOW_LABELS: Record<string, string> = {
-  AM: '9:00 AM – 12:00 PM',
-  PM: '1:00 PM – 5:00 PM',
-}
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(n)
@@ -34,8 +30,8 @@ export default async function AdminOrderDetailPage({ params }: Props) {
   const order = await getOrderSummary(params.id)
   if (!order) notFound()
 
-  const deliveryDateLabel = order.delivery_date
-    ? new Date(`${order.delivery_date}T00:00:00+08:00`).toLocaleDateString('en-PH', {
+  const pickupDateLabel = order.pickup_date
+    ? new Date(`${order.pickup_date}T00:00:00+08:00`).toLocaleDateString('en-PH', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Manila',
       })
     : '—'
@@ -126,7 +122,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
             ['Name',           order.customer.name],
             ['Email',          order.customer.email],
             ['Phone',          order.customer.phone],
-            ['Address',        order.delivery_address],
+            ...(order.special_request ? [['Special request', order.special_request]] : []),
             ['Payment method', order.payment_method === 'gcash' ? 'GCash' : 'Bank Transfer'],
           ].map(([label, value]) => (
             <div key={label} style={fieldRow}>
@@ -137,13 +133,13 @@ export default async function AdminOrderDetailPage({ params }: Props) {
         </div>
       </div>
 
-      {/* Delivery */}
+      {/* Pickup */}
       <div style={cardStyle}>
-        <h2 style={sectionHeading}>Delivery</h2>
+        <h2 style={sectionHeading}>Pickup</h2>
         <div>
           {[
-            ['Date', deliveryDateLabel],
-            ['Time', WINDOW_LABELS[order.slot_window] ?? order.slot_window],
+            ['Date', pickupDateLabel],
+            ['Time', order.time_label],
           ].map(([label, value]) => (
             <div key={label} style={fieldRow}>
               <span style={{ fontWeight: 600, color: '#1C1917', flexShrink: 0, minWidth: 110 }}>{label}</span>

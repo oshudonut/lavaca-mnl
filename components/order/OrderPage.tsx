@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { AvailabilityCalendar } from '@/components/calendar/AvailabilityCalendar'
-import { SlotWindowPicker } from '@/components/calendar/SlotWindowPicker'
+import { PickupTimePicker } from '@/components/calendar/PickupTimePicker'
 import { ClosureBanner } from '@/components/calendar/ClosureBanner'
 import { ProductSelector } from '@/components/order/ProductSelector'
 import { CustomerForm } from '@/components/order/CustomerForm'
@@ -19,7 +19,7 @@ const EMPTY_CUSTOMER: CustomerDetails = {
   name: '',
   phone: '',
   email: '',
-  delivery_address: '',
+  special_request: '',
   payment_method: 'gcash',
 }
 
@@ -52,7 +52,7 @@ export function OrderPage({ products }: Props) {
   const [loadingSlots, setLoadingSlots] = useState(true)
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
-  const [selectedWindow, setSelectedWindow] = useState<'AM' | 'PM' | null>(null)
+  const [selectedTime, setSelectedTime] = useState<string | null>(null)
 
   const [cart, setCart] = useState<CartItem[]>([])
   const [customer, setCustomer] = useState<CustomerDetails>(EMPTY_CUSTOMER)
@@ -71,7 +71,7 @@ export function OrderPage({ products }: Props) {
 
   const handleSelectDate = (date: string) => {
     setSelectedDate(date)
-    setSelectedWindow(null)
+    setSelectedTime(null)
   }
 
   const selectedDateData = slotsData?.dates.find((d) => d.date === selectedDate) ?? null
@@ -86,15 +86,15 @@ export function OrderPage({ products }: Props) {
   const validate = (): Record<string, string> => {
     const errors: Record<string, string> = {}
     if (!cart.length) errors.cart = 'Please add at least one item.'
-    if (!selectedDate) errors.date = 'Please select a delivery date.'
+    if (!selectedDate) errors.date = 'Please select a pickup date.'
     if (excludedCartProducts.length > 0) {
       errors.date = `${excludedCartProducts.map((p) => `${p.name} (${p.weight_label})`).join(', ')} ${excludedCartProducts.length > 1 ? 'are' : 'is'} not available on the selected date.`
     }
-    if (!selectedWindow) errors.window = 'Please select a delivery time.'
+    if (!selectedTime) errors.time = 'Please select a pickup time.'
     if (!customer.name.trim()) errors.name = 'Full name is required.'
     if (!customer.phone.trim()) errors.phone = 'Phone number is required.'
     if (!customer.email.trim()) errors.email = 'Email address is required.'
-    if (!customer.delivery_address.trim()) errors.delivery_address = 'Delivery address is required.'
+    if (!customer.special_request.trim()) errors.special_request = 'Special request is required.'
     return errors
   }
 
@@ -113,13 +113,13 @@ export function OrderPage({ products }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           delivery_date_id: selectedDateData!.id,
-          slot_window: selectedWindow,
+          pickup_time: selectedTime,
           cart: cart.map(({ product_id, quantity }) => ({ product_id, quantity })),
           customer: {
             name: customer.name.trim(),
             phone: customer.phone.trim(),
             email: customer.email.trim(),
-            delivery_address: customer.delivery_address.trim(),
+            special_request: customer.special_request.trim(),
             payment_method: customer.payment_method,
           },
         }),
@@ -157,7 +157,6 @@ export function OrderPage({ products }: Props) {
         <div style={{ width: '100%', maxWidth: 540 }}>
           <ClosureBanner
             message={slotsData.closure_message ?? null}
-            closed_until={slotsData.closed_until ?? null}
           />
         </div>
       </main>
@@ -199,7 +198,7 @@ export function OrderPage({ products }: Props) {
             lineHeight: 1.2,
           }}
         >
-          {'Fresh Angus\nDelivered.'}
+          {'Fresh Angus\nReady for Pickup.'}
         </h1>
         <p
           style={{
@@ -210,7 +209,7 @@ export function OrderPage({ products }: Props) {
             margin: 0,
           }}
         >
-          Metro Manila delivery · Tue–Sat
+          Pickup · 9AM – 6PM
         </p>
       </div>
 
@@ -239,7 +238,7 @@ export function OrderPage({ products }: Props) {
 
           {/* Calendar / Closure Banner */}
           <section style={cardStyle}>
-            <h2 style={sectionHeadingStyle}>Select delivery date</h2>
+            <h2 style={sectionHeadingStyle}>Select pickup date</h2>
             {loadingSlots ? (
               <div style={{ background: '#F5F4F2', height: 200, width: '100%' }} />
             ) : (
@@ -265,16 +264,17 @@ export function OrderPage({ products }: Props) {
             )}
           </section>
 
-          {/* Slot window picker — only shown after a date is selected */}
+          {/* Pickup time — only shown after a date is selected */}
           {selectedDateData && (
             <section style={cardStyle}>
-              <h2 style={sectionHeadingStyle}>Select delivery time</h2>
-              <SlotWindowPicker
-                slots={selectedDateData.slots}
-                selectedWindow={selectedWindow}
-                onSelectWindow={setSelectedWindow}
+              <h2 style={sectionHeadingStyle}>Select pickup time</h2>
+              <PickupTimePicker
+                availableTimes={selectedDateData.pickup_times}
+                selectedTime={selectedTime}
+                onSelectTime={setSelectedTime}
+                hasError={!!formErrors.time}
               />
-              {formErrors.window && <p style={fieldErrorStyle}>{formErrors.window}</p>}
+              {formErrors.time && <p style={fieldErrorStyle}>{formErrors.time}</p>}
             </section>
           )}
 
@@ -288,7 +288,7 @@ export function OrderPage({ products }: Props) {
                 name: formErrors.name,
                 phone: formErrors.phone,
                 email: formErrors.email,
-                delivery_address: formErrors.delivery_address,
+                special_request: formErrors.special_request,
               }}
             />
           </section>

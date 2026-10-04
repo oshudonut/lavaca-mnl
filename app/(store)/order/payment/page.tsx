@@ -5,10 +5,6 @@ import { PaymentInstructions } from '@/components/order/PaymentInstructions'
 import { ScreenshotUpload } from '@/components/order/ScreenshotUpload'
 import { CountdownTimer } from '@/components/order/CountdownTimer'
 
-const WINDOW_LABELS: Record<'AM' | 'PM', string> = {
-  AM: '9:00 AM – 12:00 PM',
-  PM: '1:00 PM – 5:00 PM',
-}
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(n)
@@ -31,8 +27,8 @@ export default async function PaymentPage({ searchParams }: Props) {
 
   const paymentSettings = await getPaymentSettings()
 
-  const deliveryDateLabel = order.delivery_date
-    ? new Date(`${order.delivery_date}T00:00:00+08:00`).toLocaleDateString('en-PH', {
+  const pickupDateLabel = order.pickup_date
+    ? new Date(`${order.pickup_date}T00:00:00+08:00`).toLocaleDateString('en-PH', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
@@ -155,10 +151,10 @@ export default async function PaymentPage({ searchParams }: Props) {
           </div>
           <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 2 }}>
             <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: '#57534E', margin: 0 }}>
-              Delivery: {deliveryDateLabel}
+              Pickup: {pickupDateLabel}
             </p>
             <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: '#57534E', margin: 0 }}>
-              Time: {WINDOW_LABELS[order.slot_window]}
+              Time: {order.time_label}
             </p>
           </div>
         </section>

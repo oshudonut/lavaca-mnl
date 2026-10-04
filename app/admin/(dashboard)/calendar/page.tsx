@@ -25,7 +25,7 @@ export default function AdminCalendarPage() {
           margin: '0 0 6px',
           letterSpacing: '0.01em',
         }}>
-          Delivery Calendar
+          Pickup Calendar
         </h1>
         <p style={{
           fontFamily: "'Inter', sans-serif",

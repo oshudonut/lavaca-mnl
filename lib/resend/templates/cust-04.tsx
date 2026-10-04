@@ -6,20 +6,20 @@ const fmt = (n: number) => new Intl.NumberFormat('en-PH', { style: 'currency', c
 export interface Cust04Props {
   order_number: string
   customer_name: string
-  delivery_date: string
-  delivery_window: string
+  pickup_date: string
+  pickup_time: string
   items: { name: string; weight_label: string; quantity: number; subtotal: number }[]
   total_amount: number
 }
 
-export default function Cust04({ order_number, customer_name, delivery_date, delivery_window, items, total_amount }: Cust04Props) {
+export default function Cust04({ order_number, customer_name, pickup_date, pickup_time, items, total_amount }: Cust04Props) {
   return (
     <Html><Head />
       <Body style={{ backgroundColor: '#f5f5f5', fontFamily: 'Arial, sans-serif' }}>
         <Container style={{ maxWidth: '560px', margin: '32px auto', backgroundColor: '#fff', borderRadius: '8px', padding: '32px' }}>
           <Heading style={{ fontSize: '22px', color: '#111' }}>✅ Order Confirmed!</Heading>
           <Text style={{ color: '#555', marginTop: '0' }}>
-            Hi {customer_name}, your order <strong>{order_number}</strong> has been confirmed. We'll prepare your delivery as scheduled.
+            Hi {customer_name}, your order <strong>{order_number}</strong> has been confirmed. We'll have it ready for pickup as scheduled.
           </Text>
           <Hr />
           <Heading as="h2" style={{ fontSize: '16px', color: '#333' }}>Order Summary</Heading>
@@ -36,12 +36,12 @@ export default function Cust04({ order_number, customer_name, delivery_date, del
           </Row>
           <Hr />
           <Text style={{ fontSize: '14px', color: '#333' }}>
-            <strong>Delivery date:</strong> {delivery_date}<br />
-            <strong>Time window:</strong> {delivery_window}
+            <strong>Pickup date:</strong> {pickup_date}<br />
+            <strong>Pickup time:</strong> {pickup_time}
           </Text>
           <Hr />
           <Text style={{ fontSize: '14px', color: '#555' }}>
-            Please be available to receive your delivery during the scheduled window. We'll be in touch if anything changes.
+            Please pick up your order at your scheduled time. We'll be in touch if anything changes.
           </Text>
           <Hr />
           <Text style={{ fontSize: '12px', color: '#999' }}>Lavaca MNL · Message us on Messenger for questions.</Text>

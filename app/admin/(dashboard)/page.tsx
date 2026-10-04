@@ -42,12 +42,6 @@ async function getDashboardStats() {
 
   const todayDateIds = (todayDateRows ?? []).map((r) => r.id)
 
-  const { data: todaySlotRows } = todayDateIds.length
-    ? await supabase.from('delivery_slots').select('id').in('delivery_date_id', todayDateIds)
-    : { data: [] }
-
-  const todaySlotIds = (todaySlotRows ?? []).map((r) => r.id)
-
   const { data: weekDateRows } = await supabase
     .from('delivery_dates')
     .select('id')
@@ -56,26 +50,20 @@ async function getDashboardStats() {
 
   const weekDateIds = (weekDateRows ?? []).map((r) => r.id)
 
-  const { data: weekSlotRows } = weekDateIds.length
-    ? await supabase.from('delivery_slots').select('id').in('delivery_date_id', weekDateIds)
-    : { data: [] }
-
-  const weekSlotIds = (weekSlotRows ?? []).map((r) => r.id)
-
-  const { count: pendingPaymentsCount } = todaySlotIds.length
+  const { count: pendingPaymentsCount } = todayDateIds.length
     ? await supabase
         .from('orders')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'PAYMENT_REVIEW')
-        .in('delivery_slot_id', todaySlotIds)
+        .in('delivery_date_id', todayDateIds)
     : { count: 0 }
 
-  const { count: weekConfirmedCount } = weekSlotIds.length
+  const { count: weekConfirmedCount } = weekDateIds.length
     ? await supabase
         .from('orders')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'CONFIRMED')
-        .in('delivery_slot_id', weekSlotIds)
+        .in('delivery_date_id', weekDateIds)
     : { count: 0 }
 
   const { count: activeOrdersCount } = await supabase
@@ -94,26 +82,45 @@ async function getDashboardStats() {
     0
   )
 
-  const { data: capacityDates } = await supabase
+  const { data: upcomingDateRows } = await supabase
     .from('delivery_dates')
-    .select('date, max_orders_total, delivery_slots(slot_window, max_orders, booked_count)')
+    .select('id, date')
+    .eq('is_open', true)
     .gte('date', today)
     .lte('date', in14Days)
     .order('date', { ascending: true })
+
+  const upcomingDateIds = (upcomingDateRows ?? []).map((r) => r.id)
+  const { data: upcomingOrderRows } = upcomingDateIds.length
+    ? await supabase
+        .from('orders')
+        .select('delivery_date_id')
+        .in('delivery_date_id', upcomingDateIds)
+        .not('status', 'in', '("CANCELLED","EXPIRED")')
+    : { data: [] }
+
+  const ordersPerDate = new Map<string, number>()
+  for (const row of upcomingOrderRows ?? []) {
+    ordersPerDate.set(row.delivery_date_id, (ordersPerDate.get(row.delivery_date_id) ?? 0) + 1)
+  }
+
+  const upcomingDates: UpcomingDate[] = (upcomingDateRows ?? []).map((r) => ({
+    date: r.date,
+    order_count: ordersPerDate.get(r.id) ?? 0,
+  }))
 
   return {
     pendingPaymentsCount: pendingPaymentsCount ?? 0,
     weekConfirmedCount: weekConfirmedCount ?? 0,
     activeOrdersCount: activeOrdersCount ?? 0,
     revenueThisMonth,
-    capacityDates: (capacityDates ?? []) as CapacityDate[],
+    upcomingDates,
   }
 }
 
-type CapacityDate = {
+type UpcomingDate = {
   date: string
-  max_orders_total: number
-  delivery_slots: { slot_window: string; max_orders: number; booked_count: number }[]
+  order_count: number
 }
 
 // ---------------------------------------------------------------------------
@@ -202,7 +209,7 @@ export default async function AdminDashboard() {
         <StatCard label="Revenue this month"       value={fmt(stats.revenueThisMonth)} />
       </div>
 
-      {/* Capacity — next 14 days */}
+      {/* Upcoming pickups — next 14 days */}
       <div style={{
         background: '#FFFFFF',
         border: '1px solid #D6D3D1',
@@ -223,7 +230,7 @@ export default async function AdminDashboard() {
             color: '#1C1917',
             margin: 0,
           }}>
-            Capacity
+            Upcoming Pickups
           </h2>
           <span style={{
             fontFamily: "'Jost', sans-serif",
@@ -236,7 +243,7 @@ export default async function AdminDashboard() {
           </span>
         </div>
 
-        {stats.capacityDates.length === 0 ? (
+        {stats.upcomingDates.length === 0 ? (
           <p style={{
             padding: '32px 24px',
             fontFamily: "'Inter', sans-serif",
@@ -244,22 +251,17 @@ export default async function AdminDashboard() {
             color: '#8C7B6B',
             margin: 0,
           }}>
-            No delivery dates configured for the next 14 days.
+            No open pickup dates in the next 14 days.
           </p>
         ) : (
           <div>
-            {stats.capacityDates.map((row, i) => {
+            {stats.upcomingDates.map((row, i) => {
               const dateLabel = new Date(`${row.date}T00:00:00+08:00`).toLocaleDateString('en-PH', {
                 weekday: 'short',
                 month: 'short',
                 day: 'numeric',
                 timeZone: 'Asia/Manila',
               })
-              const totalBooked = row.delivery_slots.reduce((s, sl) => s + sl.booked_count, 0)
-              const pct = row.max_orders_total > 0
-                ? Math.round((totalBooked / row.max_orders_total) * 100)
-                : 0
-              const barColor = pct >= 100 ? '#DC2626' : pct >= 75 ? '#D97706' : '#16A34A'
 
               return (
                 <div
@@ -284,51 +286,15 @@ export default async function AdminDashboard() {
                     {dateLabel}
                   </span>
 
-                  {/* Slot breakdown */}
-                  <div style={{ display: 'flex', gap: 12, flexShrink: 0 }}>
-                    {row.delivery_slots
-                      .sort((a, b) => (a.slot_window < b.slot_window ? -1 : 1))
-                      .map((sl) => (
-                        <span
-                          key={sl.slot_window}
-                          style={{
-                            fontFamily: "'Jost', sans-serif",
-                            fontSize: 10,
-                            letterSpacing: '0.1em',
-                            color: '#8C7B6B',
-                          }}
-                        >
-                          {sl.slot_window} {sl.booked_count}/{sl.max_orders}
-                        </span>
-                      ))}
-                  </div>
-
-                  {/* Progress bar */}
-                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{
-                      flex: 1,
-                      height: 3,
-                      background: '#EDE9E8',
-                      overflow: 'hidden',
-                    }}>
-                      <div style={{
-                        height: '100%',
-                        width: `${Math.min(pct, 100)}%`,
-                        background: barColor,
-                        transition: 'width 0.3s',
-                      }} />
-                    </div>
-                    <span style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: 11,
-                      color: '#8C7B6B',
-                      width: 32,
-                      textAlign: 'right',
-                      flexShrink: 0,
-                    }}>
-                      {pct}%
-                    </span>
-                  </div>
+                  {/* Order count */}
+                  <span style={{
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: 13,
+                    color: row.order_count > 0 ? '#1C1917' : '#8C7B6B',
+                    fontVariantNumeric: 'tabular-nums',
+                  }}>
+                    {row.order_count} {row.order_count === 1 ? 'order' : 'orders'}
+                  </span>
                 </div>
               )
             })}
