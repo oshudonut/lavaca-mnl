@@ -124,7 +124,7 @@ export function HomeContent() {
           />
         </div>
         <div className="lv-craft-panel">
-          <p className="lv-section-label light">Slow-Cooked &middot; 100% Angus &middot; Metro Manila</p>
+          <p className="lv-section-label light">Slow-Cooked &middot; 100% Angus &middot; Ayala Alabang</p>
           <h1 className="lv-craft-title">
             Premium Angus<br />Roast Beef,<br />
             <span className="lv-craft-title-sub">Slow-Cooked for 25 Hours.</span>
