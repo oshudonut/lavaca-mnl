@@ -64,10 +64,11 @@ export default async function ConfirmationPage({ searchParams }: Props) {
           <p
             style={{
               fontFamily: "'Jost', sans-serif",
-              fontSize: 10,
-              letterSpacing: '0.28em',
+              fontSize: 15,
+              fontWeight: 500,
+              letterSpacing: '0.24em',
               textTransform: 'uppercase',
-              color: '#A16207',
+              color: '#FFFFFF',
               margin: '0 0 18px',
             }}
           >
