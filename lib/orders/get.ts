@@ -23,7 +23,8 @@ export type OrderSummary = {
   items: {
     product_name: string
     weight_label: string
-    serving: string              // "Warm" / "Frozen", or "" for older orders
+    serving: string              // "Ready to Serve" / "Frozen for Later", or ""
+    serving_style: string | null // raw value: 'warm' | 'frozen' | null
     quantity: number
     unit_price: number
     subtotal: number
@@ -82,6 +83,7 @@ export async function getOrderSummary(orderId: string): Promise<OrderSummary | n
       product_name: item.products?.name ?? '',
       weight_label: item.products?.weight_label ?? '',
       serving: servingStyleLabel(item.serving_style),
+      serving_style: item.serving_style ?? null,
       quantity: item.quantity,
       unit_price: item.unit_price,
       subtotal: item.subtotal,
