@@ -35,76 +35,69 @@ async function getDashboardStats() {
   const in14Days = addDays(today, 14)
   const startOfMonth = manilaStartOfMonth()
 
-  const { data: todayDateRows } = await supabase
-    .from('delivery_dates')
-    .select('id')
-    .eq('date', today)
+  // Round 1: every date in the next 14 days (covers today, this week and
+  // the upcoming list) alongside the queries that don't depend on dates.
+  const [{ data: dateRows }, { count: activeOrdersCount }, { data: revenueRows }] = await Promise.all([
+    supabase
+      .from('delivery_dates')
+      .select('id, date, is_open')
+      .gte('date', today)
+      .lte('date', in14Days)
+      .order('date', { ascending: true }),
+    supabase
+      .from('orders')
+      .select('*', { count: 'exact', head: true })
+      .not('status', 'in', '("DELIVERED","CANCELLED","EXPIRED")'),
+    supabase
+      .from('orders')
+      .select('total_amount')
+      .eq('status', 'CONFIRMED')
+      .gte('created_at', `${startOfMonth}T00:00:00+08:00`),
+  ])
 
-  const todayDateIds = (todayDateRows ?? []).map((r) => r.id)
+  const dates = dateRows ?? []
+  const todayDateIds = dates.filter((d) => d.date === today).map((d) => d.id)
+  const weekDateIds = dates.filter((d) => d.date <= in7Days).map((d) => d.id)
+  const upcomingDateRows = dates.filter((d) => d.is_open)
+  const upcomingDateIds = upcomingDateRows.map((d) => d.id)
 
-  const { data: weekDateRows } = await supabase
-    .from('delivery_dates')
-    .select('id')
-    .gte('date', today)
-    .lte('date', in7Days)
-
-  const weekDateIds = (weekDateRows ?? []).map((r) => r.id)
-
-  const { count: pendingPaymentsCount } = todayDateIds.length
-    ? await supabase
-        .from('orders')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'PAYMENT_REVIEW')
-        .in('delivery_date_id', todayDateIds)
-    : { count: 0 }
-
-  const { count: weekConfirmedCount } = weekDateIds.length
-    ? await supabase
-        .from('orders')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'CONFIRMED')
-        .in('delivery_date_id', weekDateIds)
-    : { count: 0 }
-
-  const { count: activeOrdersCount } = await supabase
-    .from('orders')
-    .select('*', { count: 'exact', head: true })
-    .not('status', 'in', '("DELIVERED","CANCELLED","EXPIRED")')
-
-  const { data: revenueRows } = await supabase
-    .from('orders')
-    .select('total_amount')
-    .eq('status', 'CONFIRMED')
-    .gte('created_at', `${startOfMonth}T00:00:00+08:00`)
+  // Round 2: order queries that need the date ids, in parallel.
+  const [{ count: pendingPaymentsCount }, { count: weekConfirmedCount }, { data: upcomingOrderRows }] =
+    await Promise.all([
+      todayDateIds.length
+        ? supabase
+            .from('orders')
+            .select('*', { count: 'exact', head: true })
+            .eq('status', 'PAYMENT_REVIEW')
+            .in('delivery_date_id', todayDateIds)
+        : Promise.resolve({ count: 0 }),
+      weekDateIds.length
+        ? supabase
+            .from('orders')
+            .select('*', { count: 'exact', head: true })
+            .eq('status', 'CONFIRMED')
+            .in('delivery_date_id', weekDateIds)
+        : Promise.resolve({ count: 0 }),
+      upcomingDateIds.length
+        ? supabase
+            .from('orders')
+            .select('delivery_date_id')
+            .in('delivery_date_id', upcomingDateIds)
+            .not('status', 'in', '("CANCELLED","EXPIRED")')
+        : Promise.resolve({ data: [] as { delivery_date_id: string }[] }),
+    ])
 
   const revenueThisMonth = (revenueRows ?? []).reduce(
     (sum, row) => sum + (row.total_amount ?? 0),
     0
   )
 
-  const { data: upcomingDateRows } = await supabase
-    .from('delivery_dates')
-    .select('id, date')
-    .eq('is_open', true)
-    .gte('date', today)
-    .lte('date', in14Days)
-    .order('date', { ascending: true })
-
-  const upcomingDateIds = (upcomingDateRows ?? []).map((r) => r.id)
-  const { data: upcomingOrderRows } = upcomingDateIds.length
-    ? await supabase
-        .from('orders')
-        .select('delivery_date_id')
-        .in('delivery_date_id', upcomingDateIds)
-        .not('status', 'in', '("CANCELLED","EXPIRED")')
-    : { data: [] }
-
   const ordersPerDate = new Map<string, number>()
   for (const row of upcomingOrderRows ?? []) {
     ordersPerDate.set(row.delivery_date_id, (ordersPerDate.get(row.delivery_date_id) ?? 0) + 1)
   }
 
-  const upcomingDates: UpcomingDate[] = (upcomingDateRows ?? []).map((r) => ({
+  const upcomingDates: UpcomingDate[] = upcomingDateRows.map((r) => ({
     date: r.date,
     order_count: ordersPerDate.get(r.id) ?? 0,
   }))

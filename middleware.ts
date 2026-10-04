@@ -25,7 +25,12 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  // getClaims() verifies the session JWT locally against the project's
+  // cached public signing keys (ES256), refreshing the session only when it
+  // has expired, so most admin requests skip a network round trip to
+  // Supabase Auth. getUser() always made that round trip.
+  const { data } = await supabase.auth.getClaims()
+  const user = data?.claims?.sub ? data.claims : null
 
   // Protect /admin/* routes (except /admin/login)
   if (
@@ -42,7 +47,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  // Only the admin pages need the session check; API routes verify the
+  // session themselves, and public pages don't need it at all.
+  matcher: ['/admin/:path*'],
 }

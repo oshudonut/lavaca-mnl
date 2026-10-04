@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function AdminOrdersPage() {
   // Expire stale orders on every admin page load so the list stays current
-  await expireStaleOrders()
+  await expireStaleOrders({ deferEmails: true })
 
   const supabase = createServiceClient()
 
