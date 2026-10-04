@@ -1,6 +1,7 @@
 import { createServiceClient } from '@/lib/supabase/service'
 import { ProductsTable } from '@/components/admin/ProductsTable'
 import type { ProductRow } from '@/components/admin/ProductsTable'
+import { PageHeader } from '@/components/admin/ui'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,30 +14,9 @@ export default async function AdminProductsPage() {
     .order('sort_order', { ascending: true })
 
   return (
-    <div>
-      <div style={{ marginBottom: 28 }}>
-        <p style={{
-          fontFamily: "'Jost', sans-serif",
-          fontSize: 10,
-          fontWeight: 400,
-          letterSpacing: '0.2em',
-          textTransform: 'uppercase',
-          color: '#A16207',
-          margin: '0 0 6px',
-        }}>
-          Admin
-        </p>
-        <h1 style={{
-          fontFamily: "'Playfair Display SC', serif",
-          fontSize: 28,
-          fontWeight: 400,
-          color: '#1C1917',
-          margin: 0,
-        }}>
-          Products
-        </h1>
-      </div>
+    <>
+      <PageHeader title="Products" eyebrow="What customers can order" />
       <ProductsTable products={(rows ?? []) as ProductRow[]} />
-    </div>
+    </>
   )
 }

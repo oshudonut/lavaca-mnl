@@ -88,7 +88,7 @@ export default function LoginPage() {
             }} />
             <p style={{
               fontFamily: "'Jost', sans-serif",
-              fontSize: 9,
+              fontSize: 12,
               fontWeight: 400,
               letterSpacing: '0.28em',
               textTransform: 'uppercase',
@@ -125,7 +125,7 @@ export default function LoginPage() {
                 style={{
                   display: 'block',
                   fontFamily: "'Inter', sans-serif",
-                  fontSize: 11,
+                  fontSize: 13,
                   fontWeight: 600,
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
@@ -147,7 +147,7 @@ export default function LoginPage() {
                 style={{
                   width: '100%',
                   fontFamily: "'Inter', sans-serif",
-                  fontSize: 14,
+                  fontSize: 16,
                   color: '#1C1917',
                   background: '#FAFAF9',
                   border: `1px solid ${error && !email ? '#DC2626' : focusedField === 'email' ? '#A16207' : '#D6D3D1'}`,
@@ -167,7 +167,7 @@ export default function LoginPage() {
                 style={{
                   display: 'block',
                   fontFamily: "'Inter', sans-serif",
-                  fontSize: 11,
+                  fontSize: 13,
                   fontWeight: 600,
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
@@ -189,7 +189,7 @@ export default function LoginPage() {
                 style={{
                   width: '100%',
                   fontFamily: "'Inter', sans-serif",
-                  fontSize: 14,
+                  fontSize: 16,
                   color: '#1C1917',
                   background: '#FAFAF9',
                   border: `1px solid ${error && !password ? '#DC2626' : focusedField === 'password' ? '#A16207' : '#D6D3D1'}`,
@@ -206,7 +206,7 @@ export default function LoginPage() {
             {error && (
               <p style={{
                 fontFamily: "'Inter', sans-serif",
-                fontSize: 12,
+                fontSize: 14,
                 color: '#DC2626',
                 textAlign: 'center',
                 margin: '0 0 16px',
@@ -222,7 +222,7 @@ export default function LoginPage() {
               style={{
                 width: '100%',
                 fontFamily: "'Inter', sans-serif",
-                fontSize: 11,
+                fontSize: 14,
                 fontWeight: 600,
                 letterSpacing: '0.22em',
                 textTransform: 'uppercase',
@@ -248,7 +248,7 @@ export default function LoginPage() {
             onMouseLeave={() => setBackHovered(false)}
             style={{
               fontFamily: "'Inter', sans-serif",
-              fontSize: 11,
+              fontSize: 14,
               color: backHovered ? 'rgba(250,250,249,0.65)' : 'rgba(250,250,249,0.35)',
               textDecoration: 'none',
               letterSpacing: '0.1em',

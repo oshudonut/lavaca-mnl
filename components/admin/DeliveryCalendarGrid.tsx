@@ -30,92 +30,21 @@ interface CellProps {
 
 function DateCell({ date, record, isPast, isSelected, onClick }: CellProps) {
   const day = parseInt(date.split('-')[2], 10)
-
-  const borderColor = isSelected
-    ? '#A16207'
-    : record?.is_open
-    ? '#86EFAC'
-    : record
-    ? '#FCA5A5'
-    : '#D6D3D1'
-
-  const bgColor = isSelected
-    ? 'rgba(161,98,7,0.05)'
-    : record?.is_open
-    ? 'rgba(220,252,231,0.5)'
-    : record
-    ? 'rgba(254,226,226,0.5)'
-    : '#FFFFFF'
+  const state = record ? (record.is_open ? 'open' : 'closed') : 'unset'
+  const label = state === 'open' ? 'Open' : state === 'closed' ? 'Closed' : 'Not set up'
 
   return (
     <button
+      type="button"
       onClick={onClick}
-      style={{
-        minHeight: 60,
-        width: '100%',
-        background: bgColor,
-        border: `1px solid ${borderColor}`,
-        padding: '6px 5px',
-        textAlign: 'left',
-        display: 'flex',
-        flexDirection: 'column',
-        cursor: 'pointer',
-        outline: isSelected ? '1px solid #A16207' : 'none',
-        outlineOffset: -1,
-        opacity: isPast ? 0.5 : 1,
-        transition: 'border-color 0.15s',
-        boxSizing: 'border-box',
-      }}
+      aria-pressed={isSelected}
+      aria-label={`${date}: ${label}${record?.closure_type ? `, ${record.closure_type}` : ''}`}
+      className={`adm-cal-cell is-${state}${isSelected ? ' is-selected' : ''}${isPast ? ' is-past' : ''}`}
     >
-      <span style={{
-        fontFamily: "'Inter', sans-serif",
-        fontSize: 11,
-        fontWeight: 600,
-        color: isPast ? '#8C7B6B' : '#1C1917',
-      }}>{day}</span>
-
-      {record?.is_open ? (
-        <>
-          <span style={{
-            marginTop: 3,
-            fontFamily: "'Jost', sans-serif",
-            fontSize: 8,
-            fontWeight: 500,
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-            color: '#15803D',
-            display: 'inline-block',
-          }}>Open</span>
-        </>
-      ) : record ? (
-        <>
-          <span style={{
-            marginTop: 3,
-            fontFamily: "'Jost', sans-serif",
-            fontSize: 8,
-            fontWeight: 500,
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-            color: '#B91C1C',
-            display: 'inline-block',
-          }}>Closed</span>
-          {record.closure_type && (
-            <span style={{
-              marginTop: 'auto',
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 9,
-              color: '#8C7B6B',
-              textTransform: 'capitalize',
-            }}>{record.closure_type}</span>
-          )}
-        </>
-      ) : (
-        <span style={{
-          marginTop: 'auto',
-          fontFamily: "'Inter', sans-serif",
-          fontSize: 9,
-          color: '#C4B8B0',
-        }}>No slot</span>
+      <span className="adm-cal-day">{day}</span>
+      <span className="adm-cal-state">{label}</span>
+      {state === 'closed' && record?.closure_type && (
+        <span className="adm-cal-note">{record.closure_type}</span>
       )}
     </button>
   )
@@ -203,7 +132,11 @@ export function DeliveryCalendarGrid() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Generate failed')
-      setGenMsg(`Created ${data.created}, skipped ${data.skipped}`)
+      setGenMsg(
+        data.created > 0
+          ? `Opened ${data.created} new day${data.created === 1 ? '' : 's'}. Days already set up were left as they are.`
+          : 'Every day this month is already set up.'
+      )
       await fetchDates(currentMonth)
     } catch (err: any) {
       setGenMsg(err.message ?? 'An error occurred')
@@ -233,18 +166,6 @@ export function DeliveryCalendarGrid() {
 
   const selectedRecord = selectedDate ? (dateMap.get(selectedDate) ?? null) : null
 
-  const navBtnStyle: React.CSSProperties = {
-    background: '#FFFFFF',
-    border: '1px solid #D6D3D1',
-    padding: '7px 9px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'background 0.15s',
-    flexShrink: 0,
-  }
-
   return (
     <div>
       {/* Mobile backdrop */}
@@ -264,83 +185,34 @@ export function DeliveryCalendarGrid() {
         {/* Calendar */}
         <div style={{ flex: 1, minWidth: 0 }}>
           {/* Navigation */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
+          <div className="adm-cal-toolbar">
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <button onClick={prevMonth} style={navBtnStyle} aria-label="Previous month">
-                <svg width={14} height={14} fill="none" stroke="#1C1917" viewBox="0 0 24 24" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <span style={{
-                fontFamily: "'Playfair Display SC', serif",
-                fontSize: 15,
-                fontWeight: 400,
-                color: '#1C1917',
-                width: 160,
-                textAlign: 'center',
-                letterSpacing: '0.01em',
-              }}>{monthLabel}</span>
-              <button onClick={nextMonth} style={navBtnStyle} aria-label="Next month">
-                <svg width={14} height={14} fill="none" stroke="#1C1917" viewBox="0 0 24 24" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+              <button type="button" onClick={prevMonth} className="adm-btn adm-btn-outline adm-cal-arrow" aria-label="Previous month">‹</button>
+              <h2 className="adm-h2" style={{ minWidth: 170, textAlign: 'center' }}>{monthLabel}</h2>
+              <button type="button" onClick={nextMonth} className="adm-btn adm-btn-outline adm-cal-arrow" aria-label="Next month">›</button>
             </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              {genMsg && (
-                <span style={{ fontFamily: "'Jost', sans-serif", fontSize: 10, letterSpacing: '0.1em', color: '#8C7B6B' }}>{genMsg}</span>
-              )}
-              <button
-                onClick={handleGenerate}
-                disabled={generating}
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 11,
-                  fontWeight: 600,
-                  letterSpacing: '0.12em',
-                  textTransform: 'uppercase',
-                  background: generating ? '#D6D3D1' : '#A16207',
-                  color: generating ? '#8C7B6B' : '#FFFFFF',
-                  border: 'none',
-                  padding: '8px 14px',
-                  cursor: generating ? 'not-allowed' : 'pointer',
-                  transition: 'background 0.2s',
-                  opacity: generating ? 0.7 : 1,
-                }}
-              >
-                {generating ? 'Generating…' : 'Generate month'}
-              </button>
-            </div>
+            <button type="button" className="adm-btn adm-btn-primary" onClick={handleGenerate} disabled={generating}>
+              {generating ? 'Opening days…' : 'Open all days this month'}
+            </button>
           </div>
+          {genMsg && <p className="adm-success" role="status" style={{ marginBottom: 12 }}>{genMsg}</p>}
 
           {/* Day headers */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2, marginBottom: 2 }}>
-            {DOW_LABELS.map(d => (
-              <div key={d} style={{
-                padding: '6px 0',
-                textAlign: 'center',
-                fontFamily: "'Jost', sans-serif",
-                fontSize: 9,
-                fontWeight: 400,
-                letterSpacing: '0.18em',
-                textTransform: 'uppercase',
-                color: '#8C7B6B',
-              }}>{d}</div>
-            ))}
+          <div className="adm-cal-grid adm-cal-dow">
+            {DOW_LABELS.map((d) => <div key={d}>{d}</div>)}
           </div>
 
           {/* Calendar grid */}
           {loading ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
+            <div className="adm-cal-grid adm-skeleton">
               {Array.from({ length: 35 }).map((_, i) => (
-                <div key={i} style={{ minHeight: 60, background: '#EDE9E8' }} />
+                <div key={i} className="adm-skel-bar" style={{ minHeight: 72 }} />
               ))}
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
+            <div className="adm-cal-grid">
               {cells.map((cell, i) => {
-                if (!cell.date) return <div key={i} style={{ minHeight: 60 }} />
+                if (!cell.date) return <div key={i} />
                 const isPast = cell.date < today
                 const record = dateMap.get(cell.date) ?? null
                 return (
@@ -358,18 +230,12 @@ export function DeliveryCalendarGrid() {
           )}
 
           {/* Legend */}
-          <div style={{ marginTop: 16, display: 'flex', gap: 20 }}>
-            {[
-              { color: '#86EFAC', label: 'Open' },
-              { color: '#FCA5A5', label: 'Closed' },
-              { color: '#D6D3D1', label: 'Not set up' },
-            ].map(({ color, label }) => (
-              <span key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ width: 10, height: 10, background: color, display: 'inline-block', flexShrink: 0 }} />
-                <span style={{ fontFamily: "'Jost', sans-serif", fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#8C7B6B' }}>{label}</span>
-              </span>
-            ))}
+          <div className="adm-cal-legend">
+            <span><i className="is-open" />Open for pickups</span>
+            <span><i className="is-closed" />Closed</span>
+            <span><i className="is-unset" />Not set up (customers can’t pick it)</span>
           </div>
+          <p className="adm-hint" style={{ marginTop: 8 }}>Tap a date to open or close it, or to hide a product for that day.</p>
         </div>
 
         {/* Side panel — desktop only inline, mobile is fixed overlay */}

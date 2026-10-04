@@ -367,39 +367,32 @@
 
       <div class="mock">
         <div class="mock-navbar">
-          <div class="row1"><span class="brand">Lavaca MNL</span><span class="signout">Sign Out</span></div>
-          <div class="links"><span class="active">Dashboard</span><span>Orders</span><span>Products</span><span>Calendar</span><span>Settings</span></div>
+          <div class="row1"><span class="brand">LAVACA ADMIN</span><span class="signout">Sign out</span></div>
+          <div class="links"><span class="active">Dashboard</span><span>Orders ①</span><span>Products</span><span>Calendar</span><span>Settings</span></div>
         </div>
-        <p class="mock-caption">The bar at the top of every admin page — click a word to switch pages, or "Sign Out" when you're done</p>
-      </div>
-
-      <div class="mock-cards">
-        <div class="mock-card"><div class="lbl">Pending payments today</div><div class="val">3</div></div>
-        <div class="mock-card"><div class="lbl">Confirmed this week</div><div class="val">14</div></div>
-        <div class="mock-card"><div class="lbl">Active orders</div><div class="val">9</div></div>
-        <div class="mock-card"><div class="lbl">Revenue this month</div><div class="val">₱18,420</div></div>
+        <p class="mock-caption">The bar at the top of every admin page — click a word to switch pages. The number beside Orders is how many payments wait for you</p>
       </div>
 
       <dl class="facts">
         <div>
-          <dt>Pending payments today</dt>
-          <dd>Orders due for pickup today whose payment screenshot hasn't been checked yet. Handle these first.</dd>
+          <dt>Needs your attention</dt>
+          <dd>The first thing on the page. A blue box shows how many <strong>payments are waiting for you to review</strong>, with a <strong>Review</strong> button that opens just those orders. An amber box shows orders <strong>waiting for payment</strong> and when the first one expires. When there's nothing to do, it says "All caught up".</dd>
         </div>
         <div>
-          <dt>Confirmed this week</dt>
-          <dd>Orders you've already approved that are scheduled for pickup in the next 7 days.</dd>
+          <dt>Today’s pickups</dt>
+          <dd>Each order being picked up today: the time, the customer, what they ordered (with Ready to Serve or Frozen for Later), and its status. Tap one to open it.</dd>
         </div>
         <div>
-          <dt>Active orders</dt>
-          <dd>Every order still in progress: not yet completed, cancelled, or expired.</dd>
+          <dt>Tomorrow</dt>
+          <dd>Tomorrow’s pickups, plus a <strong>To prepare</strong> total, for example "2 × 1 kg Ready to Serve · 1 × 500g Frozen for Later".</dd>
         </div>
         <div>
-          <dt>Revenue this month</dt>
-          <dd>Total value of confirmed orders placed so far this calendar month.</dd>
+          <dt>The numbers</dt>
+          <dd>Orders confirmed in the last 7 days, revenue from confirmed orders this month, and how many orders are still in progress.</dd>
         </div>
         <div>
-          <dt>Upcoming pickups (next 14 days)</dt>
-          <dd>Each open pickup date in the next two weeks and how many orders it has. There are no order limits, so this is for planning how much to prepare each day.</dd>
+          <dt>Next 7 days</dt>
+          <dd>How many orders each day has, which days are closed, and any day that isn’t set up yet. There are no order limits, so this is for planning.</dd>
         </div>
       </dl>
     </section>
@@ -412,10 +405,10 @@
       <p class="intro">Every order ever placed, newest first. This is where most of your day-to-day work happens.</p>
       <ol class="steps">
         <li><div class="step-body">Click <strong>Orders</strong> in the top bar.</div></li>
-        <li><div class="step-body">Type in the search box to find an order by <strong>order number</strong> or <strong>customer name</strong> — or use the dropdown next to it to show only one status, like "Payment Review" (the ones waiting on you).</div></li>
-        <li><div class="step-body">Each row shows the order number, customer, items, pickup date and time, status, total, and when it was placed. Click the <strong>order number</strong> to open the full order.</div></li>
-        <li><div class="step-body">To remove orders in bulk: tick the box next to each row you want to delete (or the box in the header to select everything showing), click <strong>Delete X selected</strong>, then confirm.
-          <div class="callout warn" style="margin-top:10px;"><span class="callout-label">This can't be undone</span><p>Deleting an order erases it completely — no record is kept. For a normal cancellation, open the order and use <strong>Cancel Order</strong> instead (see next section) — it notifies the customer and keeps a record.</p></div>
+        <li><div class="step-body">Type in the search box to find an order by <strong>order number</strong> or <strong>customer name</strong> Use the buttons under it to show only one kind of order, like <strong>To review</strong> (payments waiting on you) or <strong>Waiting for payment</strong>.</div></li>
+        <li><div class="step-body">Each order shows the pickup day and time, customer, items, order number, status and total. On a phone each order is a card. Tap any order to open it.</div></li>
+        <li><div class="step-body">To remove orders in bulk: tick the box next to each row you want to delete (or the box in the header to select everything showing), click <strong>Delete … selected</strong>, then confirm.
+          <div class="callout warn" style="margin-top:10px;"><span class="callout-label">This can't be undone</span><p>Deleting an order erases it completely — no record is kept. For a normal cancellation, open the order and use <strong>Cancel this order</strong> instead (see next section) — it notifies the customer and keeps a record.</p></div>
         </div></li>
       </ol>
       <div class="callout">
@@ -439,19 +432,18 @@
       </dl>
 
       <div class="mock">
-        <p style="font-family:'Jost',sans-serif;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:10px;">Actions available on an order waiting for review</p>
+        <p style="font-family:'Jost',sans-serif;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:10px;">On an order waiting for review, “Check the payment” comes first</p>
         <div class="mock-actions">
-          <span class="mock-btn gold">Confirm Payment</span>
-          <span class="mock-btn ghost">Reject Screenshot</span>
-          <span class="mock-btn danger">Cancel Order</span>
+          <span class="mock-btn gold">Confirm payment</span>
+          <span class="mock-btn danger">Reject screenshot</span>
         </div>
       </div>
 
       <ol class="steps">
-        <li><div class="step-body"><strong>Confirm Payment</strong> — shown while the order is in <em>Payment Review</em>. Check the screenshot against the amount owed, type in the GCash or bank reference number, and click Confirm. The customer is notified automatically and the order becomes <em>Confirmed</em>.</div></li>
-        <li><div class="step-body"><strong>Reject Screenshot</strong> — also shown during <em>Payment Review</em>. Use this if the photo is blurry, the amount is wrong, or it's the wrong account. Write a short reason (the customer will see it) and click Reject — they're asked to upload a new one.</div></li>
-        <li><div class="step-body"><strong>Cancel Order</strong> — available any time before the order is completed. Write a reason (out of stock, customer request) and click Cancel Order. The customer is notified.</div></li>
-        <li><div class="step-body"><strong>Delete Order</strong> — at the bottom of the Actions box. Permanently erases the order with no notification and no record. Reserve this for genuine mistakes, duplicates, or spam — use Cancel Order for anything a real customer needs to know about.</div></li>
+        <li><div class="step-body"><strong>Confirm payment</strong>: at the top while the order is <em>To review</em>. Check the screenshot against the amount due, type the GCash or bank <strong>reference number</strong>, and tap Confirm payment. The customer is emailed and the order becomes <em>Confirmed</em>.</div></li>
+        <li><div class="step-body"><strong>Reject screenshot</strong>: if the photo is blurry, the amount is wrong, or it went to the wrong account. Write a short reason (the customer sees it) and tap <strong>Reject and ask for a new screenshot</strong>.</div></li>
+        <li><div class="step-body"><strong>Cancel this order</strong>: under <em>Other actions</em> at the bottom, any time before the order is completed. Write a reason and confirm. The customer is emailed and the order is kept on record.</div></li>
+        <li><div class="step-body"><strong>Delete order</strong>: also under <em>Other actions</em>. It erases the order completely without telling the customer. Use it only for test orders, duplicates or spam.</div></li>
       </ol>
     </section>
 
@@ -463,10 +455,10 @@
       <p class="intro">The products customers can choose on the order page. Add new items, edit prices, or take something off the menu.</p>
       <ol class="steps">
         <li><div class="step-body">Click <strong>Products</strong> in the top bar.</div></li>
-        <li><div class="step-body">To add something new, click <strong>Add Product</strong> and fill in the SKU, name, weight (e.g. "1kg"), price, and an optional description, then click <strong>Add</strong>.</div></li>
-        <li><div class="step-body">To change an existing product, click <strong>Edit</strong> on its row, update whatever needs changing, then click <strong>Save</strong>.</div></li>
-        <li><div class="step-body">To temporarily hide a product without losing its data — say, it's sold out — untick the checkbox in the <strong>Available</strong> column. Customers can't order it until you tick it again.</div></li>
-        <li><div class="step-body">To permanently remove a product, click <strong>Delete</strong> on its row, then confirm.</div></li>
+        <li><div class="step-body">To add something new, click <strong>+ Add product</strong>, fill in the name, size, price, a short product code and a description, then click <strong>Add product</strong>.</div></li>
+        <li><div class="step-body">To change an existing product, click <strong>Edit</strong> on its card, change what you need, then click <strong>Save changes</strong>.</div></li>
+        <li><div class="step-body">To temporarily hide a product without losing its data — say, it's sold out — untick <strong>Available to customers</strong> on its card. It then says "Hidden from customers" until you tick it again.</div></li>
+        <li><div class="step-body">To permanently remove a product, click <strong>Delete</strong> on its card, then <strong>Yes, delete</strong>.</div></li>
       </ol>
     </section>
 
@@ -497,7 +489,7 @@
 
       <ol class="steps">
         <li><div class="step-body">Click <strong>Calendar</strong> in the top bar, then use the arrows beside the month name to move between months.</div></li>
-        <li><div class="step-body">If a whole month hasn't been set up yet, click <strong>Generate month</strong> to open every day in that month, Mondays included, then close or adjust any date that needs to be different. Days you've already set up are left as they are, so it's safe to click again to fill in missing days.</div></li>
+        <li><div class="step-body">If a whole month hasn't been set up yet, click <strong>Open all days this month</strong> to open every day in that month, Mondays included, then close or adjust any date that needs to be different. Days you've already set up are left as they are, so it's safe to click again to fill in missing days.</div></li>
         <li><div class="step-body">Click any date to open its panel (on a phone, it slides up from the bottom).
           <ul class="sub">
             <li>Set the day to <strong>Open</strong> or <strong>Closed</strong> using the toggle at the top.</li>
@@ -533,16 +525,16 @@
 
       <h3 style="font-size:16px;margin-top:4px;">Closure announcement</h3>
       <ol class="steps">
-        <li><div class="step-body">Set it to <strong>Active</strong> to replace the order page with your banner, so customers can't place orders. Use this for holidays, restocking, or any full stop. Set it to <strong>Inactive</strong> to take orders again.</div></li>
-        <li><div class="step-body">Write the <strong>banner message</strong>. It's required while the banner is Active, and it's the only text customers see, so include anything they need to know, such as when you'll reopen.</div></li>
-        <li><div class="step-body">Fill in <strong>Closed from</strong>, and <strong>Resumes on</strong> if you know the date. These dates are for your records and aren't shown to customers. The banner stays up until you set it back to Inactive.</div></li>
-        <li><div class="step-body">Check the live preview, then click <strong>Save announcement</strong>.</div></li>
+        <li><div class="step-body">Under <strong>Are you taking orders?</strong>, choose <strong>No, show the closed banner</strong> to replace the order page with your message, so customers can't place orders. Choose <strong>Yes, open for orders</strong> to take orders again.</div></li>
+        <li><div class="step-body">Write the <strong>banner message</strong>. It's required while the banner is on, and it's the only text customers see, so include anything they need to know, such as when you'll reopen.</div></li>
+        <li><div class="step-body">Fill in <strong>Closed from</strong>, and <strong>Reopens on</strong> if you know the date. These dates are for your records and aren't shown to customers. The banner stays up until you switch back to Yes, open for orders.</div></li>
+        <li><div class="step-body">Check <strong>What customers will see</strong>, then click <strong>Save</strong>.</div></li>
       </ol>
       <div class="mock">
         <div class="banner-preview">
           <p class="msg">Taking a short break for restocking. We reopen on Tuesday, December 2.</p>
         </div>
-        <p class="mock-caption">Example of what customers see when the announcement is Active</p>
+        <p class="mock-caption">Example of what customers see while the banner is on</p>
       </div>
     </section>
 
@@ -561,15 +553,15 @@
       </div>
       <p class="intro">The colored label on every order tells you exactly where it stands. Here's what each one means.</p>
       <div class="status-table">
-        <div class="srow"><span class="pill pill-pending">Pending Payment</span><span class="desc">Order placed, but the customer hasn't paid or uploaded proof yet.</span></div>
-        <div class="srow"><span class="pill pill-review">Payment Review</span><span class="desc">A payment screenshot is in — waiting on you to Confirm or Reject it.</span></div>
+        <div class="srow"><span class="pill pill-pending">Waiting for payment</span><span class="desc">Order placed, but the customer hasn't paid or uploaded proof yet.</span></div>
+        <div class="srow"><span class="pill pill-review">To review</span><span class="desc">A payment screenshot is in — waiting on you to Confirm or Reject it.</span></div>
         <div class="srow"><span class="pill pill-confirmed">Confirmed</span><span class="desc">Payment approved. Prepare the order for the customer's pickup date and time.</span></div>
         <div class="srow"><span class="pill pill-cancelled">Cancelled</span><span class="desc">Called off by you or the customer, with a reason on file.</span></div>
         <div class="srow"><span class="pill pill-expired">Expired</span><span class="desc">No payment screenshot within 2 hours. Closed automatically, no action needed.</span></div>
       </div>
       <div class="callout">
-        <span class="callout-label">Statuses you may see in the filter</span>
-        <p>The status dropdown on the Orders page also lists Awaiting Pickup, Out for Delivery, and Delivered. Nothing in the panel moves orders into those, so new orders stay Confirmed once paid.</p>
+        <span class="callout-label">About the Confirmed filter</span>
+        <p>The <strong>Confirmed</strong> filter on the Orders page also includes older statuses (Ready for pickup, Completed). Nothing in the panel moves new orders into those, so paid orders stay Confirmed.</p>
       </div>
 
       <h3 style="font-size:16px;margin-top:8px;">If something looks off</h3>
@@ -583,7 +575,7 @@
   </main>
 
   <footer>
-    <p>Lavaca Admin Handbook · updated October 4, 2026 for pickup ordering.</p>
+    <p>Lavaca Admin Handbook · updated October 4, 2026 for pickup ordering and the redesigned admin.</p>
   </footer>
 
 </div>

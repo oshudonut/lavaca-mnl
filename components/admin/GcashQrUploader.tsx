@@ -6,19 +6,6 @@ type Props = {
   initialUrl: string | null
 }
 
-const buttonStyle = (variant: 'dark' | 'outline', disabled: boolean): React.CSSProperties => ({
-  fontFamily: "'Jost', sans-serif",
-  fontSize: 10,
-  fontWeight: 600,
-  letterSpacing: '0.16em',
-  textTransform: 'uppercase',
-  padding: '9px 14px',
-  cursor: disabled ? 'not-allowed' : 'pointer',
-  background: variant === 'dark' ? (disabled ? '#D6D3D1' : '#1C1917') : 'transparent',
-  color: variant === 'dark' ? '#FAFAF8' : '#B91C1C',
-  border: variant === 'dark' ? 'none' : '1px solid #FECACA',
-})
-
 export function GcashQrUploader({ initialUrl }: Props) {
   const [url, setUrl] = useState<string | null>(initialUrl)
   const [busy, setBusy] = useState(false)
@@ -61,31 +48,18 @@ export function GcashQrUploader({ initialUrl }: Props) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 14 }}>
-      <span
-        style={{
-          fontFamily: "'Jost', sans-serif",
-          fontSize: 10,
-          fontWeight: 500,
-          letterSpacing: '0.12em',
-          textTransform: 'uppercase',
-          color: '#57534E',
-        }}
-      >
-        GCash QR code
-      </span>
+    <div className="adm-field" style={{ gap: 10 }}>
+      <span className="adm-label">GCash QR code</span>
 
       {url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={url}
           alt="Current GCash QR code"
-          style={{ width: 160, height: 'auto', border: '1px solid #D6D3D1', background: '#FFFFFF', padding: 8 }}
+          style={{ width: 180, height: 'auto', border: '1px solid #E5DDD5', borderRadius: 10, background: '#FFFFFF', padding: 8 }}
         />
       ) : (
-        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#8C7B6B', margin: 0 }}>
-          No QR code uploaded. Customers will only see the GCash number.
-        </p>
+        <p className="adm-hint" style={{ fontSize: 15 }}>No QR code yet. Customers only see the GCash number.</p>
       )}
 
       <input
@@ -100,45 +74,30 @@ export function GcashQrUploader({ initialUrl }: Props) {
         }}
       />
 
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => inputRef.current?.click()}
-          style={buttonStyle('dark', busy)}
-        >
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+        <button type="button" className="adm-btn adm-btn-outline" disabled={busy} onClick={() => inputRef.current?.click()}>
           {busy ? 'Working…' : url ? 'Replace QR code' : 'Upload QR code'}
         </button>
         {url && !confirmRemove && (
-          <button type="button" disabled={busy} onClick={() => setConfirmRemove(true)} style={buttonStyle('outline', busy)}>
+          <button type="button" className="adm-btn adm-btn-danger" disabled={busy} onClick={() => setConfirmRemove(true)}>
             Remove
           </button>
         )}
         {url && confirmRemove && (
           <>
-            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#57534E' }}>Remove the QR code?</span>
-            <button type="button" disabled={busy} onClick={handleRemove} style={buttonStyle('outline', busy)}>
+            <span>Remove the QR code?</span>
+            <button type="button" className="adm-btn adm-btn-danger" disabled={busy} onClick={handleRemove}>
               Yes, remove
             </button>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => setConfirmRemove(false)}
-              style={{ ...buttonStyle('outline', busy), color: '#57534E', border: '1px solid #D6D3D1' }}
-            >
-              Cancel
+            <button type="button" className="adm-btn adm-btn-outline" disabled={busy} onClick={() => setConfirmRemove(false)}>
+              Keep it
             </button>
           </>
         )}
       </div>
 
-      <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: '#8C7B6B', margin: 0 }}>
-        JPG or PNG, up to 2MB. Changes apply right away; no need to click Save.
-      </p>
-
-      {error && (
-        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#B91C1C', margin: 0 }}>{error}</p>
-      )}
+      <p className="adm-hint">JPG or PNG, up to 2MB. It shows on the payment page right away, no need to click Save.</p>
+      {error && <p className="adm-error" role="alert">{error}</p>}
     </div>
   )
 }

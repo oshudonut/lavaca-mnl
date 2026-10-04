@@ -41,7 +41,6 @@ export function PaymentSettingsEditor() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-  const [focusedField, setFocusedField] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/admin/payment-settings')
@@ -84,192 +83,60 @@ export function PaymentSettingsEditor() {
     }
   }
 
-  const inputStyle = (field: string): React.CSSProperties => ({
-    width: '100%',
-    border: focusedField === field ? '1px solid #A16207' : '1px solid #D6D3D1',
-    background: '#FAFAF8',
-    padding: '9px 12px',
-    fontFamily: "'Inter', sans-serif",
-    fontSize: 13,
-    color: '#1C1917',
-    outline: 'none',
-    boxSizing: 'border-box',
-    boxShadow: focusedField === field ? '0 0 0 2px #FEF3C7' : 'none',
-  })
-
-  const labelStyle: React.CSSProperties = {
-    display: 'block',
-    fontFamily: "'Jost', sans-serif",
-    fontSize: 9,
-    fontWeight: 600,
-    letterSpacing: '0.18em',
-    textTransform: 'uppercase',
-    color: '#78716C',
-    marginBottom: 8,
-  }
-
-  const groupLabel: React.CSSProperties = {
-    fontFamily: "'Jost', sans-serif",
-    fontSize: 9,
-    fontWeight: 600,
-    letterSpacing: '0.18em',
-    textTransform: 'uppercase',
-    color: '#A8A29E',
-    margin: '0 0 6px',
-  }
-
   if (loading) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {[1, 2, 3].map(i => (
-          <div key={i} style={{
-            height: 40,
-            background: '#F5F5F4',
-            animation: 'pulse 1.5s ease-in-out infinite',
-          }} />
-        ))}
+      <div className="adm-skeleton" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {[1, 2, 3].map((i) => <div key={i} className="adm-skel-bar" style={{ height: 44 }} />)}
       </div>
     )
   }
 
+  const field = (key: keyof FormState, label: string, placeholder?: string) => (
+    <div className="adm-field">
+      <label htmlFor={key} className="adm-label">{label}</label>
+      <input
+        id={key}
+        className="adm-input"
+        value={form[key]}
+        onChange={(e) => set(key, e.target.value)}
+        placeholder={placeholder}
+        autoComplete="off"
+      />
+    </div>
+  )
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* GCash */}
-      <div>
-        <p style={groupLabel}>GCash</p>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <div>
-            <label htmlFor="gcash_number" style={labelStyle}>Number</label>
-            <input
-              id="gcash_number"
-              value={form.gcash_number}
-              onChange={e => set('gcash_number', e.target.value)}
-              onFocus={() => setFocusedField('gcash_number')}
-              onBlur={() => setFocusedField(null)}
-              placeholder="e.g. 0917 123 4567"
-              style={inputStyle('gcash_number')}
-            />
-          </div>
-          <div>
-            <label htmlFor="gcash_account_name" style={labelStyle}>Account name</label>
-            <input
-              id="gcash_account_name"
-              value={form.gcash_account_name}
-              onChange={e => set('gcash_account_name', e.target.value)}
-              onFocus={() => setFocusedField('gcash_account_name')}
-              onBlur={() => setFocusedField(null)}
-              placeholder="e.g. Lavaca MNL"
-              style={inputStyle('gcash_account_name')}
-            />
-          </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <h3 className="adm-h3">GCash</h3>
+        <div className="adm-form-grid">
+          {field('gcash_number', 'GCash number', 'e.g. 0917 123 4567')}
+          {field('gcash_account_name', 'Account name', 'e.g. Lavaca MNL')}
         </div>
         <GcashQrUploader initialUrl={qrUrl} />
       </div>
 
-      {/* BPI */}
-      <div>
-        <p style={groupLabel}>BPI</p>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <div>
-            <label htmlFor="bpi_account" style={labelStyle}>Account number</label>
-            <input
-              id="bpi_account"
-              value={form.bpi_account}
-              onChange={e => set('bpi_account', e.target.value)}
-              onFocus={() => setFocusedField('bpi_account')}
-              onBlur={() => setFocusedField(null)}
-              style={inputStyle('bpi_account')}
-            />
-          </div>
-          <div>
-            <label htmlFor="bpi_name" style={labelStyle}>Account name</label>
-            <input
-              id="bpi_name"
-              value={form.bpi_name}
-              onChange={e => set('bpi_name', e.target.value)}
-              onFocus={() => setFocusedField('bpi_name')}
-              onBlur={() => setFocusedField(null)}
-              style={inputStyle('bpi_name')}
-            />
-          </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <h3 className="adm-h3">BPI</h3>
+        <div className="adm-form-grid">
+          {field('bpi_account', 'Account number')}
+          {field('bpi_name', 'Account name')}
         </div>
       </div>
 
-      {/* BDO */}
-      <div>
-        <p style={groupLabel}>BDO</p>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <div>
-            <label htmlFor="bdo_account" style={labelStyle}>Account number</label>
-            <input
-              id="bdo_account"
-              value={form.bdo_account}
-              onChange={e => set('bdo_account', e.target.value)}
-              onFocus={() => setFocusedField('bdo_account')}
-              onBlur={() => setFocusedField(null)}
-              style={inputStyle('bdo_account')}
-            />
-          </div>
-          <div>
-            <label htmlFor="bdo_name" style={labelStyle}>Account name</label>
-            <input
-              id="bdo_name"
-              value={form.bdo_name}
-              onChange={e => set('bdo_name', e.target.value)}
-              onFocus={() => setFocusedField('bdo_name')}
-              onBlur={() => setFocusedField(null)}
-              style={inputStyle('bdo_name')}
-            />
-          </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <h3 className="adm-h3">BDO</h3>
+        <div className="adm-form-grid">
+          {field('bdo_account', 'Account number')}
+          {field('bdo_name', 'Account name')}
         </div>
       </div>
 
-      {error && (
-        <p style={{
-          border: '1px solid #FECACA',
-          background: '#FEF2F2',
-          padding: '10px 14px',
-          fontFamily: "'Inter', sans-serif",
-          fontSize: 13,
-          color: '#B91C1C',
-          margin: 0,
-        }}>
-          {error}
-        </p>
-      )}
+      {error && <p className="adm-error" role="alert">{error}</p>}
+      {success && <p className="adm-success" role="status">Payment details saved. Customers will see them on the payment page.</p>}
 
-      {success && (
-        <p style={{
-          border: '1px solid #BBF7D0',
-          background: '#F0FDF4',
-          padding: '10px 14px',
-          fontFamily: "'Inter', sans-serif",
-          fontSize: 13,
-          color: '#15803D',
-          margin: 0,
-        }}>
-          Payment details saved.
-        </p>
-      )}
-
-      <button
-        onClick={handleSave}
-        disabled={saving}
-        style={{
-          width: '100%',
-          background: saving ? '#D6D3D1' : '#1C1917',
-          color: '#FAFAF8',
-          border: 'none',
-          padding: '12px 0',
-          fontFamily: "'Jost', sans-serif",
-          fontSize: 11,
-          fontWeight: 600,
-          letterSpacing: '0.18em',
-          textTransform: 'uppercase',
-          cursor: saving ? 'not-allowed' : 'pointer',
-        }}
-      >
-        {saving ? 'Saving...' : 'Save payment details'}
+      <button type="button" className="adm-btn adm-btn-primary" onClick={handleSave} disabled={saving} style={{ alignSelf: 'flex-start' }}>
+        {saving ? 'Saving…' : 'Save payment details'}
       </button>
     </div>
   )

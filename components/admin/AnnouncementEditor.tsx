@@ -32,7 +32,6 @@ export function AnnouncementEditor() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-  const [focusedField, setFocusedField] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/admin/announcements')
@@ -81,223 +80,86 @@ export function AnnouncementEditor() {
     }
   }
 
-  const inputStyle = (field: string): React.CSSProperties => ({
-    width: '100%',
-    border: focusedField === field ? '1px solid #A16207' : '1px solid #D6D3D1',
-    background: '#FAFAF8',
-    padding: '9px 12px',
-    fontFamily: "'Inter', sans-serif",
-    fontSize: 13,
-    color: '#1C1917',
-    outline: 'none',
-    boxSizing: 'border-box',
-    boxShadow: focusedField === field ? '0 0 0 2px #FEF3C7' : 'none',
-  })
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {[1, 2, 3].map(i => (
-          <div key={i} style={{
-            height: 40,
-            background: '#F5F5F4',
-            animation: 'pulse 1.5s ease-in-out infinite',
-          }} />
-        ))}
+      <div className="adm-skeleton" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {[1, 2, 3].map((i) => <div key={i} className="adm-skel-bar" style={{ height: 44 }} />)}
       </div>
     )
   }
 
-  const labelStyle: React.CSSProperties = {
-    display: 'block',
-    fontFamily: "'Jost', sans-serif",
-    fontSize: 9,
-    fontWeight: 600,
-    letterSpacing: '0.18em',
-    textTransform: 'uppercase',
-    color: '#78716C',
-    marginBottom: 8,
-  }
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* Active toggle */}
-      <div>
-        <label style={labelStyle}>Announcement status</label>
-        <div style={{ display: 'flex', gap: 8 }}>
+      {/* On / off */}
+      <fieldset style={{ border: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <legend className="adm-label" style={{ padding: 0, marginBottom: 8 }}>Are you taking orders?</legend>
+        <div className="adm-segmented">
           <button
             type="button"
+            aria-pressed={!form.is_active}
+            className={!form.is_active ? 'is-on is-open' : ''}
             onClick={() => set('is_active', false)}
-            style={{
-              flex: 1,
-              border: !form.is_active ? '1px solid #D6D3D1' : '1px solid #E7E5E4',
-              background: !form.is_active ? '#1C1917' : '#FAFAF8',
-              color: !form.is_active ? '#FAFAF8' : '#78716C',
-              padding: '10px 0',
-              fontFamily: "'Jost', sans-serif",
-              fontSize: 12,
-              fontWeight: 600,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              cursor: 'pointer',
-            }}
           >
-            Inactive
+            Yes, open for orders
           </button>
           <button
             type="button"
+            aria-pressed={form.is_active}
+            className={form.is_active ? 'is-on is-closed' : ''}
             onClick={() => set('is_active', true)}
-            style={{
-              flex: 1,
-              border: form.is_active ? '1px solid #A16207' : '1px solid #E7E5E4',
-              background: form.is_active ? '#A16207' : '#FAFAF8',
-              color: form.is_active ? '#FFFFFF' : '#78716C',
-              padding: '10px 0',
-              fontFamily: "'Jost', sans-serif",
-              fontSize: 12,
-              fontWeight: 600,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              cursor: 'pointer',
-            }}
           >
-            Active
+            No, show the closed banner
           </button>
         </div>
         {form.is_active && (
-          <p style={{
-            fontFamily: "'Jost', sans-serif",
-            fontSize: 11,
-            color: '#92400E',
-            margin: '8px 0 0',
-            lineHeight: 1.5,
-          }}>
-            When active, the order page shows the closure banner instead of the availability calendar.
+          <p className="adm-hint" style={{ color: '#7A4A00' }}>
+            Customers will see only your message on the order page and can’t place orders until you switch this back.
           </p>
         )}
-      </div>
+      </fieldset>
 
-      {/* Message */}
-      <div>
-        <label style={labelStyle}>Banner message</label>
+      <div className="adm-field">
+        <label htmlFor="banner-message" className="adm-label">Banner message</label>
         <textarea
+          id="banner-message"
+          className="adm-textarea"
           rows={3}
           value={form.message}
-          onChange={e => set('message', e.target.value)}
-          onFocus={() => setFocusedField('message')}
-          onBlur={() => setFocusedField(null)}
-          placeholder="e.g. We are currently taking a short break from orders."
-          style={{ ...inputStyle('message'), resize: 'none' }}
+          onChange={(e) => set('message', e.target.value)}
+          placeholder="e.g. We are taking a short break and will reopen on December 2."
         />
-        <p style={{ fontFamily: "'Jost', sans-serif", fontSize: 11, color: '#A8A29E', margin: '6px 0 0', lineHeight: 1.5 }}>
-          This is the message customers will see on the order page.
-        </p>
+        <p className="adm-hint">This is the only text customers see, so include anything they need, like when you’ll reopen.</p>
       </div>
 
-      {/* Dates */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        <div>
-          <label style={labelStyle}>Closed from</label>
-          <input
-            type="date"
-            value={form.closed_from}
-            onChange={e => set('closed_from', e.target.value)}
-            onFocus={() => setFocusedField('closed_from')}
-            onBlur={() => setFocusedField(null)}
-            style={inputStyle('closed_from')}
-          />
+      <div className="adm-form-grid">
+        <div className="adm-field">
+          <label htmlFor="closed-from" className="adm-label">Closed from</label>
+          <input id="closed-from" type="date" className="adm-input" value={form.closed_from} onChange={(e) => set('closed_from', e.target.value)} />
         </div>
-        <div>
-          <label style={labelStyle}>
-            Resumes on{' '}
-            <span style={{ color: '#A8A29E', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>optional</span>
-          </label>
-          <input
-            type="date"
-            value={form.closed_until}
-            onChange={e => set('closed_until', e.target.value)}
-            onFocus={() => setFocusedField('closed_until')}
-            onBlur={() => setFocusedField(null)}
-            style={inputStyle('closed_until')}
-          />
-          <p style={{ fontFamily: "'Jost', sans-serif", fontSize: 11, color: '#A8A29E', margin: '6px 0 0', lineHeight: 1.5 }}>
-            For your records only. Customers don&apos;t see this date.
-          </p>
+        <div className="adm-field">
+          <label htmlFor="closed-until" className="adm-label">Reopens on (optional)</label>
+          <input id="closed-until" type="date" className="adm-input" value={form.closed_until} onChange={(e) => set('closed_until', e.target.value)} />
+          <p className="adm-hint">For your records only. Customers don’t see these dates.</p>
         </div>
       </div>
 
-      {/* Preview */}
-      {form.is_active && (
-        <div style={{
-          border: '1px solid #FDE68A',
-          background: '#FFFBEB',
-          padding: '14px 16px',
-        }}>
-          <p style={{
-            fontFamily: "'Jost', sans-serif",
-            fontSize: 9,
-            fontWeight: 600,
-            letterSpacing: '0.18em',
-            textTransform: 'uppercase',
-            color: '#92400E',
-            margin: '0 0 8px',
-          }}>
-            Banner preview
-          </p>
-          {form.message && (
-            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, color: '#78350F', margin: 0 }}>
+      {form.is_active && form.message.trim() && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <span className="adm-label">What customers will see</span>
+          <div style={{ background: '#1C1917', borderLeft: '3px solid #A16207', padding: '18px 20px', borderRadius: 6 }}>
+            <p style={{ margin: 0, fontFamily: "'Playfair Display', serif", fontStyle: 'italic', fontSize: 17, color: '#FAFAF9', whiteSpace: 'pre-line' }}>
               {form.message}
             </p>
-          )}
+          </div>
         </div>
       )}
 
-      {error && (
-        <p style={{
-          border: '1px solid #FECACA',
-          background: '#FEF2F2',
-          padding: '10px 14px',
-          fontFamily: "'Inter', sans-serif",
-          fontSize: 13,
-          color: '#B91C1C',
-          margin: 0,
-        }}>
-          {error}
-        </p>
-      )}
+      {error && <p className="adm-error" role="alert">{error}</p>}
+      {success && <p className="adm-success" role="status">Saved.</p>}
 
-      {success && (
-        <p style={{
-          border: '1px solid #BBF7D0',
-          background: '#F0FDF4',
-          padding: '10px 14px',
-          fontFamily: "'Inter', sans-serif",
-          fontSize: 13,
-          color: '#15803D',
-          margin: 0,
-        }}>
-          Announcement saved.
-        </p>
-      )}
-
-      <button
-        onClick={handleSave}
-        disabled={saving}
-        style={{
-          width: '100%',
-          background: saving ? '#D6D3D1' : '#1C1917',
-          color: '#FAFAF8',
-          border: 'none',
-          padding: '12px 0',
-          fontFamily: "'Jost', sans-serif",
-          fontSize: 11,
-          fontWeight: 600,
-          letterSpacing: '0.18em',
-          textTransform: 'uppercase',
-          cursor: saving ? 'not-allowed' : 'pointer',
-        }}
-      >
-        {saving ? 'Saving...' : 'Save announcement'}
+      <button type="button" className="adm-btn adm-btn-primary" onClick={handleSave} disabled={saving} style={{ alignSelf: 'flex-start' }}>
+        {saving ? 'Saving…' : 'Save'}
       </button>
     </div>
   )

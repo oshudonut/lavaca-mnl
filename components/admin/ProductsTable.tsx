@@ -47,60 +47,6 @@ function toForm(p: ProductRow): FormState {
   }
 }
 
-const inputBase: React.CSSProperties = {
-  fontFamily: "'Inter', sans-serif",
-  fontSize: 13,
-  color: '#1C1917',
-  background: '#FFFFFF',
-  border: '1px solid #D6D3D1',
-  padding: '8px 10px',
-  outline: 'none',
-  borderRadius: 0,
-  width: '100%',
-  boxSizing: 'border-box',
-}
-
-const labelStyle: React.CSSProperties = {
-  display: 'block',
-  fontFamily: "'Jost', sans-serif",
-  fontSize: 9,
-  fontWeight: 500,
-  letterSpacing: '0.14em',
-  textTransform: 'uppercase',
-  color: '#8C7B6B',
-  marginBottom: 6,
-}
-
-function ghostButton(disabled: boolean): React.CSSProperties {
-  return {
-    fontFamily: "'Jost', sans-serif",
-    fontSize: 10,
-    fontWeight: 600,
-    letterSpacing: '0.14em',
-    textTransform: 'uppercase',
-    background: 'transparent',
-    color: '#78716C',
-    border: '1px solid #D6D3D1',
-    padding: '6px 14px',
-    cursor: disabled ? 'not-allowed' : 'pointer',
-  }
-}
-
-function primaryButton(disabled: boolean): React.CSSProperties {
-  return {
-    fontFamily: "'Jost', sans-serif",
-    fontSize: 10,
-    fontWeight: 600,
-    letterSpacing: '0.14em',
-    textTransform: 'uppercase',
-    background: disabled ? '#D6D3D1' : '#A16207',
-    color: '#FFFFFF',
-    border: 'none',
-    padding: '6px 14px',
-    cursor: disabled ? 'not-allowed' : 'pointer',
-  }
-}
-
 interface Props {
   products: ProductRow[]
 }
@@ -218,183 +164,145 @@ export function ProductsTable({ products }: Props) {
     router.refresh()
   }
 
-  function renderFormFields(form: FormState, setForm: (f: FormState) => void, includeSku: boolean) {
+  function renderFormFields(form: FormState, setForm: (f: FormState) => void, idPrefix: string) {
+    const field = (key: keyof FormState, label: string, opts: { placeholder?: string; type?: string; hint?: string } = {}) => (
+      <div className="adm-field">
+        <label htmlFor={`${idPrefix}-${key}`} className="adm-label">{label}</label>
+        <input
+          id={`${idPrefix}-${key}`}
+          className="adm-input"
+          type={opts.type ?? 'text'}
+          {...(opts.type === 'number' ? { min: '0', step: '0.01', inputMode: 'decimal' as const } : {})}
+          placeholder={opts.placeholder}
+          value={form[key] as string}
+          onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+        />
+        {opts.hint && <p className="adm-hint">{opts.hint}</p>}
+      </div>
+    )
     return (
-      <div style={{ display: 'grid', gridTemplateColumns: includeSku ? 'repeat(5, 1fr)' : 'repeat(4, 1fr)', gap: 12 }}>
-        {includeSku && (
-          <div>
-            <label style={labelStyle}>SKU</label>
-            <input style={inputBase} value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} />
-          </div>
-        )}
-        <div>
-          <label style={labelStyle}>Name</label>
-          <input style={inputBase} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div className="adm-form-grid">
+          {field('name', 'Product name', { placeholder: 'e.g. Angus Roast Beef' })}
+          {field('weight_label', 'Size / weight', { placeholder: 'e.g. 1 kg' })}
+          {field('price', 'Price (₱)', { type: 'number', placeholder: 'e.g. 3200' })}
+          {field('sku', 'Product code (SKU)', { placeholder: 'e.g. LVC004', hint: 'A short unique code. Customers don’t see it.' })}
         </div>
-        <div>
-          <label style={labelStyle}>Weight</label>
-          <input style={inputBase} value={form.weight_label} onChange={(e) => setForm({ ...form, weight_label: e.target.value })} placeholder="e.g. 1kg" />
-        </div>
-        <div>
-          <label style={labelStyle}>Price (₱)</label>
-          <input style={inputBase} type="number" min="0" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
-        </div>
-        <div>
-          <label style={labelStyle}>Description</label>
-          <input style={inputBase} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-        </div>
+        {field('description', 'Description', { placeholder: 'e.g. Pre-sliced and ready to serve' })}
+        <label className="adm-checkline">
+          <input
+            type="checkbox"
+            className="adm-check"
+            checked={form.is_available}
+            onChange={(e) => setForm({ ...form, is_available: e.target.checked })}
+          />
+          Available to customers
+        </label>
       </div>
     )
   }
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <span style={{
-          fontFamily: "'Jost', sans-serif",
-          fontSize: 10,
-          letterSpacing: '0.16em',
-          textTransform: 'uppercase',
-          color: '#8C7B6B',
-        }}>
-          {products.length} product{products.length !== 1 ? 's' : ''}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        <span className="adm-card-note">
+          {products.length} product{products.length !== 1 ? 's' : ''} · {products.filter((p) => p.is_available).length} available to customers
         </span>
         {!addingNew && (
-          <button style={primaryButton(false)} onClick={() => { setAddingNew(true); setError(null) }}>
-            Add Product
+          <button type="button" className="adm-btn adm-btn-primary" onClick={() => { setAddingNew(true); setError(null) }}>
+            + Add product
           </button>
         )}
       </div>
 
-      {error && (
-        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#B91C1C', marginBottom: 12 }}>
-          {error}
-        </p>
-      )}
+      {error && <p className="adm-error" role="alert">{error}</p>}
 
       {addingNew && (
-        <div style={{ background: '#FFFFFF', border: '1px solid #D6D3D1', padding: 20, marginBottom: 20 }}>
-          {renderFormFields(newForm, setNewForm, true)}
-          <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-            <button style={primaryButton(busyId === 'new')} disabled={busyId === 'new'} onClick={handleAdd}>
-              {busyId === 'new' ? 'Adding…' : 'Add'}
+        <section className="adm-card">
+          <h2 className="adm-h2">New product</h2>
+          {renderFormFields(newForm, setNewForm, 'new')}
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <button type="button" className="adm-btn adm-btn-primary" disabled={busyId === 'new'} onClick={handleAdd}>
+              {busyId === 'new' ? 'Adding…' : 'Add product'}
             </button>
-            <button style={ghostButton(false)} onClick={() => { setAddingNew(false); setNewForm(EMPTY_FORM); setError(null) }}>
+            <button type="button" className="adm-btn adm-btn-outline" onClick={() => { setAddingNew(false); setNewForm(EMPTY_FORM); setError(null) }}>
               Cancel
             </button>
           </div>
-        </div>
+        </section>
       )}
 
-      <div style={{ background: '#FFFFFF', border: '1px solid #D6D3D1', overflow: 'hidden' }}>
-        {products.length === 0 ? (
-          <p style={{ padding: '40px 24px', fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#8C7B6B', textAlign: 'center', margin: 0 }}>
-            No products yet.
-          </p>
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid #D6D3D1', background: '#F5F4F2' }}>
-                  {['SKU', 'Name', 'Weight', 'Price', 'Available', ''].map((col, i) => (
-                    <th key={col || i} style={{
-                      padding: '12px 16px',
-                      fontFamily: "'Jost', sans-serif",
-                      fontSize: 9,
-                      letterSpacing: '0.2em',
-                      textTransform: 'uppercase',
-                      color: '#8C7B6B',
-                      textAlign: i === 3 ? 'right' : 'left',
-                      whiteSpace: 'nowrap',
-                    }}>
-                      {col}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {products.map((p, i) => {
-                  const isEditing = editingId === p.id
-                  const isBusy = busyId === p.id
+      {products.length === 0 ? (
+        <div className="adm-card"><p className="adm-empty">No products yet. Add your first one above.</p></div>
+      ) : (
+        products.map((p) => {
+          const isBusy = busyId === p.id
 
-                  if (isEditing) {
-                    return (
-                      <tr key={p.id} style={{ borderTop: i === 0 ? 'none' : '1px solid #F5F4F2' }}>
-                        <td colSpan={6} style={{ padding: '16px' }}>
-                          {renderFormFields(editForm, setEditForm, true)}
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 14 }}>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#1C1917', cursor: 'pointer' }}>
-                              <input
-                                type="checkbox"
-                                checked={editForm.is_available}
-                                onChange={(e) => setEditForm({ ...editForm, is_available: e.target.checked })}
-                                style={{ accentColor: '#A16207' }}
-                              />
-                              Available
-                            </label>
-                            <button style={primaryButton(isBusy)} disabled={isBusy} onClick={() => saveEdit(p.id)}>
-                              {isBusy ? 'Saving…' : 'Save'}
-                            </button>
-                            <button style={ghostButton(isBusy)} onClick={cancelEdit}>Cancel</button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  }
+          if (editingId === p.id) {
+            return (
+              <section key={p.id} className="adm-card" style={{ borderColor: '#A16207' }}>
+                <h2 className="adm-h2">Edit {p.name} · {p.weight_label}</h2>
+                {renderFormFields(editForm, setEditForm, `edit-${p.id}`)}
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  <button type="button" className="adm-btn adm-btn-primary" disabled={isBusy} onClick={() => saveEdit(p.id)}>
+                    {isBusy ? 'Saving…' : 'Save changes'}
+                  </button>
+                  <button type="button" className="adm-btn adm-btn-outline" disabled={isBusy} onClick={cancelEdit}>
+                    Cancel
+                  </button>
+                </div>
+              </section>
+            )
+          }
 
-                  return (
-                    <tr key={p.id} style={{ borderTop: i === 0 ? 'none' : '1px solid #F5F4F2' }}>
-                      <td style={{ padding: '14px 16px', fontFamily: "'Inter', sans-serif", color: '#57534E', whiteSpace: 'nowrap' }}>{p.sku}</td>
-                      <td style={{ padding: '14px 16px' }}>
-                        <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, color: '#1C1917' }}>{p.name}</div>
-                        {p.description && (
-                          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#8C7B6B' }}>{p.description}</div>
-                        )}
-                      </td>
-                      <td style={{ padding: '14px 16px', fontFamily: "'Inter', sans-serif", color: '#57534E', whiteSpace: 'nowrap' }}>{p.weight_label}</td>
-                      <td style={{ padding: '14px 16px', fontFamily: "'Inter', sans-serif", fontWeight: 600, color: '#1C1917', textAlign: 'right', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
-                        {fmt(p.price)}
-                      </td>
-                      <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
-                        <label style={{ display: 'inline-flex', alignItems: 'center', cursor: isBusy ? 'not-allowed' : 'pointer' }}>
-                          <input
-                            type="checkbox"
-                            checked={p.is_available}
-                            disabled={isBusy}
-                            onChange={() => toggleAvailable(p)}
-                            style={{ accentColor: '#A16207', cursor: isBusy ? 'not-allowed' : 'pointer' }}
-                          />
-                        </label>
-                      </td>
-                      <td style={{ padding: '14px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
-                        {confirmDeleteId === p.id ? (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: '#B91C1C' }}>Delete?</span>
-                            <button style={primaryButton(isBusy)} disabled={isBusy} onClick={() => handleDelete(p.id)}>
-                              {isBusy ? '…' : 'Yes'}
-                            </button>
-                            <button style={ghostButton(false)} onClick={() => setConfirmDeleteId(null)}>No</button>
-                          </span>
-                        ) : (
-                          <span style={{ display: 'inline-flex', gap: 8 }}>
-                            <button style={ghostButton(false)} onClick={() => startEdit(p)}>Edit</button>
-                            <button
-                              style={{ ...ghostButton(false), color: '#B91C1C', borderColor: '#FECACA' }}
-                              onClick={() => setConfirmDeleteId(p.id)}
-                            >
-                              Delete
-                            </button>
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+          return (
+            <section key={p.id} className={`adm-card adm-product${p.is_available ? '' : ' is-hidden'}`}>
+              <div className="adm-product-main">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
+                  <span style={{ fontSize: 19, fontWeight: 600 }}>
+                    {p.name} <span style={{ fontWeight: 400, color: '#6B5D52' }}>· {p.weight_label}</span>
+                  </span>
+                  {p.description && <span style={{ fontSize: 16, color: '#44372E' }}>{p.description}</span>}
+                  <span className="adm-hint">Code: {p.sku}</span>
+                </div>
+                <span style={{ fontSize: 22, fontWeight: 600, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                  {fmt(p.price)}
+                </span>
+              </div>
+
+              <div className="adm-product-actions">
+                <label className="adm-checkline" style={{ cursor: isBusy ? 'not-allowed' : 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    className="adm-check"
+                    checked={p.is_available}
+                    disabled={isBusy}
+                    onChange={() => toggleAvailable(p)}
+                  />
+                  {p.is_available ? 'Available to customers' : 'Hidden from customers'}
+                </label>
+
+                {confirmDeleteId === p.id ? (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                    <span style={{ color: '#9B1C1C', fontWeight: 500 }}>Delete this product?</span>
+                    <button type="button" className="adm-btn adm-btn-danger" disabled={isBusy} onClick={() => handleDelete(p.id)}>
+                      {isBusy ? 'Deleting…' : 'Yes, delete'}
+                    </button>
+                    <button type="button" className="adm-btn adm-btn-outline" onClick={() => setConfirmDeleteId(null)}>
+                      Keep it
+                    </button>
+                  </span>
+                ) : (
+                  <span style={{ display: 'flex', gap: 10 }}>
+                    <button type="button" className="adm-btn adm-btn-outline" onClick={() => startEdit(p)}>Edit</button>
+                    <button type="button" className="adm-btn adm-btn-danger" onClick={() => setConfirmDeleteId(p.id)}>Delete</button>
+                  </span>
+                )}
+              </div>
+            </section>
+          )
+        })
+      )}
     </div>
   )
 }

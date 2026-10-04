@@ -89,7 +89,6 @@ export function DateSidePanel({ date, record, products, onClose, onSaved, isMobi
   const [form, setForm] = useState<FormState>(() => defaultForm(record))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [focusedField, setFocusedField] = useState<string | null>(null)
 
   useEffect(() => {
     setForm(defaultForm(record))
@@ -158,269 +157,118 @@ export function DateSidePanel({ date, record, products, onClose, onSaved, isMobi
     }
   }
 
-  const inputStyle = (field: string): React.CSSProperties => ({
-    width: '100%',
-    fontFamily: "'Inter', sans-serif",
-    fontSize: 13,
-    color: '#1C1917',
-    background: '#FAFAF9',
-    border: `1px solid ${focusedField === field ? '#A16207' : '#D6D3D1'}`,
-    padding: '10px 12px',
-    outline: 'none',
-    borderRadius: 0,
-    boxSizing: 'border-box',
-    transition: 'border-color 0.2s',
-  })
-
-  const labelStyle: React.CSSProperties = {
-    display: 'block',
-    fontFamily: "'Jost', sans-serif",
-    fontSize: 9,
-    fontWeight: 400,
-    letterSpacing: '0.22em',
-    textTransform: 'uppercase',
-    color: '#8C7B6B',
-    marginBottom: 8,
-  }
-
-  const toggleBtn = (active: boolean, activeStyle: { border: string; bg: string; color: string }): React.CSSProperties => ({
-    flex: 1,
-    fontFamily: "'Inter', sans-serif",
-    fontSize: 12,
-    fontWeight: active ? 600 : 400,
-    background: active ? activeStyle.bg : '#FFFFFF',
-    color: active ? activeStyle.color : '#8C7B6B',
-    border: `1px solid ${active ? activeStyle.border : '#D6D3D1'}`,
-    padding: '9px 0',
-    cursor: 'pointer',
-    borderRadius: 0,
-    transition: 'all 0.15s',
-  })
-
   const panelStyle: React.CSSProperties = isMobileOverlay
     ? {
         position: 'fixed',
         bottom: 0,
         left: 0,
         right: 0,
-        zIndex: 50,
+        zIndex: 60,
         background: '#FFFFFF',
-        borderTop: '2px solid #A16207',
-        maxHeight: '85vh',
+        borderTop: '3px solid #A16207',
+        borderRadius: '16px 16px 0 0',
+        maxHeight: '88vh',
         overflowY: 'auto',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }
     : {
-        width: 304,
+        width: 330,
         flexShrink: 0,
         background: '#FFFFFF',
-        border: '1px solid #D6D3D1',
+        border: '1px solid #E5DDD5',
+        borderRadius: 14,
         overflowY: 'auto',
-        maxHeight: 'calc(100vh - 120px)',
+        maxHeight: 'calc(100vh - 110px)',
         position: 'sticky',
-        top: 80,
+        top: 84,
       }
 
   return (
-    <aside style={panelStyle}>
-      {/* Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'space-between',
-        gap: 8,
-        padding: '16px 20px',
-        borderBottom: '1px solid #D6D3D1',
-      }}>
-        <div>
-          <p style={{
-            fontFamily: "'Jost', sans-serif",
-            fontSize: 9,
-            letterSpacing: '0.22em',
-            textTransform: 'uppercase',
-            color: '#A16207',
-            margin: '0 0 4px',
-          }}>{date}</p>
-          <h2 style={{
-            fontFamily: "'Playfair Display SC', serif",
-            fontSize: 14,
-            fontWeight: 400,
-            color: '#1C1917',
-            margin: 0,
-            letterSpacing: '0.01em',
-          }}>{dateLabel}</h2>
-        </div>
-        <button
-          onClick={onClose}
-          aria-label="Close"
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: 4,
-            color: '#8C7B6B',
-            flexShrink: 0,
-            marginTop: 2,
-          }}
-        >
-          <svg width={16} height={16} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+    <aside style={panelStyle} aria-label={`Settings for ${dateLabel}`}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, padding: '18px 20px', borderBottom: '1px solid #EFE8E1' }}>
+        <h2 className="adm-h2">{dateLabel}</h2>
+        <button type="button" onClick={onClose} aria-label="Close" className="adm-btn adm-btn-outline" style={{ padding: '6px 12px', fontSize: 15 }}>
+          Close
         </button>
       </div>
 
-      <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
-        {/* Open / Closed toggle */}
-        <div>
-          <label style={labelStyle}>Status</label>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <button
-              type="button"
-              onClick={() => set('is_open', true)}
-              style={toggleBtn(form.is_open, { border: '#16A34A', bg: '#F0FDF4', color: '#15803D' })}
-            >
+      <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <fieldset style={{ border: 'none', margin: 0, padding: 0 }}>
+          <legend className="adm-label" style={{ padding: 0, marginBottom: 8 }}>Can customers pick up on this day?</legend>
+          <div className="adm-segmented">
+            <button type="button" aria-pressed={form.is_open} className={form.is_open ? 'is-on is-open' : ''} onClick={() => set('is_open', true)}>
               Open
             </button>
-            <button
-              type="button"
-              onClick={() => set('is_open', false)}
-              style={toggleBtn(!form.is_open, { border: '#DC2626', bg: '#FEF2F2', color: '#B91C1C' })}
-            >
+            <button type="button" aria-pressed={!form.is_open} className={!form.is_open ? 'is-on is-closed' : ''} onClick={() => set('is_open', false)}>
               Closed
             </button>
           </div>
-        </div>
+        </fieldset>
 
         {form.is_open ? (
-          <>
-            {/* Products available */}
-            <div>
-              <label style={labelStyle}>Products available</label>
-              {products.length === 0 ? (
-                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#8C7B6B', margin: 0 }}>
-                  No available products to list.
-                </p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {products.map((p) => {
-                    const checked = !form.excluded_product_ids.has(p.id)
-                    return (
-                      <label
-                        key={p.id}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 8,
-                          fontFamily: "'Inter', sans-serif",
-                          fontSize: 13,
-                          color: '#1C1917',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => {
-                            const next = new Set(form.excluded_product_ids)
-                            if (checked) next.add(p.id)
-                            else next.delete(p.id)
-                            set('excluded_product_ids', next)
-                          }}
-                          style={{ accentColor: '#A16207' }}
-                        />
-                        {p.name} — {p.weight_label}
-                      </label>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          </>
+          <fieldset style={{ border: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <legend className="adm-label" style={{ padding: 0, marginBottom: 6 }}>Products customers can order for this day</legend>
+            {products.length === 0 ? (
+              <p className="adm-hint">No products are available right now.</p>
+            ) : (
+              products.map((p) => {
+                const checked = !form.excluded_product_ids.has(p.id)
+                return (
+                  <label key={p.id} className="adm-checkline">
+                    <input
+                      type="checkbox"
+                      className="adm-check"
+                      checked={checked}
+                      onChange={() => {
+                        const next = new Set(form.excluded_product_ids)
+                        if (checked) next.add(p.id)
+                        else next.delete(p.id)
+                        set('excluded_product_ids', next)
+                      }}
+                    />
+                    {p.name} · {p.weight_label}
+                  </label>
+                )
+              })
+            )}
+            <p className="adm-hint">Untick a product if it’s sold out for this day only.</p>
+          </fieldset>
         ) : (
           <>
-            {/* Closure type */}
-            <div>
-              <label style={labelStyle}>Closure type</label>
+            <div className="adm-field">
+              <label htmlFor="closure-type" className="adm-label">Why is it closed?</label>
               <select
+                id="closure-type"
+                className="adm-select"
                 value={form.closure_type}
-                onChange={e => set('closure_type', e.target.value as FormState['closure_type'])}
-                onFocus={() => setFocusedField('closureType')}
-                onBlur={() => setFocusedField(null)}
-                style={{
-                  width: '100%',
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 13,
-                  color: '#1C1917',
-                  background: '#FAFAF9',
-                  border: `1px solid ${focusedField === 'closureType' ? '#A16207' : '#D6D3D1'}`,
-                  padding: '10px 12px',
-                  outline: 'none',
-                  borderRadius: 0,
-                  cursor: 'pointer',
-                }}
+                onChange={(e) => set('closure_type', e.target.value as FormState['closure_type'])}
               >
-                <option value="operational">Operational</option>
+                <option value="operational">Regular day off</option>
                 <option value="holiday">Holiday</option>
                 <option value="vacation">Vacation</option>
               </select>
               {form.closure_type !== 'operational' && (
-                <p style={{ marginTop: 6, fontFamily: "'Inter', sans-serif", fontSize: 11, color: '#8C7B6B' }}>
-                  A calendar event will be created for this closure.
-                </p>
+                <p className="adm-hint">This will also be added to your Google Calendar.</p>
               )}
             </div>
-
-            {/* Closure reason */}
-            <div>
-              <label style={labelStyle}>Closure reason (optional)</label>
+            <div className="adm-field">
+              <label htmlFor="closure-reason" className="adm-label">Note for yourself (optional)</label>
               <textarea
+                id="closure-reason"
+                className="adm-textarea"
                 rows={3}
                 value={form.closure_reason}
-                onChange={e => set('closure_reason', e.target.value)}
-                onFocus={() => setFocusedField('reason')}
-                onBlur={() => setFocusedField(null)}
-                placeholder="e.g. National holiday, staff leave..."
-                style={{
-                  ...inputStyle('reason'),
-                  resize: 'none',
-                  lineHeight: 1.5,
-                }}
+                onChange={(e) => set('closure_reason', e.target.value)}
+                placeholder="e.g. Christmas break"
               />
             </div>
           </>
         )}
 
-        {error && (
-          <p style={{
-            background: '#FEF2F2',
-            border: '1px solid #FCA5A5',
-            padding: '10px 12px',
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 12,
-            color: '#B91C1C',
-            margin: 0,
-          }}>{error}</p>
-        )}
+        {error && <p className="adm-error" role="alert">{error}</p>}
 
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          style={{
-            width: '100%',
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 11,
-            fontWeight: 600,
-            letterSpacing: '0.22em',
-            textTransform: 'uppercase',
-            background: saving ? '#D6D3D1' : '#A16207',
-            color: saving ? '#8C7B6B' : '#FFFFFF',
-            border: 'none',
-            padding: '14px 0',
-            cursor: saving ? 'not-allowed' : 'pointer',
-            borderRadius: 0,
-            transition: 'background 0.2s',
-          }}
-        >
-          {saving ? 'Saving…' : 'Save'}
+        <button type="button" className="adm-btn adm-btn-primary" onClick={handleSave} disabled={saving} style={{ width: '100%' }}>
+          {saving ? 'Saving…' : 'Save this day'}
         </button>
       </div>
     </aside>
