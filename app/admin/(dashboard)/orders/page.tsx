@@ -3,6 +3,7 @@ import { expireStaleOrders } from '@/lib/orders/expire'
 import { OrdersTable } from '@/components/admin/OrdersTable'
 import type { OrderTableRow } from '@/components/admin/OrdersTable'
 import { orderTimeLabel } from '@/lib/delivery/pickup'
+import { servingStyleLabel } from '@/lib/orders/validation'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,7 +21,7 @@ export default async function AdminOrdersPage() {
       delivery_dates ( date ),
       delivery_slots ( slot_window ),
       order_items (
-        quantity,
+        quantity, serving_style,
         products ( name, weight_label )
       )
     `)
@@ -32,7 +33,10 @@ export default async function AdminOrdersPage() {
     const dateRow = Array.isArray(row.delivery_dates) ? row.delivery_dates[0] : row.delivery_dates
 
     const itemsSummary = (row.order_items ?? [])
-      .map((item: any) => `${item.products?.name ?? ''} ×${item.quantity}`)
+      .map((item: any) => {
+        const serving = servingStyleLabel(item.serving_style)
+        return `${item.products?.name ?? ''} ×${item.quantity}${serving ? ` (${serving})` : ''}`
+      })
       .join(', ')
 
     return {

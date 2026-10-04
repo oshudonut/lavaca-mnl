@@ -21,10 +21,12 @@ export interface Admin01Props {
   customer_name: string
   customer_email: string
   customer_phone: string
+  customer_address: string
+  customer_instagram: string | null
   special_request: string | null
   pickup_date: string
   pickup_time: string
-  items: { name: string; weight_label: string; quantity: number; subtotal: number }[]
+  items: { name: string; weight_label: string; serving?: string; quantity: number; subtotal: number }[]
   total_amount: number
   payment_method: 'gcash' | 'bank_transfer'
   admin_url: string
@@ -35,6 +37,8 @@ export default function Admin01({
   customer_name,
   customer_email,
   customer_phone,
+  customer_address,
+  customer_instagram,
   special_request,
   pickup_date,
   pickup_time,
@@ -74,6 +78,14 @@ export default function Admin01({
           <Text style={{ fontSize: '14px', margin: '0 0 4px' }}>
             <strong>Phone:</strong> {customer_phone}
           </Text>
+          <Text style={{ fontSize: '14px', margin: '0 0 4px' }}>
+            <strong>Address:</strong> {customer_address}
+          </Text>
+          {customer_instagram && (
+            <Text style={{ fontSize: '14px', margin: '0 0 4px' }}>
+              <strong>Instagram:</strong> @{customer_instagram}
+            </Text>
+          )}
           {special_request && (
             <Text style={{ fontSize: '14px', margin: '0 0 4px' }}>
               <strong>Special request:</strong> {special_request}
@@ -105,7 +117,7 @@ export default function Admin01({
             <Row key={i} style={{ marginBottom: '4px' }}>
               <Column>
                 <Text style={{ margin: '0', fontSize: '14px' }}>
-                  {item.name} · {item.weight_label} × {item.quantity}
+                  {item.name} · {item.weight_label}{item.serving ? ` · ${item.serving}` : ''} × {item.quantity}
                 </Text>
               </Column>
               <Column align="right">

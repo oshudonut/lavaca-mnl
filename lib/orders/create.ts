@@ -4,10 +4,20 @@ import { sendEmail } from '@/lib/resend/send'
 import Cust01 from '@/lib/resend/templates/cust-01'
 import Admin01 from '@/lib/resend/templates/admin-01'
 import { formatPickupTime, isPickupTime } from '@/lib/delivery/pickup'
+import {
+  SERVING_STYLES,
+  isValidEmail,
+  isValidZip,
+  normalizeInstagram,
+  normalizePhone,
+  servingStyleLabel,
+  type ServingStyle,
+} from '@/lib/orders/validation'
 
 export interface CartItem {
   product_id: string
   quantity: number
+  serving_style: ServingStyle
 }
 
 export interface CreateOrderInput {
@@ -19,6 +29,11 @@ export interface CreateOrderInput {
     phone: string
     email: string
     special_request: string
+    address_street: string
+    address_village: string
+    address_city: string
+    address_zip: string
+    instagram?: string
     payment_method: 'gcash' | 'bank_transfer'
   }
 }
@@ -62,11 +77,30 @@ export async function createOrder(
   if (!customer.name.trim()) {
     return { error: { code: 'VALIDATION', message: 'Full name is required.' } }
   }
-  if (!customer.phone.trim()) {
-    return { error: { code: 'VALIDATION', message: 'Phone number is required.' } }
+  const phone = normalizePhone(customer.phone ?? '')
+  if (!phone) {
+    return { error: { code: 'VALIDATION', message: 'Enter a valid mobile number, e.g. 0917 123 4567.' } }
   }
-  if (!customer.email.trim()) {
-    return { error: { code: 'VALIDATION', message: 'Email address is required.' } }
+  if (!isValidEmail(customer.email ?? '')) {
+    return { error: { code: 'VALIDATION', message: 'Enter a valid email address.' } }
+  }
+  if (
+    !customer.address_street?.trim() ||
+    !customer.address_village?.trim() ||
+    !customer.address_city?.trim()
+  ) {
+    return { error: { code: 'VALIDATION', message: 'Please complete your address.' } }
+  }
+  if (!isValidZip(customer.address_zip ?? '')) {
+    return { error: { code: 'VALIDATION', message: 'ZIP code must be 4 digits.' } }
+  }
+  for (const item of cart) {
+    if (!Number.isInteger(item.quantity) || item.quantity < 1) {
+      return { error: { code: 'VALIDATION', message: 'Invalid item quantity.' } }
+    }
+    if (!(SERVING_STYLES as readonly string[]).includes(item.serving_style)) {
+      return { error: { code: 'VALIDATION', message: 'Choose warm or frozen for each item.' } }
+    }
   }
   if (!customer.special_request?.trim()) {
     return { error: { code: 'VALIDATION', message: 'Special request is required.' } }
@@ -151,7 +185,7 @@ export async function createOrder(
     .upsert(
       {
         name: customer.name.trim(),
-        phone: customer.phone.trim(),
+        phone,
         email: customer.email.trim().toLowerCase(),
       },
       { onConflict: 'email' }
@@ -199,6 +233,11 @@ export async function createOrder(
       delivery_date_id,
       pickup_time,
       special_request: customer.special_request.trim().slice(0, 500),
+      address_street: customer.address_street.trim(),
+      address_village: customer.address_village.trim(),
+      address_city: customer.address_city.trim(),
+      address_zip: customer.address_zip.trim(),
+      instagram_handle: normalizeInstagram(customer.instagram ?? '') || null,
       status: 'PENDING_PAYMENT',
       subtotal,
       total_amount,
@@ -224,6 +263,7 @@ export async function createOrder(
       quantity: item.quantity,
       unit_price: product.price,
       subtotal: product.price * item.quantity,
+      serving_style: item.serving_style,
     }
   })
 
@@ -248,6 +288,7 @@ export async function createOrder(
     return {
       name: product.name,
       weight_label: product.weight_label,
+      serving: servingStyleLabel(item.serving_style),
       quantity: item.quantity,
       subtotal: product.price * item.quantity,
     }
@@ -262,7 +303,7 @@ export async function createOrder(
   // -------------------------------------------------------------------------
   await Promise.allSettled([
     sendEmail({
-      to: customer.email,
+      to: customer.email.trim(),
       subject: `We received your order! Lavaca MNL ${order_number}`,
       react: React.createElement(Cust01, {
         order_number,
@@ -284,8 +325,14 @@ export async function createOrder(
         order_id,
         order_number,
         customer_name: customer.name,
-        customer_email: customer.email,
-        customer_phone: customer.phone,
+        customer_email: customer.email.trim(),
+        customer_phone: phone,
+        customer_address: [
+          customer.address_street.trim(),
+          customer.address_village.trim(),
+          `${customer.address_city.trim()} ${customer.address_zip.trim()}`,
+        ].join(', '),
+        customer_instagram: normalizeInstagram(customer.instagram ?? '') || null,
         special_request: customer.special_request.trim(),
         pickup_date: pickupDate,
         pickup_time: formatPickupTime(pickup_time),

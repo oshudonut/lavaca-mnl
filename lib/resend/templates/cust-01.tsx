@@ -11,6 +11,7 @@ import {
   Text,
 } from '@react-email/components'
 import * as React from 'react'
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL, PICKUP_LOCATION } from '@/lib/site'
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(n)
@@ -20,7 +21,7 @@ export interface Cust01Props {
   customer_name: string
   pickup_date: string
   pickup_time: string
-  items: { name: string; weight_label: string; quantity: number; subtotal: number }[]
+  items: { name: string; weight_label: string; serving?: string; quantity: number; subtotal: number }[]
   total_amount: number
   payment_url: string
   payment_method: 'gcash' | 'bank_transfer'
@@ -65,7 +66,7 @@ export default function Cust01({
             <Row key={i} style={{ marginBottom: '6px' }}>
               <Column>
                 <Text style={{ margin: '0', fontSize: '14px' }}>
-                  {item.name} · {item.weight_label} × {item.quantity}
+                  {item.name} · {item.weight_label}{item.serving ? ` · ${item.serving}` : ''} × {item.quantity}
                 </Text>
               </Column>
               <Column align="right">
@@ -89,6 +90,8 @@ export default function Cust01({
             <strong>Pickup date:</strong> {pickup_date}
             <br />
             <strong>Pickup time:</strong> {pickup_time}
+            <br />
+            <strong>Pickup location:</strong> {PICKUP_LOCATION}
           </Text>
 
           <Hr />
@@ -122,7 +125,7 @@ export default function Cust01({
 
           <Hr />
           <Text style={{ fontSize: '12px', color: '#999' }}>
-            Lavaca MNL · For questions, message us on Facebook Messenger.
+            Lavaca MNL · For questions, message us on Instagram {INSTAGRAM_HANDLE} ({INSTAGRAM_URL}).
           </Text>
         </Container>
       </Body>

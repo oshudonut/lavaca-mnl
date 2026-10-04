@@ -6,7 +6,11 @@ export type CustomerDetails = {
   name: string
   phone: string
   email: string
-  special_request: string
+  address_street: string
+  address_village: string
+  address_city: string
+  address_zip: string
+  instagram: string
   payment_method: 'gcash' | 'bank_transfer'
 }
 
@@ -91,7 +95,9 @@ export function CustomerForm({ value, onChange, errors }: Props) {
         </label>
         <input
           id="cf-phone"
-          type="text"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
           required
           placeholder="+63 9XX XXX XXXX"
           value={value.phone}
@@ -117,6 +123,7 @@ export function CustomerForm({ value, onChange, errors }: Props) {
         <input
           id="cf-email"
           type="email"
+          autoComplete="email"
           required
           value={value.email}
           onChange={(e) => set('email', e.target.value)}
@@ -133,32 +140,126 @@ export function CustomerForm({ value, onChange, errors }: Props) {
         )}
       </div>
 
-      {/* Special request */}
+      {/* Address */}
       <div style={fieldWrapperStyle}>
-        <label htmlFor="cf-special-request" style={labelStyle}>
-          Special Request
+        <label htmlFor="cf-street" style={labelStyle}>
+          House/lot number and street
         </label>
-        <textarea
-          id="cf-special-request"
+        <input
+          id="cf-street"
+          type="text"
           required
-          rows={3}
-          maxLength={500}
-          value={value.special_request}
-          onChange={(e) => set('special_request', e.target.value)}
-          onFocus={() => setFocusedField('special_request')}
+          autoComplete="address-line1"
+          placeholder="e.g. 12 Acacia St."
+          value={value.address_street}
+          onChange={(e) => set('address_street', e.target.value)}
+          onFocus={() => setFocusedField('address_street')}
           onBlur={() => setFocusedField(null)}
-          style={{
-            ...inputStyle(focusedField === 'special_request', !!errors?.special_request),
-            resize: 'vertical',
-          }}
-          aria-describedby={errors?.special_request ? 'cf-special-request-error' : undefined}
-          aria-invalid={!!errors?.special_request}
+          style={inputStyle(focusedField === 'address_street', !!errors?.address_street)}
+          aria-describedby={errors?.address_street ? 'cf-street-error' : undefined}
+          aria-invalid={!!errors?.address_street}
         />
-        {errors?.special_request && (
-          <p id="cf-special-request-error" style={errorTextStyle}>
-            {errors.special_request}
+        {errors?.address_street && (
+          <p id="cf-street-error" style={errorTextStyle}>
+            {errors.address_street}
           </p>
         )}
+      </div>
+
+      <div style={fieldWrapperStyle}>
+        <label htmlFor="cf-village" style={labelStyle}>
+          Village
+        </label>
+        <input
+          id="cf-village"
+          type="text"
+          required
+          autoComplete="address-line2"
+          placeholder="e.g. Ayala Alabang Village"
+          value={value.address_village}
+          onChange={(e) => set('address_village', e.target.value)}
+          onFocus={() => setFocusedField('address_village')}
+          onBlur={() => setFocusedField(null)}
+          style={inputStyle(focusedField === 'address_village', !!errors?.address_village)}
+          aria-describedby={errors?.address_village ? 'cf-village-error' : undefined}
+          aria-invalid={!!errors?.address_village}
+        />
+        {errors?.address_village && (
+          <p id="cf-village-error" style={errorTextStyle}>
+            {errors.address_village}
+          </p>
+        )}
+      </div>
+
+      <div style={fieldWrapperStyle}>
+        <label htmlFor="cf-city" style={labelStyle}>
+          City
+        </label>
+        <input
+          id="cf-city"
+          type="text"
+          required
+          autoComplete="address-level2"
+          placeholder="e.g. Muntinlupa"
+          value={value.address_city}
+          onChange={(e) => set('address_city', e.target.value)}
+          onFocus={() => setFocusedField('address_city')}
+          onBlur={() => setFocusedField(null)}
+          style={inputStyle(focusedField === 'address_city', !!errors?.address_city)}
+          aria-describedby={errors?.address_city ? 'cf-city-error' : undefined}
+          aria-invalid={!!errors?.address_city}
+        />
+        {errors?.address_city && (
+          <p id="cf-city-error" style={errorTextStyle}>
+            {errors.address_city}
+          </p>
+        )}
+      </div>
+
+      <div style={fieldWrapperStyle}>
+        <label htmlFor="cf-zip" style={labelStyle}>
+          ZIP code
+        </label>
+        <input
+          id="cf-zip"
+          type="text"
+          required
+          autoComplete="postal-code"
+          inputMode="numeric"
+          maxLength={4}
+          placeholder="e.g. 1780"
+          value={value.address_zip}
+          onChange={(e) => set('address_zip', e.target.value)}
+          onFocus={() => setFocusedField('address_zip')}
+          onBlur={() => setFocusedField(null)}
+          style={inputStyle(focusedField === 'address_zip', !!errors?.address_zip)}
+          aria-describedby={errors?.address_zip ? 'cf-zip-error' : undefined}
+          aria-invalid={!!errors?.address_zip}
+        />
+        {errors?.address_zip && (
+          <p id="cf-zip-error" style={errorTextStyle}>
+            {errors.address_zip}
+          </p>
+        )}
+      </div>
+
+      {/* Instagram (optional) */}
+      <div style={fieldWrapperStyle}>
+        <label htmlFor="cf-instagram" style={labelStyle}>
+          Instagram name{' '}
+          <span style={{ color: '#8C7B6B', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
+        </label>
+        <input
+          id="cf-instagram"
+          type="text"
+          autoCapitalize="none"
+          placeholder="@yourname"
+          value={value.instagram}
+          onChange={(e) => set('instagram', e.target.value)}
+          onFocus={() => setFocusedField('instagram')}
+          onBlur={() => setFocusedField(null)}
+          style={inputStyle(focusedField === 'instagram', false)}
+        />
       </div>
 
       {/* Payment method */}

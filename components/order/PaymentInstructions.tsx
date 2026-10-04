@@ -6,6 +6,7 @@ interface Props {
   defaultMethod: 'gcash' | 'bank_transfer'
   gcashNumber: string
   gcashAccountName: string
+  gcashQrUrl: string | null
   bpiAccount: string
   bpiName: string
   bdoAccount: string
@@ -125,6 +126,7 @@ export function PaymentInstructions({
   defaultMethod,
   gcashNumber,
   gcashAccountName,
+  gcashQrUrl,
   bpiAccount,
   bpiName,
   bdoAccount,
@@ -164,6 +166,30 @@ export function PaymentInstructions({
       {/* GCash details */}
       {method === 'gcash' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {gcashQrUrl && (
+            <div
+              style={{
+                border: '1px solid #D6D3D1',
+                background: '#FFFFFF',
+                padding: 16,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 8,
+                marginBottom: 4,
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={gcashQrUrl}
+                alt="GCash QR code for Lavaca MNL"
+                style={{ width: '100%', maxWidth: 240, height: 'auto', display: 'block' }}
+              />
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: '#57534E', margin: 0, textAlign: 'center' }}>
+                Scan with the GCash app, or send to the number below.
+              </p>
+            </div>
+          )}
           <CopyField label="GCash number" value={gcashNumber} />
           <CopyField label="Account name" value={gcashAccountName} />
         </div>

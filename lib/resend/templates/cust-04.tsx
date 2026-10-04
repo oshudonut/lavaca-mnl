@@ -1,5 +1,6 @@
 import { Body, Column, Container, Head, Heading, Hr, Html, Row, Text } from '@react-email/components'
 import * as React from 'react'
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL, PICKUP_LOCATION } from '@/lib/site'
 
 const fmt = (n: number) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(n)
 
@@ -8,7 +9,7 @@ export interface Cust04Props {
   customer_name: string
   pickup_date: string
   pickup_time: string
-  items: { name: string; weight_label: string; quantity: number; subtotal: number }[]
+  items: { name: string; weight_label: string; serving?: string; quantity: number; subtotal: number }[]
   total_amount: number
 }
 
@@ -25,7 +26,7 @@ export default function Cust04({ order_number, customer_name, pickup_date, picku
           <Heading as="h2" style={{ fontSize: '16px', color: '#333' }}>Order Summary</Heading>
           {items.map((item, i) => (
             <Row key={i} style={{ marginBottom: '6px' }}>
-              <Column><Text style={{ margin: '0', fontSize: '14px' }}>{item.name} · {item.weight_label} × {item.quantity}</Text></Column>
+              <Column><Text style={{ margin: '0', fontSize: '14px' }}>{item.name} · {item.weight_label}{item.serving ? ` · ${item.serving}` : ''} × {item.quantity}</Text></Column>
               <Column align="right"><Text style={{ margin: '0', fontSize: '14px' }}>{fmt(item.subtotal)}</Text></Column>
             </Row>
           ))}
@@ -37,14 +38,15 @@ export default function Cust04({ order_number, customer_name, pickup_date, picku
           <Hr />
           <Text style={{ fontSize: '14px', color: '#333' }}>
             <strong>Pickup date:</strong> {pickup_date}<br />
-            <strong>Pickup time:</strong> {pickup_time}
+            <strong>Pickup time:</strong> {pickup_time}<br />
+            <strong>Pickup location:</strong> {PICKUP_LOCATION}
           </Text>
           <Hr />
           <Text style={{ fontSize: '14px', color: '#555' }}>
             Please pick up your order at your scheduled time. We'll be in touch if anything changes.
           </Text>
           <Hr />
-          <Text style={{ fontSize: '12px', color: '#999' }}>Lavaca MNL · Message us on Messenger for questions.</Text>
+          <Text style={{ fontSize: '12px', color: '#999' }}>Lavaca MNL · For questions, message us on Instagram {INSTAGRAM_HANDLE} ({INSTAGRAM_URL}).</Text>
         </Container>
       </Body>
     </Html>

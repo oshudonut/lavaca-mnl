@@ -123,6 +123,8 @@ export default async function AdminOrderDetailPage({ params }: Props) {
             ['Email',          order.customer.email],
             ['Phone',          order.customer.phone],
             ...(order.special_request ? [['Special request', order.special_request]] : []),
+            ...(order.address ? [['Address', order.address]] : []),
+            ...(order.instagram_handle ? [['Instagram', `@${order.instagram_handle}`]] : []),
             ['Payment method', order.payment_method === 'gcash' ? 'GCash' : 'Bank Transfer'],
           ].map(([label, value]) => (
             <div key={label} style={fieldRow}>
@@ -166,7 +168,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
               fontSize: 13,
             }}>
               <span style={{ color: '#57534E' }}>
-                {item.product_name} · {item.weight_label} × {item.quantity}
+                {item.product_name} · {item.weight_label}{item.serving ? ` · ${item.serving}` : ''} × {item.quantity}
               </span>
               <span style={{ fontWeight: 600, color: '#1C1917', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
                 {fmt(item.subtotal)}

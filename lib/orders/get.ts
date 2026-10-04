@@ -1,5 +1,6 @@
 import { createServiceClient } from '@/lib/supabase/service'
 import { orderTimeLabel } from '@/lib/delivery/pickup'
+import { servingStyleLabel } from '@/lib/orders/validation'
 
 export type OrderSummary = {
   id: string
@@ -9,6 +10,8 @@ export type OrderSummary = {
   subtotal: number
   total_amount: number
   special_request: string | null
+  address: string | null        // "street, village, city zip"
+  instagram_handle: string | null
   payment_method: 'gcash' | 'bank_transfer'
   customer: {
     name: string
@@ -20,6 +23,7 @@ export type OrderSummary = {
   items: {
     product_name: string
     weight_label: string
+    serving: string              // "Warm" / "Frozen", or "" for older orders
     quantity: number
     unit_price: number
     subtotal: number
@@ -34,11 +38,12 @@ export async function getOrderSummary(orderId: string): Promise<OrderSummary | n
     .select(`
       id, order_number, status, created_at, subtotal, total_amount,
       special_request, payment_method, pickup_time,
+      address_street, address_village, address_city, address_zip, instagram_handle,
       customers ( name, email, phone ),
       delivery_dates ( date ),
       delivery_slots ( slot_window ),
       order_items (
-        quantity, unit_price, subtotal,
+        quantity, unit_price, subtotal, serving_style,
         products ( name, weight_label )
       )
     `)
@@ -59,6 +64,12 @@ export async function getOrderSummary(orderId: string): Promise<OrderSummary | n
     subtotal: data.subtotal,
     total_amount: data.total_amount,
     special_request: data.special_request,
+    address: data.address_street
+      ? [data.address_street, data.address_village, `${data.address_city ?? ''} ${data.address_zip ?? ''}`.trim()]
+          .filter(Boolean)
+          .join(', ')
+      : null,
+    instagram_handle: data.instagram_handle,
     payment_method: data.payment_method,
     customer: {
       name: customer?.name ?? '',
@@ -70,6 +81,7 @@ export async function getOrderSummary(orderId: string): Promise<OrderSummary | n
     items: (data.order_items ?? []).map((item: any) => ({
       product_name: item.products?.name ?? '',
       weight_label: item.products?.weight_label ?? '',
+      serving: servingStyleLabel(item.serving_style),
       quantity: item.quantity,
       unit_price: item.unit_price,
       subtotal: item.subtotal,

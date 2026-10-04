@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { LogoIntro } from '@/components/LogoIntro'
+import { INSTAGRAM_URL, PICKUP_LOCATION } from '@/lib/site'
 
 const TRUST = [
   { num: '25',   l1: 'Hours',           l2: 'Slow-Cooked'  },
@@ -37,7 +38,7 @@ const GALLERY = [
 ]
 
 const PICKUP_INFO = [
-  { icon: 'pin',      strong: 'Pickup Only',           sub: 'Collect your order at your chosen time' },
+  { icon: 'pin',      strong: PICKUP_LOCATION,         sub: 'Pickup at your chosen time'             },
   { icon: 'calendar', strong: 'Open Every Day',        sub: 'Pickup 9AM – 6PM'                       },
   { icon: 'clock',    strong: 'Same-Day Orders',       sub: 'Order today for a later pickup time'    },
   { icon: 'card',     strong: 'GCash & Bank Transfer', sub: 'BPI · BDO'                              },
@@ -101,7 +102,7 @@ export function HomeContent() {
       {/* ── NAV ── */}
       <nav className="lv-nav">
         <div className="lv-nav-inner">
-          <Image src="/lavaca-logo.png" alt="Lavaca MNL" width={120} height={34} style={{ height: 34, width: 'auto' }} priority />
+          <Image src="/lavaca-logo-mark.png" alt="Lavaca MNL" width={744} height={486} className="lv-nav-logo" priority />
           <div className="lv-nav-links">
             <button onClick={() => scrollTo('craft-section')} className="lv-nav-link">Our Story</button>
             <button onClick={() => scrollTo('process-section')} className="lv-nav-link">How It Works</button>
@@ -112,27 +113,29 @@ export function HomeContent() {
       </nav>
 
       {/* ── HERO ── */}
-      <section className="lv-hero">
-        <Image
-          src="/photo-hero.png"
-          alt="Lavaca MNL Angus Roast Beef"
-          fill
-          style={{ objectFit: 'cover', objectPosition: 'center 30%' }}
-          priority
-        />
-        <div className="hero-overlay" />
-        <div className="lv-hero-content">
-          <div className="lv-hero-rule" />
-          <p className="lv-hero-eyebrow">Slow-Cooked &middot; 100% Angus &middot; Metro Manila</p>
-          <h1 className="lv-hero-headline">
-            Premium<br />Angus<br />Roast Beef.
+      <section id="craft-section" className="lv-craft lv-craft-hero">
+        <div className="lv-craft-photo">
+          <Image
+            src="/photo-craft.png"
+            alt="Lavaca MNL Angus roast beef being carved"
+            fill
+            priority
+            style={{ objectFit: 'cover', objectPosition: 'center 25%' }}
+          />
+        </div>
+        <div className="lv-craft-panel">
+          <p className="lv-section-label light">Slow-Cooked &middot; 100% Angus &middot; Metro Manila</p>
+          <h1 className="lv-craft-title">
+            Premium Angus<br />Roast Beef,<br />
+            <span className="lv-craft-title-sub">Slow-Cooked for 25 Hours.</span>
           </h1>
-          <p className="lv-hero-body">
-            Slow-Cooked for 25 Hours.<br />
-            Crafted for Gatherings.<br />
-            Ready for Pickup.
+          <p className="lv-craft-quote">
+            &ldquo;Every cut of premium Angus is prepared with obsessive patience — sealed with a spice crust, slow-cooked until the connective tissue surrenders and the flavour deepens into something the family will talk about long after dinner.&rdquo;
           </p>
-          <Link href="/order" className="lv-btn-primary">Order Now</Link>
+          <p className="lv-craft-body">
+            We believe the best food is never rushed. Lavaca MNL exists to bring that patience to your table — thoughtfully prepared, carefully packaged, and ready exactly when you need it.
+          </p>
+          <Link href="/order" className="lv-btn-primary" style={{ alignSelf: 'flex-start' }}>Order Now</Link>
         </div>
       </section>
 
@@ -145,37 +148,6 @@ export function HomeContent() {
           </div>
         ))}
       </div>
-
-      {/* ── CRAFT ── */}
-      <section id="craft-section" className="lv-craft">
-        <div className="lv-craft-photo">
-          <Image
-            src="/photo-craft.png"
-            alt="The craft behind Lavaca MNL"
-            fill
-            style={{ objectFit: 'cover', objectPosition: 'center 25%' }}
-          />
-        </div>
-        <div className="lv-craft-panel">
-          <p className="lv-section-label light">The Craft</p>
-          <h2 className="lv-craft-title">
-            Slow-Cooked<br />for 25 Hours.
-          </h2>
-          <p className="lv-craft-quote">
-            &ldquo;Every cut of premium Angus is prepared with obsessive patience — sealed with a spice crust, slow-cooked until the connective tissue surrenders and the flavour deepens into something the family will talk about long after dinner.&rdquo;
-          </p>
-          <p className="lv-craft-body">
-            We believe the best food is never rushed. Lavaca MNL exists to bring that patience to your table — thoughtfully prepared, carefully packaged, and ready exactly when you need it.
-          </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 18, width: 200 }}>
-            <div style={{ flex: 1, height: 1, background: 'rgba(161,98,7,0.3)' }} />
-            <svg width="7" height="7" viewBox="0 0 8 8" aria-hidden style={{ flexShrink: 0 }}>
-              <rect x="4" y="0" width="5" height="5" transform="rotate(45 4 0)" fill="rgba(161,98,7,0.45)" />
-            </svg>
-            <div style={{ flex: 1, height: 1, background: 'rgba(161,98,7,0.3)' }} />
-          </div>
-        </div>
-      </section>
 
       {/* ── PROCESS ── */}
       <section id="process-section" className="lv-process">
@@ -239,12 +211,12 @@ export function HomeContent() {
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
             <Link href="/order" className="lv-btn-primary">Order Now</Link>
             <a
-              href="https://m.me/lavacamnl"
+              href={INSTAGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="lv-btn-outline"
             >
-              Message Us on Messenger
+              Message Us on Instagram
             </a>
           </div>
         </div>

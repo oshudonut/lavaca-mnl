@@ -6,6 +6,7 @@ import { sendEmail } from '@/lib/resend/send'
 import Cust04 from '@/lib/resend/templates/cust-04'
 import { syncOrderToCalendar } from '@/lib/orders/calendar-sync'
 import { orderTimeLabel } from '@/lib/delivery/pickup'
+import { servingStyleLabel } from '@/lib/orders/validation'
 
 export async function POST(
   request: NextRequest,
@@ -30,7 +31,7 @@ export async function POST(
       delivery_dates ( date ),
       delivery_slots ( slot_window ),
       order_items (
-        quantity, subtotal,
+        quantity, subtotal, serving_style,
         products ( name, weight_label )
       )
     `)
@@ -78,6 +79,7 @@ export async function POST(
       pickup_time: orderTimeLabel({ pickup_time: order.pickup_time, slot_window: slot?.slot_window }),
       items: (order.order_items ?? []).map((item: any) => ({
         name: item.products?.name ?? '',
+        serving: servingStyleLabel(item.serving_style),
         weight_label: item.products?.weight_label ?? '',
         quantity: item.quantity,
         subtotal: item.subtotal,

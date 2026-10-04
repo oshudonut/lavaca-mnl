@@ -221,7 +221,7 @@ export function AnnouncementEditor() {
             style={inputStyle('closed_until')}
           />
           <p style={{ fontFamily: "'Jost', sans-serif", fontSize: 11, color: '#A8A29E', margin: '6px 0 0', lineHeight: 1.5 }}>
-            Leave blank to show &ldquo;We will announce our return on Facebook.&rdquo;
+            For your records only. Customers don&apos;t see this date.
           </p>
         </div>
       </div>

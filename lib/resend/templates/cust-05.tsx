@@ -1,5 +1,6 @@
 import { Body, Container, Head, Heading, Hr, Html, Text } from '@react-email/components'
 import * as React from 'react'
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from '@/lib/site'
 
 export interface Cust05Props {
   order_number: string
@@ -22,7 +23,7 @@ export default function Cust05({ order_number, customer_name, cancellation_reaso
           </Text>
           <Hr />
           <Text style={{ fontSize: '14px', color: '#555' }}>
-            If you have questions or would like to place a new order, please visit our page or message us on Messenger.
+            If you have questions or would like to place a new order, please visit our website or message us on Instagram {INSTAGRAM_HANDLE} ({INSTAGRAM_URL}).
           </Text>
           <Hr />
           <Text style={{ fontSize: '12px', color: '#999' }}>Lavaca MNL · We're sorry for the inconvenience.</Text>

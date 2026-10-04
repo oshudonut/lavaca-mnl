@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { getOrderSummary } from '@/lib/orders/get'
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL, PICKUP_LOCATION } from '@/lib/site'
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(n)
@@ -39,8 +41,8 @@ export default async function ConfirmationPage({ searchParams }: Props) {
           <div
             style={{
               width: 36,
-              height: 1,
-              background: '#A16207',
+              height: 2,
+              background: '#FFC35A',
               margin: '0 auto 28px',
             }}
           />
@@ -54,7 +56,7 @@ export default async function ConfirmationPage({ searchParams }: Props) {
           >
             <polyline
               points="4 12 9 17 20 6"
-              stroke="#A16207"
+              stroke="#FFC35A"
               strokeWidth={1.5}
               fill="none"
             />
@@ -76,7 +78,7 @@ export default async function ConfirmationPage({ searchParams }: Props) {
               fontFamily: "'Playfair Display SC', serif",
               fontSize: 'clamp(36px, 8vw, 52px)',
               fontWeight: 400,
-              color: '#FAFAF9',
+              color: '#FFC35A',
               lineHeight: 1.05,
               margin: '0 0 20px',
               whiteSpace: 'pre-line',
@@ -164,7 +166,7 @@ export default async function ConfirmationPage({ searchParams }: Props) {
                 }}
               >
                 <span style={{ color: '#1C1917' }}>
-                  {item.product_name} · {item.weight_label} × {item.quantity}
+                  {item.product_name} · {item.weight_label}{item.serving ? ` · ${item.serving}` : ''} × {item.quantity}
                 </span>
                 <span
                   style={{
@@ -266,6 +268,30 @@ export default async function ConfirmationPage({ searchParams }: Props) {
               {order.time_label}
             </p>
           </div>
+          <div style={{ paddingTop: 14, marginTop: 14, borderTop: '1px solid rgba(161,98,7,0.08)' }}>
+            <p
+              style={{
+                fontFamily: "'Jost', sans-serif",
+                fontSize: 9,
+                letterSpacing: '0.28em',
+                textTransform: 'uppercase',
+                color: '#A16207',
+                margin: '0 0 6px',
+              }}
+            >
+              Location
+            </p>
+            <p
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: 13,
+                color: '#1C1917',
+                margin: 0,
+              }}
+            >
+              {PICKUP_LOCATION}
+            </p>
+          </div>
           {order.special_request && (
             <div style={{ paddingTop: 14, marginTop: 14, borderTop: '1px solid rgba(161,98,7,0.08)' }}>
               <p
@@ -326,12 +352,29 @@ export default async function ConfirmationPage({ searchParams }: Props) {
               lineHeight: 1.6,
             }}
           >
-            We&apos;ll send a confirmation email to{' '}
-            <span style={{ fontWeight: 600, color: 'rgba(250,250,249,0.85)' }}>
-              {order.customer.email}
-            </span>{' '}
-            once your payment is verified. This typically takes less than 4 hours.
+            We&apos;ll send a confirmation email once your payment is verified. This typically takes less than 4 hours.
           </p>
+        </div>
+
+        {/* Back to homepage */}
+        <div style={{ textAlign: 'center', marginTop: 40 }}>
+          <Link
+            href="/"
+            style={{
+              display: 'inline-block',
+              background: '#A16207',
+              color: '#FFFFFF',
+              fontFamily: "'Inter', sans-serif",
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: '0.22em',
+              textTransform: 'uppercase',
+              textDecoration: 'none',
+              padding: '16px 32px',
+            }}
+          >
+            Go Back to Homepage
+          </Link>
         </div>
 
         {/* Footer */}
@@ -341,20 +384,23 @@ export default async function ConfirmationPage({ searchParams }: Props) {
             fontFamily: "'Inter', sans-serif",
             fontSize: 12,
             color: '#8C7B6B',
-            marginTop: 48,
+            marginTop: 32,
             marginBottom: 0,
           }}
         >
-          Questions? Message us on{' '}
-          <span
+          Questions? You may message us on Instagram{' '}
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             style={{
               fontFamily: "'Playfair Display', serif",
               fontStyle: 'italic',
               color: '#A16207',
             }}
           >
-            Facebook Messenger
-          </span>
+            {INSTAGRAM_HANDLE}
+          </a>
           .
         </p>
       </div>

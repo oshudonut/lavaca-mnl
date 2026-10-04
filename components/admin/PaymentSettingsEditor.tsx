@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { GcashQrUploader } from '@/components/admin/GcashQrUploader'
 
 interface PaymentSettingsRow {
   id: string
   gcash_number: string
   gcash_account_name: string
+  gcash_qr_url: string | null
   bpi_account: string
   bpi_name: string
   bdo_account: string
@@ -35,6 +37,7 @@ function defaultForm(s: PaymentSettingsRow | null): FormState {
 export function PaymentSettingsEditor() {
   const [form, setForm] = useState<FormState>(defaultForm(null))
   const [loading, setLoading] = useState(true)
+  const [qrUrl, setQrUrl] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -43,7 +46,10 @@ export function PaymentSettingsEditor() {
   useEffect(() => {
     fetch('/api/admin/payment-settings')
       .then(r => r.json())
-      .then((data: PaymentSettingsRow | null) => setForm(defaultForm(data)))
+      .then((data: PaymentSettingsRow | null) => {
+        setForm(defaultForm(data))
+        setQrUrl(data?.gcash_qr_url ?? null)
+      })
       .catch(err => console.error('[PaymentSettingsEditor] fetch error:', err))
       .finally(() => setLoading(false))
   }, [])
@@ -157,6 +163,7 @@ export function PaymentSettingsEditor() {
             />
           </div>
         </div>
+        <GcashQrUploader initialUrl={qrUrl} />
       </div>
 
       {/* BPI */}

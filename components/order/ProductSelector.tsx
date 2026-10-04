@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import type { ServingStyle } from '@/lib/orders/validation'
 
 export type Product = {
   id: string
@@ -16,12 +17,14 @@ export type CartItem = {
   product_id: string
   quantity: number
   unit_price: number
+  serving_style: ServingStyle | null
 }
 
 type Props = {
   products: Product[]
   cart: CartItem[]
   onChange: (cart: CartItem[]) => void
+  showStyleErrors?: boolean
 }
 
 const formatCurrency = (amount: number) =>
@@ -43,22 +46,28 @@ const qtyButtonStyle = (disabled: boolean): React.CSSProperties => ({
   padding: 0,
 })
 
-export function ProductSelector({ products, cart, onChange }: Props) {
+export function ProductSelector({ products, cart, onChange, showStyleErrors }: Props) {
   const [hoveredId, setHoveredId] = useState<string | null>(null)
 
-  const getQuantity = (productId: string) =>
-    cart.find((item) => item.product_id === productId)?.quantity ?? 0
+  const getItem = (productId: string) => cart.find((item) => item.product_id === productId)
+
+  const getQuantity = (productId: string) => getItem(productId)?.quantity ?? 0
 
   const handleChange = (product: Product, delta: number) => {
-    const current = getQuantity(product.id)
-    const next = Math.max(0, current + delta)
+    const existing = getItem(product.id)
+    const next = Math.max(0, (existing?.quantity ?? 0) + delta)
 
-    const filtered = cart.filter((item) => item.product_id !== product.id)
     if (next === 0) {
-      onChange(filtered)
+      onChange(cart.filter((item) => item.product_id !== product.id))
+    } else if (existing) {
+      onChange(cart.map((item) => (item.product_id === product.id ? { ...item, quantity: next } : item)))
     } else {
-      onChange([...filtered, { product_id: product.id, quantity: next, unit_price: product.price }])
+      onChange([...cart, { product_id: product.id, quantity: next, unit_price: product.price, serving_style: null }])
     }
+  }
+
+  const handleStyle = (productId: string, style: ServingStyle) => {
+    onChange(cart.map((item) => (item.product_id === productId ? { ...item, serving_style: style } : item)))
   }
 
   const subtotal = cart.reduce((sum, item) => sum + item.unit_price * item.quantity, 0)
@@ -68,6 +77,8 @@ export function ProductSelector({ products, cart, onChange }: Props) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {products.map((product) => {
         const qty = getQuantity(product.id)
+        const style = getItem(product.id)?.serving_style ?? null
+        const styleMissing = showStyleErrors && qty > 0 && !style
         const isHovered = hoveredId === product.id
         return (
           <div
@@ -128,6 +139,46 @@ export function ProductSelector({ products, cart, onChange }: Props) {
                 >
                   {product.description}
                 </p>
+              )}
+              {qty > 0 && (
+                <div style={{ marginTop: 12 }}>
+                  <div
+                    role="radiogroup"
+                    aria-label={`Warm or frozen for ${product.name}`}
+                    style={{ display: 'flex', gap: 8 }}
+                  >
+                    {(['warm', 'frozen'] as const).map((opt) => {
+                      const selected = style === opt
+                      return (
+                        <button
+                          key={opt}
+                          type="button"
+                          role="radio"
+                          aria-checked={selected}
+                          onClick={() => handleStyle(product.id, opt)}
+                          style={{
+                            fontFamily: "'Inter', sans-serif",
+                            fontSize: 12,
+                            fontWeight: 500,
+                            padding: '6px 16px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            background: selected ? '#A16207' : 'transparent',
+                            color: selected ? '#FFFFFF' : '#57534E',
+                            border: `1px solid ${selected ? '#A16207' : styleMissing ? '#DC2626' : '#D6D3D1'}`,
+                          }}
+                        >
+                          {opt === 'warm' ? 'Warm' : 'Frozen'}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  {styleMissing && (
+                    <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: '#DC2626', margin: '6px 0 0' }}>
+                      Choose warm or frozen.
+                    </p>
+                  )}
+                </div>
               )}
             </div>
 

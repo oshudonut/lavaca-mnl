@@ -56,14 +56,26 @@ export default async function PaymentPage({ searchParams }: Props) {
     <main style={{ background: '#FAFAF9', minHeight: '100vh' }}>
       {/* Dark hero header */}
       <header style={{ background: '#0C0A09', padding: '48px 24px 44px', textAlign: 'center' }}>
-        <div style={{ width: 36, height: 1, background: '#A16207', margin: '0 auto 18px' }} />
-        <p style={sectionLabelStyle}>Send Your Payment</p>
+        <div style={{ width: 36, height: 2, background: '#FFC35A', margin: '0 auto 18px' }} />
+        <p
+          style={{
+            fontFamily: "'Jost', sans-serif",
+            fontSize: 15,
+            fontWeight: 500,
+            letterSpacing: '0.24em',
+            textTransform: 'uppercase',
+            color: '#FFFFFF',
+            margin: 0,
+          }}
+        >
+          Send Your Payment
+        </p>
         <h1
           style={{
             fontFamily: "'Playfair Display SC', serif",
             fontSize: 32,
             fontWeight: 400,
-            color: '#FAFAF9',
+            color: '#FFC35A',
             whiteSpace: 'pre-line',
             lineHeight: 1.25,
             margin: '14px 0 10px',
@@ -117,7 +129,7 @@ export default async function PaymentPage({ searchParams }: Props) {
                 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}
               >
                 <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#1C1917' }}>
-                  {item.product_name} · {item.weight_label} × {item.quantity}
+                  {item.product_name} · {item.weight_label}{item.serving ? ` · ${item.serving}` : ''} × {item.quantity}
                 </span>
                 <span
                   style={{
@@ -169,6 +181,7 @@ export default async function PaymentPage({ searchParams }: Props) {
             defaultMethod={order.payment_method}
             gcashNumber={paymentSettings.gcashNumber}
             gcashAccountName={paymentSettings.gcashAccountName}
+            gcashQrUrl={paymentSettings.gcashQrUrl}
             bpiAccount={paymentSettings.bpiAccount}
             bpiName={paymentSettings.bpiName}
             bdoAccount={paymentSettings.bdoAccount}

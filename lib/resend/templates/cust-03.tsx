@@ -1,5 +1,6 @@
 import { Body, Container, Head, Heading, Hr, Html, Link, Text } from '@react-email/components'
 import * as React from 'react'
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from '@/lib/site'
 
 export interface Cust03Props {
   order_number: string
@@ -29,7 +30,7 @@ export default function Cust03({ order_number, customer_name, rejection_reason, 
             Re-upload Screenshot
           </Link>
           <Hr />
-          <Text style={{ fontSize: '12px', color: '#999' }}>Lavaca MNL · Message us on Messenger for help.</Text>
+          <Text style={{ fontSize: '12px', color: '#999' }}>Lavaca MNL · For help, message us on Instagram {INSTAGRAM_HANDLE} ({INSTAGRAM_URL}).</Text>
         </Container>
       </Body>
     </Html>

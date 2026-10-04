@@ -10,7 +10,7 @@ export async function GET() {
   const supabase = createServiceClient()
   const { data } = await supabase
     .from('payment_settings')
-    .select('id, gcash_number, gcash_account_name, bpi_account, bpi_name, bdo_account, bdo_name, updated_at')
+    .select('id, gcash_number, gcash_account_name, gcash_qr_url, bpi_account, bpi_name, bdo_account, bdo_name, updated_at')
     .order('updated_at', { ascending: false })
     .limit(1)
     .maybeSingle()
@@ -61,14 +61,14 @@ export async function PUT(request: NextRequest) {
       .from('payment_settings')
       .update(payload)
       .eq('id', existing.id)
-      .select('id, gcash_number, gcash_account_name, bpi_account, bpi_name, bdo_account, bdo_name, updated_at')
+      .select('id, gcash_number, gcash_account_name, gcash_qr_url, bpi_account, bpi_name, bdo_account, bdo_name, updated_at')
       .single()
     result = data
   } else {
     const { data } = await supabase
       .from('payment_settings')
       .insert(payload)
-      .select('id, gcash_number, gcash_account_name, bpi_account, bpi_name, bdo_account, bdo_name, updated_at')
+      .select('id, gcash_number, gcash_account_name, gcash_qr_url, bpi_account, bpi_name, bdo_account, bdo_name, updated_at')
       .single()
     result = data
   }

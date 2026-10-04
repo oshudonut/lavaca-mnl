@@ -74,7 +74,12 @@
   z-index: 100;
   background: #5C1A1A;
   border-bottom: 1px solid rgba(212,149,74,0.15);
-  height: 72px;
+  height: 84px;
+}
+.lv-nav-logo {
+  height: 60px;
+  width: auto;
+  display: block;
 }
 
 .lv-nav-inner {
@@ -125,81 +130,12 @@
 
 /* ── Hero ── */
 
-.lv-hero {
-  position: relative;
-  height: 100vh;
-  min-height: 680px;
-  overflow: hidden;
-  display: flex;
-  align-items: flex-end;
-}
 
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(90deg, rgba(12,10,9,0.92) 0%, rgba(12,10,9,0.68) 42%, rgba(12,10,9,0.18) 100%),
-    linear-gradient(to top, rgba(12,10,9,0.58) 0%, transparent 55%);
-  pointer-events: none;
-  z-index: 1;
-}
-.hero-overlay::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: repeating-linear-gradient(
-    -45deg,
-    rgba(161,98,7,0.014) 0px,
-    rgba(161,98,7,0.014) 1px,
-    transparent 1px,
-    transparent 24px
-  );
-}
 
-.lv-hero-content {
-  position: relative;
-  z-index: 2;
-  padding: 0 80px 96px;
-  max-width: 780px;
-}
 
-.lv-hero-rule {
-  width: 36px;
-  height: 1px;
-  background: #A16207;
-  margin-bottom: 18px;
-}
 
-.lv-hero-eyebrow {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-size: 14px;
-  font-weight: 400;
-  letter-spacing: 0;
-  color: #A16207;
-  margin-bottom: 26px;
-}
 
-.lv-hero-headline {
-  font-family: 'Playfair Display SC', serif;
-  font-size: clamp(56px, 9vw, 110px);
-  font-weight: 400;
-  line-height: 0.94;
-  letter-spacing: -0.01em;
-  color: #FAFAF9;
-  margin-bottom: 36px;
-}
 
-.lv-hero-body {
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  font-weight: 300;
-  letter-spacing: 0.02em;
-  line-height: 2.2;
-  color: rgba(250,250,249,0.58);
-  max-width: 420px;
-  margin-bottom: 52px;
-}
 
 /* ── Buttons ── */
 
@@ -353,7 +289,13 @@
   font-weight: 500;
   line-height: 1.05;
   letter-spacing: -0.01em;
-  color: #FAFAF9;
+  color: #FFC35A;
+}
+.lv-craft-title-sub {
+  display: block;
+  margin-top: 14px;
+  font-style: italic;
+  font-size: 0.62em;
 }
 
 .lv-craft-quote {
@@ -568,7 +510,7 @@
   font-size: clamp(44px, 8vw, 72px);
   font-weight: 400;
   line-height: 1.02;
-  color: #FAFAF9;
+  color: #FFC35A;
   margin: 20px 0 26px;
 }
 
@@ -585,7 +527,6 @@
 /* ── Responsive ── */
 
 @media (max-width: 1024px) {
-  .lv-hero-content { padding: 0 56px 80px; }
   .lv-process { padding: 96px 48px; }
   .lv-trust { padding: 48px 40px; }
   .lv-craft-panel { padding: 80px 56px; }
@@ -595,6 +536,7 @@
 @media (max-width: 900px) {
   .lv-craft { grid-template-columns: 1fr; }
   .lv-craft-photo { min-height: 420px; }
+  .lv-craft-hero .lv-craft-photo { min-height: 300px; }
   .lv-process-steps { grid-template-columns: 1fr; gap: 48px; }
   .lv-process-steps::before { display: none; }
 }
@@ -604,9 +546,6 @@
   .lv-nav-links { display: none; }
   .lv-nav-cta { font-size: 14px; padding: 9px 22px; }
 
-  .lv-hero { min-height: 560px; }
-  .lv-hero-content { padding: 0 28px 64px; }
-  .lv-hero-body { margin-bottom: 40px; }
 
   .lv-trust {
     grid-template-columns: repeat(2, 1fr);
@@ -648,10 +587,8 @@
 }
 
 @media (max-width: 480px) {
-  .lv-nav { height: 64px; }
-  .lv-hero-content { padding: 0 24px 60px; }
-  .lv-hero-headline { margin-bottom: 28px; }
-  .lv-hero-body { font-size: 13px; }
+  .lv-nav { height: 72px; }
+  .lv-nav-logo { height: 50px; }
   .lv-btn-primary { padding: 16px 36px; }
 
   .lv-trust { grid-template-columns: 1fr; row-gap: 32px; padding: 36px 20px; }
