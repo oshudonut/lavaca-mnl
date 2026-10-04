@@ -109,7 +109,7 @@ export function AnnouncementEditor() {
             className={form.is_active ? 'is-on is-closed' : ''}
             onClick={() => set('is_active', true)}
           >
-            No, show the closed banner
+            No, closed for now
           </button>
         </div>
         {form.is_active && (

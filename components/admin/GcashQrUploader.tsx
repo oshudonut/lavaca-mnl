@@ -51,52 +51,58 @@ export function GcashQrUploader({ initialUrl }: Props) {
     <div className="adm-field" style={{ gap: 10 }}>
       <span className="adm-label">GCash QR code</span>
 
-      {url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={url}
-          alt="Current GCash QR code"
-          style={{ width: 180, height: 'auto', border: '1px solid #E5DDD5', borderRadius: 10, background: '#FFFFFF', padding: 8 }}
+      <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        {url ? (
+          <a href={url} target="_blank" rel="noopener noreferrer" aria-label="Open the QR code full size">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={url}
+              alt="Current GCash QR code"
+              style={{ width: 120, height: 'auto', border: '1px solid #E5DDD5', borderRadius: 10, background: '#FFFFFF', padding: 6, display: 'block' }}
+            />
+          </a>
+        ) : (
+          <p className="adm-hint" style={{ fontSize: 15, flexBasis: '100%' }}>No QR code yet. Customers only see the GCash number.</p>
+        )}
+
+        <input
+          ref={inputRef}
+          id="gcash-qr-file"
+          type="file"
+          accept="image/png,image/jpeg"
+          style={{ display: 'none' }}
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (file) handleFile(file)
+          }}
         />
-      ) : (
-        <p className="adm-hint" style={{ fontSize: 15 }}>No QR code yet. Customers only see the GCash number.</p>
-      )}
 
-      <input
-        ref={inputRef}
-        id="gcash-qr-file"
-        type="file"
-        accept="image/png,image/jpeg"
-        style={{ display: 'none' }}
-        onChange={(e) => {
-          const file = e.target.files?.[0]
-          if (file) handleFile(file)
-        }}
-      />
-
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-        <button type="button" className="adm-btn adm-btn-outline" disabled={busy} onClick={() => inputRef.current?.click()}>
-          {busy ? 'Working…' : url ? 'Replace QR code' : 'Upload QR code'}
-        </button>
-        {url && !confirmRemove && (
-          <button type="button" className="adm-btn adm-btn-danger" disabled={busy} onClick={() => setConfirmRemove(true)}>
-            Remove
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-start' }}>
+          <button type="button" className="adm-btn adm-btn-outline" disabled={busy} onClick={() => inputRef.current?.click()}>
+            {busy ? 'Working…' : url ? 'Replace QR code' : 'Upload QR code'}
           </button>
-        )}
-        {url && confirmRemove && (
-          <>
-            <span>Remove the QR code?</span>
-            <button type="button" className="adm-btn adm-btn-danger" disabled={busy} onClick={handleRemove}>
-              Yes, remove
+          {url && !confirmRemove && (
+            <button type="button" className="adm-btn adm-btn-danger" disabled={busy} onClick={() => setConfirmRemove(true)}>
+              Remove
             </button>
-            <button type="button" className="adm-btn adm-btn-outline" disabled={busy} onClick={() => setConfirmRemove(false)}>
-              Keep it
-            </button>
-          </>
-        )}
+          )}
+          {url && confirmRemove && (
+            <>
+              <span>Remove the QR code?</span>
+              <span style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button type="button" className="adm-btn adm-btn-danger" disabled={busy} onClick={handleRemove}>
+                  Yes, remove
+                </button>
+                <button type="button" className="adm-btn adm-btn-outline" disabled={busy} onClick={() => setConfirmRemove(false)}>
+                  Keep it
+                </button>
+              </span>
+            </>
+          )}
+        </div>
       </div>
 
-      <p className="adm-hint">JPG or PNG, up to 2MB. It shows on the payment page right away, no need to click Save.</p>
+      <p className="adm-hint">JPG or PNG, up to 2MB. Shows on the payment page right away.</p>
       {error && <p className="adm-error" role="alert">{error}</p>}
     </div>
   )

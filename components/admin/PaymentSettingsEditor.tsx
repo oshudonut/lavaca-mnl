@@ -106,8 +106,8 @@ export function PaymentSettingsEditor() {
   )
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <h3 className="adm-h3">GCash</h3>
         <div className="adm-form-grid">
           {field('gcash_number', 'GCash number', 'e.g. 0917 123 4567')}
@@ -116,7 +116,7 @@ export function PaymentSettingsEditor() {
         <GcashQrUploader initialUrl={qrUrl} />
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <h3 className="adm-h3">BPI</h3>
         <div className="adm-form-grid">
           {field('bpi_account', 'Account number')}
@@ -124,7 +124,7 @@ export function PaymentSettingsEditor() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <h3 className="adm-h3">BDO</h3>
         <div className="adm-form-grid">
           {field('bdo_account', 'Account number')}
