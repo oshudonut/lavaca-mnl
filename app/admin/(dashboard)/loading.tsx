@@ -1,33 +1,18 @@
 // Shown instantly while an admin page loads, so clicks respond right away.
 // The nav bar comes from the layout and stays in place.
 export default function AdminLoading() {
-  const bar = (width: number | string, height = 12): React.CSSProperties => ({
-    width,
-    height,
-    background: '#E7E5E4',
-  })
-
   return (
-    <div aria-busy="true" aria-label="Loading" className="lv-admin-skeleton">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
-        <div style={bar(90, 9)} />
-        <div style={bar(260, 28)} />
+    <div aria-busy="true" aria-label="Loading" className="adm-skeleton" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="adm-skel-bar" style={{ width: 160, height: 14 }} />
+        <div className="adm-skel-bar" style={{ width: 280, height: 32 }} />
       </div>
-      <div
-        style={{
-          background: '#FFFFFF',
-          border: '1px solid #D6D3D1',
-          padding: 24,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 18,
-        }}
-      >
-        {[0, 1, 2, 3, 4, 5].map((i) => (
-          <div key={i} style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-            <div style={bar('22%')} />
-            <div style={bar('38%')} />
-            <div style={bar('18%')} />
+      <div className="adm-card">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <div key={i} style={{ display: 'flex', gap: 16, alignItems: 'center', padding: '8px 0' }}>
+            <div className="adm-skel-bar" style={{ width: '18%', height: 16 }} />
+            <div className="adm-skel-bar" style={{ width: '42%', height: 16 }} />
+            <div className="adm-skel-bar" style={{ width: '16%', height: 16 }} />
           </div>
         ))}
       </div>

@@ -699,16 +699,6 @@
   to   { opacity: 1; }
 }
 
-/* ── Admin loading skeleton ── */
-.lv-admin-skeleton { animation: lv-skeleton-pulse 1.4s ease-in-out infinite; }
-@keyframes lv-skeleton-pulse {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.55; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .lv-admin-skeleton { animation: none; }
-}
-
 /* Brand hashtag in the hero quote: Maize highlight + underline */
 .lv-hashtag {
   color: #FFC35A;

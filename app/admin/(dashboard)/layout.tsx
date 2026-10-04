@@ -1,12 +1,20 @@
+import '../admin.css'
 import { AdminNav } from '@/components/admin/AdminNav'
+import { createServiceClient } from '@/lib/supabase/service'
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export const dynamic = 'force-dynamic'
+
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  // Count shown on the Orders tab: payments waiting for the owner to check.
+  const { count } = await createServiceClient()
+    .from('orders')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'PAYMENT_REVIEW')
+
   return (
-    <div style={{ minHeight: '100vh', background: '#F5F4F2', fontFamily: "'Inter', sans-serif" }}>
-      <AdminNav />
-      <main style={{ maxWidth: 1152, margin: '0 auto', padding: '40px 24px' }}>
-        {children}
-      </main>
+    <div className="adm">
+      <AdminNav reviewCount={count ?? 0} />
+      <main className="adm-main">{children}</main>
     </div>
   )
 }

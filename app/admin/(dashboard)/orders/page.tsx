@@ -7,7 +7,11 @@ import { servingStyleLabel } from '@/lib/orders/validation'
 
 export const dynamic = 'force-dynamic'
 
-export default async function AdminOrdersPage() {
+export default async function AdminOrdersPage({
+  searchParams,
+}: {
+  searchParams: { status?: string }
+}) {
   // Expire stale orders on every admin page load so the list stays current
   await expireStaleOrders({ deferEmails: true })
 
@@ -77,7 +81,7 @@ export default async function AdminOrdersPage() {
           Orders
         </h1>
       </div>
-      <OrdersTable orders={orders} />
+      <OrdersTable orders={orders} initialStatus={searchParams.status} />
     </div>
   )
 }

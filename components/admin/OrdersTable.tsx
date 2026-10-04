@@ -36,11 +36,14 @@ export type OrderTableRow = {
 
 interface Props {
   orders: OrderTableRow[]
+  initialStatus?: string
 }
 
-export function OrdersTable({ orders }: Props) {
+export function OrdersTable({ orders, initialStatus }: Props) {
   const router = useRouter()
-  const [statusFilter, setStatusFilter] = useState('ALL')
+  const [statusFilter, setStatusFilter] = useState(
+    initialStatus && ALL_STATUSES.includes(initialStatus) ? initialStatus : 'ALL'
+  )
   const [search, setSearch] = useState('')
   const [focusedField, setFocusedField] = useState<string | null>(null)
   const [selected, setSelected] = useState<Set<string>>(new Set())
