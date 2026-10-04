@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { AvailabilityCalendar } from '@/components/calendar/AvailabilityCalendar'
 import { PickupTimePicker } from '@/components/calendar/PickupTimePicker'
@@ -12,6 +12,7 @@ import type { Product, CartItem } from '@/components/order/ProductSelector'
 import type { CustomerDetails } from '@/components/order/CustomerForm'
 import { isValidEmail, isValidZip, normalizePhone } from '@/lib/orders/validation'
 import { PICKUP_LOCATION } from '@/lib/site'
+import { formatPickupTime } from '@/lib/delivery/pickup'
 
 interface Props {
   products: Product[]
@@ -60,6 +61,30 @@ const fieldErrorStyle: React.CSSProperties = {
   marginTop: 10,
 }
 
+const STEPS = ['Items', 'Pickup date', 'Pickup time', 'Your details', 'Confirm'] as const
+const CONFIRM_STEP = STEPS.length - 1
+const STEP_EXIT_MS = 220
+
+const fmtPeso = (n: number) =>
+  new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(n)
+
+const summaryLabelStyle: React.CSSProperties = {
+  fontFamily: "'Jost', sans-serif",
+  fontSize: 9,
+  letterSpacing: '0.28em',
+  textTransform: 'uppercase',
+  color: '#A16207',
+  margin: '0 0 6px',
+}
+
+const summaryTextStyle: React.CSSProperties = {
+  fontFamily: "'Inter', sans-serif",
+  fontSize: 13,
+  color: '#1C1917',
+  margin: 0,
+  lineHeight: 1.6,
+}
+
 export function OrderPage({ products }: Props) {
   const router = useRouter()
 
@@ -77,6 +102,11 @@ export function OrderPage({ products }: Props) {
   const [formErrors, setFormErrors] = useState<Partial<Record<string, string>>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+
+  const [step, setStep] = useState(0)
+  const [direction, setDirection] = useState<'next' | 'back'>('next')
+  const [leaving, setLeaving] = useState(false)
+  const stepsTopRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetch('/api/delivery-slots')
@@ -100,36 +130,76 @@ export function OrderPage({ products }: Props) {
         .filter((p): p is NonNullable<typeof p> => Boolean(p))
     : []
 
-  const validate = (): Record<string, string> => {
+  // One validator per step; each returns only that step's errors.
+  const validateStep = (index: number): Record<string, string> => {
     const errors: Record<string, string> = {}
-    if (!cart.length) errors.cart = 'Please add at least one item.'
-    else if (cart.some((item) => !item.serving_style)) errors.cart = 'Choose warm or frozen for each item.'
-    if (!specialRequest.trim()) errors.special_request = 'Special request is required.'
-    if (!selectedDate) errors.date = 'Please select a pickup date.'
-    if (excludedCartProducts.length > 0) {
-      errors.date = `${excludedCartProducts.map((p) => `${p.name} (${p.weight_label})`).join(', ')} ${excludedCartProducts.length > 1 ? 'are' : 'is'} not available on the selected date.`
+    if (index === 0) {
+      if (!cart.length) errors.cart = 'Please add at least one item.'
+      else if (cart.some((item) => !item.serving_style)) errors.cart = 'Choose warm or frozen for each item.'
+      if (!specialRequest.trim()) errors.special_request = 'Special request is required.'
     }
-    if (!selectedTime) errors.time = 'Please select a pickup time.'
-    if (!customer.name.trim()) errors.name = 'Full name is required.'
-    if (!customer.phone.trim()) errors.phone = 'Phone number is required.'
-    else if (!normalizePhone(customer.phone)) errors.phone = 'Enter a valid mobile number, e.g. 0917 123 4567.'
-    if (!customer.email.trim()) errors.email = 'Email address is required.'
-    else if (!isValidEmail(customer.email)) errors.email = 'Enter a valid email address, e.g. name@gmail.com.'
-    if (!customer.address_street.trim()) errors.address_street = 'House/lot number and street is required.'
-    if (!customer.address_village.trim()) errors.address_village = 'Village is required.'
-    if (!customer.address_city.trim()) errors.address_city = 'City is required.'
-    if (!customer.address_zip.trim()) errors.address_zip = 'ZIP code is required.'
-    else if (!isValidZip(customer.address_zip)) errors.address_zip = 'ZIP code must be 4 digits.'
+    if (index === 1) {
+      if (!selectedDate) errors.date = 'Please select a pickup date.'
+      else if (excludedCartProducts.length > 0) {
+        errors.date = `${excludedCartProducts.map((p) => `${p.name} (${p.weight_label})`).join(', ')} ${excludedCartProducts.length > 1 ? 'are' : 'is'} not available on the selected date.`
+      }
+    }
+    if (index === 2) {
+      if (!selectedTime) errors.time = 'Please select a pickup time.'
+    }
+    if (index === 3) {
+      if (!customer.name.trim()) errors.name = 'Full name is required.'
+      if (!customer.phone.trim()) errors.phone = 'Phone number is required.'
+      else if (!normalizePhone(customer.phone)) errors.phone = 'Enter a valid mobile number, e.g. 0917 123 4567.'
+      if (!customer.email.trim()) errors.email = 'Email address is required.'
+      else if (!isValidEmail(customer.email)) errors.email = 'Enter a valid email address, e.g. name@gmail.com.'
+      if (!customer.address_street.trim()) errors.address_street = 'House/lot number and street is required.'
+      if (!customer.address_village.trim()) errors.address_village = 'Village is required.'
+      if (!customer.address_city.trim()) errors.address_city = 'City is required.'
+      if (!customer.address_zip.trim()) errors.address_zip = 'ZIP code is required.'
+      else if (!isValidZip(customer.address_zip)) errors.address_zip = 'ZIP code must be 4 digits.'
+    }
     return errors
+  }
+
+  // Animate the current step out, then swap in the target step.
+  const goTo = (target: number) => {
+    if (target === step || leaving) return
+    setDirection(target > step ? 'next' : 'back')
+    setSubmitError(null)
+    const reduceMotion =
+      typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    setLeaving(true)
+    window.setTimeout(() => {
+      setStep(target)
+      setLeaving(false)
+      const top = stepsTopRef.current?.getBoundingClientRect().top ?? 0
+      if (top < 0) stepsTopRef.current?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
+    }, reduceMotion ? 0 : STEP_EXIT_MS)
+  }
+
+  const handleNext = () => {
+    const errors = validateStep(step)
+    setFormErrors(errors)
+    if (Object.keys(errors).length === 0) goTo(step + 1)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (step < CONFIRM_STEP) {
+      handleNext()
+      return
+    }
     setSubmitError(null)
 
-    const errors = validate()
-    setFormErrors(errors)
-    if (Object.keys(errors).length > 0) return
+    for (let i = 0; i < CONFIRM_STEP; i++) {
+      const errors = validateStep(i)
+      if (Object.keys(errors).length > 0) {
+        setFormErrors(errors)
+        goTo(i)
+        return
+      }
+    }
 
     setIsSubmitting(true)
     try {
@@ -242,169 +312,321 @@ export function OrderPage({ products }: Props) {
           gap: 24,
         }}
       >
+        {/* Step progress */}
+        <div ref={stepsTopRef} style={{ display: 'flex', flexDirection: 'column', gap: 10, scrollMarginTop: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
+            <span
+              style={{
+                fontFamily: "'Jost', sans-serif",
+                fontSize: 10,
+                letterSpacing: '0.24em',
+                textTransform: 'uppercase',
+                color: '#A16207',
+              }}
+            >
+              Step {step + 1} of {STEPS.length}
+            </span>
+            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#57534E' }}>{STEPS[step]}</span>
+          </div>
+          <div
+            role="progressbar"
+            aria-valuemin={1}
+            aria-valuemax={STEPS.length}
+            aria-valuenow={step + 1}
+            aria-label="Order progress"
+            style={{ display: 'grid', gridTemplateColumns: `repeat(${STEPS.length}, 1fr)`, gap: 4 }}
+          >
+            {STEPS.map((label, i) => (
+              <div key={label} className="lv-step-track">
+                <div className={`lv-step-fill${i <= step ? ' is-done' : ''}`} />
+              </div>
+            ))}
+          </div>
+        </div>
+
         <form
           onSubmit={handleSubmit}
           noValidate
           style={{ display: 'flex', flexDirection: 'column', gap: 24 }}
         >
-          {/* Products */}
-          <section style={cardStyle}>
-            <h2 style={sectionHeadingStyle}>Choose your items</h2>
-            <ProductSelector
-              products={products}
-              cart={cart}
-              onChange={setCart}
-              showStyleErrors={!!formErrors.cart}
-            />
-            {formErrors.cart && <p style={fieldErrorStyle}>{formErrors.cart}</p>}
-
-            {/* Special request — below the subtotal */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 24 }}>
-              <label htmlFor="order-special-request" style={fieldLabelStyle}>
-                Special Request
-              </label>
-              <textarea
-                id="order-special-request"
-                required
-                rows={3}
-                maxLength={500}
-                value={specialRequest}
-                onChange={(e) => setSpecialRequest(e.target.value)}
-                onFocus={() => setSpecialRequestFocused(true)}
-                onBlur={() => setSpecialRequestFocused(false)}
-                aria-invalid={!!formErrors.special_request}
-                aria-describedby={formErrors.special_request ? 'order-special-request-error' : undefined}
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 14,
-                  color: '#1C1917',
-                  background: '#FFFFFF',
-                  border: `1px solid ${formErrors.special_request ? '#DC2626' : specialRequestFocused ? '#A16207' : '#D6D3D1'}`,
-                  padding: '11px 14px',
-                  width: '100%',
-                  outline: 'none',
-                  borderRadius: 0,
-                  resize: 'vertical',
-                  transition: 'border-color 0.2s',
-                }}
-              />
-              {formErrors.special_request && (
-                <p id="order-special-request-error" style={{ ...fieldErrorStyle, marginTop: 0 }}>
-                  {formErrors.special_request}
-                </p>
-              )}
-            </div>
-          </section>
-
-          {/* Calendar / Closure Banner */}
-          <section style={cardStyle}>
-            <h2 style={sectionHeadingStyle}>Select pickup date</h2>
-            {loadingSlots ? (
-              <div style={{ background: '#F5F4F2', height: 200, width: '100%' }} />
-            ) : (
-              <>
-                {slotsData && (
-                  <AvailabilityCalendar
-                    slotsData={slotsData}
-                    selectedDate={selectedDate}
-                    onSelectDate={handleSelectDate}
+          <div
+            key={step}
+            className={`lv-step${leaving ? ' is-leaving' : ''}`}
+            data-dir={direction}
+          >
+            {step === 0 && (
+                <section style={cardStyle}>
+                  <h2 style={sectionHeadingStyle}>Choose your items</h2>
+                  <ProductSelector
+                    products={products}
+                    cart={cart}
+                    onChange={setCart}
+                    showStyleErrors={!!formErrors.cart}
                   />
-                )}
-                {excludedCartProducts.length > 0 && (
-                  <p style={fieldErrorStyle}>
-                    {excludedCartProducts.map((p) => `${p.name} (${p.weight_label})`).join(', ')}{' '}
-                    {excludedCartProducts.length > 1 ? 'are' : 'is'} not available on this date. Remove{' '}
-                    {excludedCartProducts.length > 1 ? 'them' : 'it'} or choose a different date.
-                  </p>
-                )}
-                {formErrors.date && excludedCartProducts.length === 0 && (
-                  <p style={fieldErrorStyle}>{formErrors.date}</p>
-                )}
-              </>
+                  {formErrors.cart && <p style={fieldErrorStyle}>{formErrors.cart}</p>}
+
+                  {/* Special request — below the subtotal */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 24 }}>
+                    <label htmlFor="order-special-request" style={fieldLabelStyle}>
+                      Special Request
+                    </label>
+                    <textarea
+                      id="order-special-request"
+                      required
+                      rows={3}
+                      maxLength={500}
+                      value={specialRequest}
+                      onChange={(e) => setSpecialRequest(e.target.value)}
+                      onFocus={() => setSpecialRequestFocused(true)}
+                      onBlur={() => setSpecialRequestFocused(false)}
+                      aria-invalid={!!formErrors.special_request}
+                      aria-describedby={formErrors.special_request ? 'order-special-request-error' : undefined}
+                      style={{
+                        fontFamily: "'Inter', sans-serif",
+                        fontSize: 14,
+                        color: '#1C1917',
+                        background: '#FFFFFF',
+                        border: `1px solid ${formErrors.special_request ? '#DC2626' : specialRequestFocused ? '#A16207' : '#D6D3D1'}`,
+                        padding: '11px 14px',
+                        width: '100%',
+                        outline: 'none',
+                        borderRadius: 0,
+                        resize: 'vertical',
+                        transition: 'border-color 0.2s',
+                      }}
+                    />
+                    {formErrors.special_request && (
+                      <p id="order-special-request-error" style={{ ...fieldErrorStyle, marginTop: 0 }}>
+                        {formErrors.special_request}
+                      </p>
+                    )}
+                  </div>
+                </section>
             )}
-          </section>
+            {step === 1 && (
+                <section style={cardStyle}>
+                  <h2 style={sectionHeadingStyle}>Select pickup date</h2>
+                  {loadingSlots ? (
+                    <div style={{ background: '#F5F4F2', height: 200, width: '100%' }} />
+                  ) : (
+                    <>
+                      {slotsData && (
+                        <AvailabilityCalendar
+                          slotsData={slotsData}
+                          selectedDate={selectedDate}
+                          onSelectDate={handleSelectDate}
+                        />
+                      )}
+                      {excludedCartProducts.length > 0 && (
+                        <p style={fieldErrorStyle}>
+                          {excludedCartProducts.map((p) => `${p.name} (${p.weight_label})`).join(', ')}{' '}
+                          {excludedCartProducts.length > 1 ? 'are' : 'is'} not available on this date. Remove{' '}
+                          {excludedCartProducts.length > 1 ? 'them' : 'it'} or choose a different date.
+                        </p>
+                      )}
+                      {formErrors.date && excludedCartProducts.length === 0 && (
+                        <p style={fieldErrorStyle}>{formErrors.date}</p>
+                      )}
+                    </>
+                  )}
+                </section>
+            )}
+            {step === 2 && (
+                <section style={cardStyle}>
+                  <h2 style={{ ...sectionHeadingStyle, marginBottom: 6 }}>Select pickup time</h2>
+                  <p
+                    style={{
+                      fontFamily: "'Inter', sans-serif",
+                      fontSize: 12,
+                      color: '#57534E',
+                      margin: '0 0 16px',
+                    }}
+                  >
+                    Pickup location: <strong style={{ color: '#1C1917', fontWeight: 600 }}>{PICKUP_LOCATION}</strong>
+                  </p>
+                  <PickupTimePicker
+                    availableTimes={selectedDateData?.pickup_times ?? []}
+                    selectedTime={selectedTime}
+                    onSelectTime={setSelectedTime}
+                    hasError={!!formErrors.time}
+                  />
+                  {formErrors.time && <p style={fieldErrorStyle}>{formErrors.time}</p>}
+                </section>
+            )}
+            {step === 3 && (
+                <section style={cardStyle}>
+                  <h2 style={sectionHeadingStyle}>Your details</h2>
+                  <CustomerForm
+                    value={customer}
+                    onChange={setCustomer}
+                    errors={{
+                      name: formErrors.name,
+                      phone: formErrors.phone,
+                      email: formErrors.email,
+                      address_street: formErrors.address_street,
+                      address_village: formErrors.address_village,
+                      address_city: formErrors.address_city,
+                      address_zip: formErrors.address_zip,
+                    }}
+                  />
+                </section>
+            )}
+            {step === CONFIRM_STEP && (
+              <section style={cardStyle}>
+                <h2 style={sectionHeadingStyle}>Confirm your order</h2>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                  <SummaryBlock label="Items" onEdit={() => goTo(0)}>
+                    {cart.map((item) => {
+                      const product = products.find((p) => p.id === item.product_id)
+                      if (!product) return null
+                      return (
+                        <div key={item.product_id} style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                          <span style={summaryTextStyle}>
+                            {product.name} · {product.weight_label}
+                            {item.serving_style ? ` · ${item.serving_style === 'warm' ? 'Warm' : 'Frozen'}` : ''} × {item.quantity}
+                          </span>
+                          <span style={{ ...summaryTextStyle, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                            {fmtPeso(item.unit_price * item.quantity)}
+                          </span>
+                        </div>
+                      )
+                    })}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10 }}>
+                      <span style={{ ...summaryTextStyle, fontWeight: 600 }}>Subtotal</span>
+                      <span style={{ ...summaryTextStyle, fontWeight: 600, color: '#A16207', fontVariantNumeric: 'tabular-nums' }}>
+                        {fmtPeso(cart.reduce((sum, item) => sum + item.unit_price * item.quantity, 0))}
+                      </span>
+                    </div>
+                  </SummaryBlock>
+                  <SummaryBlock label="Special request" onEdit={() => goTo(0)}>
+                    <p style={{ ...summaryTextStyle, whiteSpace: 'pre-line' }}>{specialRequest.trim()}</p>
+                  </SummaryBlock>
+                  <SummaryBlock label="Pickup" onEdit={() => goTo(1)}>
+                    <p style={summaryTextStyle}>
+                      {selectedDate
+                        ? new Date(`${selectedDate}T00:00:00+08:00`).toLocaleDateString('en-PH', {
+                            weekday: 'long',
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric',
+                            timeZone: 'Asia/Manila',
+                          })
+                        : '—'}
+                      {selectedTime ? ` at ${formatPickupTime(selectedTime)}` : ''}
+                    </p>
+                    <p style={{ ...summaryTextStyle, color: '#57534E' }}>{PICKUP_LOCATION}</p>
+                  </SummaryBlock>
+                  <SummaryBlock label="Your details" onEdit={() => goTo(3)} last>
+                    <p style={summaryTextStyle}>{customer.name.trim()}</p>
+                    <p style={summaryTextStyle}>{customer.phone.trim()} · {customer.email.trim()}</p>
+                    <p style={summaryTextStyle}>
+                      {customer.address_street.trim()}, {customer.address_village.trim()}, {customer.address_city.trim()}{' '}
+                      {customer.address_zip.trim()}
+                    </p>
+                    {customer.instagram.trim() && <p style={summaryTextStyle}>Instagram: {customer.instagram.trim()}</p>}
+                    <p style={summaryTextStyle}>
+                      Payment: {customer.payment_method === 'gcash' ? 'GCash' : 'Bank Transfer'}
+                    </p>
+                  </SummaryBlock>
+                </div>
+              </section>
+            )}
+          </div>
 
-          {/* Pickup time — only shown after a date is selected */}
-          {selectedDateData && (
-            <section style={cardStyle}>
-              <h2 style={{ ...sectionHeadingStyle, marginBottom: 6 }}>Select pickup time</h2>
+          {/* Navigation */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {submitError && step === CONFIRM_STEP && (
               <p
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 12,
-                  color: '#57534E',
-                  margin: '0 0 16px',
-                }}
-              >
-                Pickup location: <strong style={{ color: '#1C1917', fontWeight: 600 }}>{PICKUP_LOCATION}</strong>
-              </p>
-              <PickupTimePicker
-                availableTimes={selectedDateData.pickup_times}
-                selectedTime={selectedTime}
-                onSelectTime={setSelectedTime}
-                hasError={!!formErrors.time}
-              />
-              {formErrors.time && <p style={fieldErrorStyle}>{formErrors.time}</p>}
-            </section>
-          )}
-
-          {/* Customer details */}
-          <section style={cardStyle}>
-            <h2 style={sectionHeadingStyle}>Your details</h2>
-            <CustomerForm
-              value={customer}
-              onChange={setCustomer}
-              errors={{
-                name: formErrors.name,
-                phone: formErrors.phone,
-                email: formErrors.email,
-                address_street: formErrors.address_street,
-                address_village: formErrors.address_village,
-                address_city: formErrors.address_city,
-                address_zip: formErrors.address_zip,
-              }}
-            />
-          </section>
-
-          {/* Submit */}
-          <div>
-            {submitError && (
-              <p
+                role="alert"
                 style={{
                   fontFamily: "'Inter', sans-serif",
                   fontSize: 12,
                   color: '#DC2626',
                   textAlign: 'center',
-                  marginBottom: 8,
+                  margin: 0,
                 }}
               >
                 {submitError}
               </p>
             )}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              style={{
-                width: '100%',
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: '0.22em',
-                textTransform: 'uppercase',
-                background: isSubmitting ? '#D6D3D1' : '#A16207',
-                color: isSubmitting ? '#8C7B6B' : '#FFFFFF',
-                border: 'none',
-                padding: '18px 0',
-                cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                transition: 'background 0.2s',
-                marginTop: 8,
-              }}
-            >
-              {isSubmitting ? 'Placing order…' : 'Place Order'}
-            </button>
+            <div style={{ display: 'flex', gap: 12 }}>
+              {step > 0 && (
+                <button
+                  type="button"
+                  onClick={() => goTo(step - 1)}
+                  disabled={leaving || isSubmitting}
+                  className="lv-step-btn lv-step-btn-back"
+                >
+                  Back
+                </button>
+              )}
+              {step < CONFIRM_STEP ? (
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  disabled={leaving || (step === 1 && loadingSlots)}
+                  className="lv-step-btn lv-step-btn-next"
+                >
+                  Next
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={isSubmitting || leaving}
+                  className="lv-step-btn lv-step-btn-next"
+                >
+                  {isSubmitting ? 'Placing order…' : 'Place Order'}
+                </button>
+              )}
+            </div>
           </div>
         </form>
       </div>
     </main>
+  )
+}
+
+function SummaryBlock({
+  label,
+  onEdit,
+  last,
+  children,
+}: {
+  label: string
+  onEdit: () => void
+  last?: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <div
+      style={{
+        padding: '14px 0',
+        borderBottom: last ? 'none' : '1px solid rgba(161,98,7,0.12)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 4,
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <p style={summaryLabelStyle}>{label}</p>
+        <button
+          type="button"
+          onClick={onEdit}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 12,
+            color: '#A16207',
+            textDecoration: 'underline',
+            cursor: 'pointer',
+          }}
+        >
+          Edit
+        </button>
+      </div>
+      {children}
+    </div>
   )
 }

@@ -635,3 +635,76 @@
     box-shadow: 0 1px 20px rgba(0, 0, 0, 0.06);
   }
 }
+
+/* ── Order steps ── */
+
+.lv-step {
+  --lv-step-shift: 28px;
+  animation: lv-step-in 420ms cubic-bezier(0.05, 0.7, 0.1, 1) both;
+}
+.lv-step[data-dir="back"] { --lv-step-shift: -28px; }
+.lv-step.is-leaving {
+  animation: lv-step-out 220ms cubic-bezier(0.3, 0, 1, 1) both;
+}
+
+@keyframes lv-step-in {
+  from { opacity: 0; transform: translateX(var(--lv-step-shift)); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes lv-step-out {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(calc(var(--lv-step-shift) * -1)); }
+}
+
+.lv-step-track {
+  height: 3px;
+  background: #E7E5E4;
+  overflow: hidden;
+}
+.lv-step-fill {
+  height: 100%;
+  background: #A16207;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 420ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.lv-step-fill.is-done { transform: scaleX(1); }
+
+.lv-step-btn {
+  flex: 1;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 18px 0;
+  cursor: pointer;
+  border-radius: 0;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 120ms ease-out;
+}
+.lv-step-btn:active:not(:disabled) { transform: scale(0.98); }
+.lv-step-btn:focus-visible { outline: 2px solid #A16207; outline-offset: 2px; }
+.lv-step-btn:disabled { cursor: not-allowed; opacity: 0.6; }
+.lv-step-btn-next {
+  background: #A16207;
+  color: #FFFFFF;
+  border: 1px solid #A16207;
+}
+.lv-step-btn-next:hover:not(:disabled) { background: #B8730A; border-color: #B8730A; }
+.lv-step-btn-back {
+  flex: 0 0 34%;
+  background: transparent;
+  color: #57534E;
+  border: 1px solid #D6D3D1;
+}
+.lv-step-btn-back:hover:not(:disabled) { border-color: #A16207; color: #1C1917; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lv-step, .lv-step.is-leaving { animation-name: lv-step-fade; animation-duration: 150ms; }
+  .lv-step.is-leaving { animation-direction: reverse; }
+  .lv-step-fill { transition: none; }
+}
+@keyframes lv-step-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
