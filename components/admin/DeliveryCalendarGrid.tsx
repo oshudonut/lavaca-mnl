@@ -23,43 +23,13 @@ function firstDayOfWeek(yearMonth: string): number {
 interface CellProps {
   date: string
   record: AdminDateRecord | null
-  isMonday: boolean
   isPast: boolean
   isSelected: boolean
   onClick: () => void
 }
 
-function DateCell({ date, record, isMonday, isPast, isSelected, onClick }: CellProps) {
+function DateCell({ date, record, isPast, isSelected, onClick }: CellProps) {
   const day = parseInt(date.split('-')[2], 10)
-
-  if (isMonday) {
-    return (
-      <div style={{
-        minHeight: 60,
-        background: '#F5F4F2',
-        border: '1px solid #E8E5E3',
-        padding: '6px 5px',
-        display: 'flex',
-        flexDirection: 'column',
-        opacity: 0.55,
-      }}>
-        <span style={{
-          fontFamily: "'Inter', sans-serif",
-          fontSize: 11,
-          fontWeight: 500,
-          color: '#8C7B6B',
-        }}>{day}</span>
-        <span style={{
-          marginTop: 'auto',
-          fontFamily: "'Jost', sans-serif",
-          fontSize: 8,
-          letterSpacing: '0.1em',
-          textTransform: 'uppercase',
-          color: '#8C7B6B',
-        }}>Rest</span>
-      </div>
-    )
-  }
 
   const borderColor = isSelected
     ? '#A16207'
@@ -371,8 +341,6 @@ export function DeliveryCalendarGrid() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
               {cells.map((cell, i) => {
                 if (!cell.date) return <div key={i} style={{ minHeight: 60 }} />
-                const dow = new Date(cell.date + 'T00:00:00Z').getUTCDay()
-                const isMonday = dow === 1
                 const isPast = cell.date < today
                 const record = dateMap.get(cell.date) ?? null
                 return (
@@ -380,12 +348,9 @@ export function DeliveryCalendarGrid() {
                     key={cell.date}
                     date={cell.date}
                     record={record}
-                    isMonday={isMonday}
                     isPast={isPast}
                     isSelected={selectedDate === cell.date}
-                    onClick={() => {
-                      if (!isMonday) setSelectedDate(cell.date === selectedDate ? null : cell.date!)
-                    }}
+                    onClick={() => setSelectedDate(cell.date === selectedDate ? null : cell.date!)}
                   />
                 )
               })}

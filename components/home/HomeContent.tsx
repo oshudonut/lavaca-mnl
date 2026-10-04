@@ -8,7 +8,7 @@ const TRUST = [
   { num: '25',   l1: 'Hours',           l2: 'Slow-Cooked'  },
   { num: '100%', l1: 'Premium',         l2: 'Angus Beef'   },
   { num: '3',    l1: 'Sizes for Every', l2: 'Occasion'     },
-  { num: '48h',  l1: 'Advance',         l2: 'Order'        },
+  { num: '7',    l1: 'Days',            l2: 'a Week'       },
 ]
 
 const STEPS = [
@@ -20,7 +20,7 @@ const STEPS = [
   {
     num: '2',
     title: 'Pick Your Pickup Time',
-    desc: 'Choose a pickup date and any hour from 9AM to 6PM that works for you. Available Tuesday through Sunday.',
+    desc: 'Choose a pickup date and any hour from 9AM to 6PM that works for you. Open every day, same-day orders welcome.',
   },
   {
     num: '3',
@@ -38,8 +38,8 @@ const GALLERY = [
 
 const PICKUP_INFO = [
   { icon: 'pin',      strong: 'Pickup Only',           sub: 'Collect your order at your chosen time' },
-  { icon: 'calendar', strong: 'Tuesday – Sunday',      sub: 'Pickup 9AM – 6PM'                       },
-  { icon: 'clock',    strong: '48 Hours Advance',      sub: 'Order at least 2 days before pickup'    },
+  { icon: 'calendar', strong: 'Open Every Day',        sub: 'Pickup 9AM – 6PM'                       },
+  { icon: 'clock',    strong: 'Same-Day Orders',       sub: 'Order today for a later pickup time'    },
   { icon: 'card',     strong: 'GCash & Bank Transfer', sub: 'BPI · BDO'                              },
 ]
 

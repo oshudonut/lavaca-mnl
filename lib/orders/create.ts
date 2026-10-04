@@ -78,7 +78,7 @@ export async function createOrder(
   const supabase = createServiceClient()
 
   // -------------------------------------------------------------------------
-  // Look up the pickup date and enforce open / Monday / 48hr rules
+  // Look up the pickup date; it must be open and the time not yet passed
   // -------------------------------------------------------------------------
   const { data: dateRow, error: dateError } = await supabase
     .from('delivery_dates')
@@ -91,10 +91,7 @@ export async function createOrder(
   }
 
   const pickupAt = new Date(`${dateRow.date}T${pickup_time}:00+08:00`)
-  const isMonday = new Date(`${dateRow.date}T00:00:00+08:00`).getDay() === 1
-  const withinCutoff = pickupAt < new Date(Date.now() + 48 * 60 * 60 * 1000)
-
-  if (!dateRow.is_open || isMonday || withinCutoff) {
+  if (!dateRow.is_open || pickupAt <= new Date()) {
     return {
       error: { code: 'VALIDATION', message: 'This pickup time is no longer available. Please choose another.' },
     }

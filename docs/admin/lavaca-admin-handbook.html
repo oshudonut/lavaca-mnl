@@ -299,7 +299,7 @@
     <p class="dek">Everything you need to run orders, products, the pickup calendar, and site announcements from the admin panel. No tech background required. Work through it once top to bottom, then keep it open in a tab for reference.</p>
     <div class="callout">
       <span class="callout-label">New in October 2026: pickup only</span>
-      <p>Lavaca no longer delivers. Customers now pick a <strong>pickup date</strong> and a <strong>pickup time</strong> (any hour from 9:00 AM to 6:00 PM), and every order includes a required <strong>Special Request</strong>. There are no more AM/PM slots, delivery addresses, or order limits. Payment details can now be edited from Settings, and the closure banner shows only the message you type.</p>
+      <p>Lavaca no longer delivers. Customers now pick a <strong>pickup date</strong> and a <strong>pickup time</strong> (any hour from 9:00 AM to 6:00 PM, any day of the week, same-day included), and every order includes a required <strong>Special Request</strong>. There are no more AM/PM slots, delivery addresses, or order limits. Payment details can now be edited from Settings, and the closure banner shows only the message you type.</p>
     </div>
   </header>
 
@@ -479,15 +479,15 @@
 
       <div class="mock">
         <div class="cal-grid">
-          <div class="cal-cell rest"><span class="d">1</span><span class="tag">Rest</span></div>
+          <div class="cal-cell open"><span class="d">1</span><span class="tag">Open</span></div>
           <div class="cal-cell open"><span class="d">2</span><span class="tag">Open</span></div>
           <div class="cal-cell open"><span class="d">3</span><span class="tag">Open</span></div>
           <div class="cal-cell" style="border-color:var(--border);"><span class="d">4</span></div>
           <div class="cal-cell closed"><span class="d">5</span><span class="tag">Closed</span></div>
           <div class="cal-cell open"><span class="d">6</span><span class="tag">Open</span></div>
-          <div class="cal-cell rest"><span class="d">8</span><span class="tag">Rest</span></div>
+          <div class="cal-cell open"><span class="d">7</span><span class="tag">Open</span></div>
         </div>
-        <p class="mock-caption">A week on the calendar — green means open for orders, red means closed, grey means nothing's set up yet, and Mondays always rest</p>
+        <p class="mock-caption">A week on the calendar — green means open for orders, red means closed, and grey means nothing's set up yet</p>
       </div>
       <div class="legend">
         <span class="item"><span class="swatch" style="background:#86EFAC;"></span>Open</span>
@@ -497,8 +497,7 @@
 
       <ol class="steps">
         <li><div class="step-body">Click <strong>Calendar</strong> in the top bar, then use the arrows beside the month name to move between months.</div></li>
-        <li><div class="step-body">Mondays always show as greyed-out "Rest" days — Lavaca is closed on Mondays, so they're skipped automatically and can't be clicked.</div></li>
-        <li><div class="step-body">If a whole month hasn't been set up yet, click <strong>Generate month</strong> to open every Tuesday to Sunday in that month, then adjust any date that needs to be different.</div></li>
+        <li><div class="step-body">If a whole month hasn't been set up yet, click <strong>Generate month</strong> to open every day in that month, Mondays included, then close or adjust any date that needs to be different. Days you've already set up are left as they are, so it's safe to click again to fill in missing days.</div></li>
         <li><div class="step-body">Click any date to open its panel (on a phone, it slides up from the bottom).
           <ul class="sub">
             <li>Set the day to <strong>Open</strong> or <strong>Closed</strong> using the toggle at the top.</li>
@@ -510,7 +509,7 @@
       </ol>
       <div class="callout">
         <span class="callout-label">Pickup times</span>
-        <p>On any open date, customers choose a pickup time from a dropdown: 9:00 AM, 10:00 AM, and so on up to 6:00 PM. Orders must be placed at least 48 hours ahead, so times sooner than that show as unavailable. To stop orders for a day, close that date.</p>
+        <p>On any open date, customers choose a pickup time from a dropdown: 9:00 AM, 10:00 AM, and so on up to 6:00 PM. Same-day orders are allowed: customers can book any time that hasn't passed yet, so earlier times today show as unavailable. To stop orders for a day, close that date.</p>
       </div>
     </section>
 

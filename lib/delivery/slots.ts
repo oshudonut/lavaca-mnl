@@ -13,7 +13,7 @@ export type AvailableDate = {
   max_orders_total: number
   closure_reason: string | null
   closure_type: string | null
-  pickup_times: string[]   // "HH:MM" times still bookable (past the 48hr cutoff)
+  pickup_times: string[]   // "HH:MM" times still bookable (later than now)
   unavailable_product_ids: string[]
 }
 
@@ -44,8 +44,7 @@ type AnnouncementRow = {
  * Returns pickup dates and bookable pickup times between fromDate and toDate (inclusive).
  *
  * Business rules enforced:
- *   BR-ORD-01 — 48hr advance booking cutoff applied server-side
- *   BR-ORD-04 — Mondays excluded from output entirely
+ *   BR-ORD-01 — same-day booking allowed; only pickup times later than now
  *
  * If a sitewide closure announcement is active, returns early with
  * closure_active: true and an empty dates array.
@@ -107,7 +106,7 @@ export async function getAvailableSlots(
   // -------------------------------------------------------------------------
   // Step 3: Transform and apply business rules
   // -------------------------------------------------------------------------
-  const cutoff = new Date(Date.now() + 48 * 60 * 60 * 1000)
+  const now = new Date()
 
   type RawDateRow = {
     id: string
@@ -132,15 +131,10 @@ export async function getAvailableSlots(
       date_product_exclusions,
     } = rawRow
 
-    // BR-ORD-04: Skip Mondays entirely (getDay() === 1)
-    // Use +08:00 (PST) so day-of-week is correct regardless of server timezone
-    const dayOfWeek = new Date(`${date}T00:00:00+08:00`).getDay()
-    if (dayOfWeek === 1) continue
-
-    // BR-ORD-01: 48hr advance booking rule, applied per pickup time.
-    // Explicit +08:00 offset (PST) so cutoff is correct on UTC servers
+    // BR-ORD-01: only pickup times that haven't passed yet.
+    // Explicit +08:00 offset (PST) so the comparison is correct on UTC servers
     const pickup_times = PICKUP_TIMES.filter(
-      (t) => new Date(`${date}T${t}:00+08:00`) >= cutoff
+      (t) => new Date(`${date}T${t}:00+08:00`) > now
     )
 
     dates.push({

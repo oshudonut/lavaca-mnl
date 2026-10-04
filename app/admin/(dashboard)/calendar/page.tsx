@@ -33,7 +33,7 @@ export default function AdminCalendarPage() {
           color: '#57534E',
           margin: 0,
         }}>
-          Manage open dates, slot capacity, and closures.
+          Manage open dates and closures.
         </p>
       </div>
       <DeliveryCalendarGrid />

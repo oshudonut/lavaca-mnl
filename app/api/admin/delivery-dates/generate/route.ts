@@ -42,14 +42,11 @@ export async function POST(request: NextRequest) {
   const end = new Date(to_date + 'T00:00:00Z')
 
   while (cursor <= end) {
-    const dow = cursor.getUTCDay() // 0=Sun, 1=Mon
-    if (dow !== 1) {              // skip Monday
-      const d = formatUTCDate(cursor)
-      if (existingSet.has(d)) {
-        skipped++
-      } else {
-        toCreate.push(d)
-      }
+    const d = formatUTCDate(cursor)
+    if (existingSet.has(d)) {
+      skipped++
+    } else {
+      toCreate.push(d)
     }
     cursor.setUTCDate(cursor.getUTCDate() + 1)
   }

@@ -40,7 +40,7 @@ function getDateState(
 
   if (!availableDate.is_open) return { state: 'closed', label: 'Closed' }
 
-  // No pickup times left once the 48hr cutoff is applied
+  // No pickup times left today (all have passed)
   if (availableDate.pickup_times.length === 0) return { state: 'disabled' }
 
   return { state: 'available' }
@@ -209,18 +209,11 @@ export function AvailabilityCalendar({ slotsData, selectedDate, onSelectDate }: 
         {gridDays.map((day) => {
           const isCurrentMonth = isSameMonth(day, viewMonth)
           const dayStr = format(day, 'yyyy-MM-dd')
-          const dayOfWeek = day.getDay() // 0=Sun, 1=Mon
-          const isMonday = dayOfWeek === 1
           const isPast = isBefore(day, today) && !isToday(day)
           const isSelected = dayStr === selectedDate
 
           // Days outside the current month: empty cell
           if (!isCurrentMonth) {
-            return <div key={dayStr} />
-          }
-
-          // Monday: visually blank, non-interactive
-          if (isMonday) {
             return <div key={dayStr} />
           }
 
